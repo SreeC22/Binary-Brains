@@ -1,45 +1,73 @@
-# Binary Brains - Code Translation and Conversion Tool
+# Binary Brains
 
-## Project Overview
+Binary Brains is a code translation and conversion tool designed to facilitate seamless translation between various programming languages. Leveraging the power of GPT-3, this tool aims to ensure accuracy and correctness in code conversion, making it an invaluable asset for developers working across multiple languages.
 
-The "Binary Brains" project aims to develop a code translation and conversion tool capable of translating code snippets between various programming languages. This tool will utilize GPT-3 to assist in the translation process, ensuring the accuracy and correctness of the code.
+## Features
 
-## Repository Structure
+- **Code Translation:** Translate code snippets between different programming languages.
+- **GPT-3 Integration:** Utilize the advanced capabilities of GPT-3 for accurate code translation.
+- **User-Friendly Interface:** A simple and intuitive interface for easy navigation and usage.
+- **Multiple Language Support:** Support for a wide range of programming languages.
 
-The repository is structured to facilitate the RedwoodJS framework, providing a full-stack development environment:
+## Technologies Used
 
-- `/api`: Backend logic, including integration with GPT-3 and database management.
-- `/web`: Frontend code, consisting of user interface components built with React.
+- **Frontend:** React, Chakra UI
+- **Backend:** Rust
+- **Database:** MongoDB
+- **Authentication:** OAuth
+- **Testing:** Jest, Enzyme
+- **Deployment:** AWS
 
-Additional directories may be added to support the specific needs of our project, such as:
+## Getting Started
 
-- `/scripts`: Utility scripts for development and deployment.
-- `/tests`: Testing scripts and test cases.
+To get started with Binary Brains, follow these steps:
 
-## Development Sprints
+### Prerequisites
 
-- **Sprint 1**: Project Initialization and UI Design
-  - Initialize the RedwoodJS project structure.
-  - Begin designing the user interface.
+- Node.js
+- Rust
+- MongoDB
 
-- **Sprint 2**: GPT-3 Integration and Initial Code Translation Logic
-  - Integrate GPT-3 API.
-  - Develop the initial logic for translating code between languages.
+### Installation
 
-- **Sprint 3**: Code Translation Logic and Frontend Development
-  - Refine the code translation logic.
-  - Continue development of the frontend interface.
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/SreeC22/Binary-Brains.git
+   cd Binary-Brains
+   ```
 
-- **Sprint 4**: Testing, Documentation, and Final Refinement
-  - Write and execute test cases.
-  - Document the code and usage instructions.
-  - Finalize UI and logic refinements.
+2. **Set Up the Frontend:**
+   ```bash
+   cd frontend
+   npm install
+   npm start
+   ```
 
-## Contribution Guidelines
+3. **Set Up the Backend:**
+   ```bash
+   cd backend
+   cargo build
+   cargo run
+   ```
 
-- Contributions are managed through Jira issues and discussed in our regular team meetings.
-- All merge requests must be reviewed by at least one other team member before being merged into the main branch.
+4. **Configure MongoDB:**
+   - Ensure MongoDB is running and accessible.
+
+### Usage
+
+- Access the frontend application at `http://localhost:3000`.
+- Interact with the backend API at `http://localhost:8080`.
+
+## Contributing
+
+Contributions to Binary Brains are welcome! Please follow these steps to contribute:
+
+1. Fork the repository.
+2. Create a new branch for your feature (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a pull request.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
