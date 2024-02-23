@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 actix-web = "4.5.1"
 actix-cors = "0.6.0"
-
+mongodb = "2.0.0"
+tokio = { version = "1", features = ["full"] }

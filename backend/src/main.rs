@@ -1,5 +1,5 @@
-use actix_cors::Cors;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+mod db;
 
 // Define the greet function here
 async fn greet() -> impl Responder {
@@ -8,15 +8,24 @@ async fn greet() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        let cors = Cors::default()
-            .allow_any_origin()
-            .allow_any_method()
-            .allow_any_header();
+    // Attempt to establish a database connection first
+    let database_connection = db::establish_connection().await;
+    match database_connection {
+        Ok(_) => {
+            println!("Successfully connected to the database.");
+        },
+        Err(e) => {
+            eprintln!("Failed to connect to the database: {}", e);
+            // Exit the application if the database connection fails
+            std::process::exit(1);
+        },
+    }
 
+    // Configure and start the Actix web server
+    HttpServer::new(|| {
         App::new()
-            .wrap(cors)
             .route("/greet", web::get().to(greet))
+            // Add more routes and configurations as needed
     })
     .bind("127.0.0.1:8080")?
     .run()
