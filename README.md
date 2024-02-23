@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Binary Brains - Code Translation and Conversion Tool
 
 ## Project Overview
@@ -90,4 +89,3 @@ Additional directories may be added to support the specific needs of our project
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
->>>>>>> 13cc9cc (Remove all files except README.md)
