@@ -2,7 +2,7 @@ import React from 'react';
 
 const Login = () => {
   const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-  const REDIRECT_URI = `${process.env.REACT_APP_BACKEND_URL}/oauth_callback`;
+  const REDIRECT_URI = process.env.REACT_APP_BACKEND_URL + '/oauth_callback'; 
 
   const handleLogin = () => {
     const state = Math.random().toString(36).substring(2, 15); // Generate a random state string
