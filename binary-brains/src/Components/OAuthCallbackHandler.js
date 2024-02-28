@@ -1,30 +1,28 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const OAuthCallbackHandler = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
+    const queryParams = new URLSearchParams(window.location.search);
     const code = queryParams.get('code');
-    const state = queryParams.get('state');
-    // You might want to validate the state here to ensure it matches what you sent
-
     if (code) {
-      // Here you would typically send the code to your backend to exchange it for tokens
-      console.log('Authorization code:', code);
-      // After handling the authorization code, redirect the user as needed
-      navigate('/'); // Example redirection after handling the callback
+      fetch(`${process.env.REACT_APP_BACKEND_URL}/oauth_callback?code=${encodeURIComponent(code)}`, {
+        method: 'GET', // Assuming your backend expects a GET request
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('User info received:', data);
+        // Store the user info in localStorage or state management library
+        localStorage.setItem('user', JSON.stringify(data));
+        navigate('/'); // Redirect to home page or dashboard
+    })
+    
+      .catch(error => console.error('Error:', error));
     }
-  }, [navigate, location]);
+  }, [navigate]);
 
-  return (
-    <div>
-      Processing OAuth callback...
-    </div>
-  );
+  return <div>Processing OAuth callback...</div>;
 };
 
 export default OAuthCallbackHandler;
-

@@ -1,11 +1,11 @@
-use actix_web::{web, App, HttpResponse, HttpServer, middleware};
+use actix_web::{web, App, HttpResponse, HttpServer, middleware, Responder, error::ErrorInternalServerError};
 use actix_cors::Cors;
 use serde::{Deserialize, Serialize};
 use dotenv::dotenv;
 use std::env;
-use log::{info, error};
-use actix_web::Responder;
 
+
+use serde_json::json; 
 #[derive(Clone, Deserialize)]
 pub struct OAuthConfig {
     pub google_client_id: String,
@@ -27,44 +27,66 @@ struct TokenResponse {
     // Include other fields as needed
 }
 
-async fn exchange_code_for_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::Error> {
+#[derive(Serialize, Deserialize, Debug)]
+struct UserInfo {
+    name: String,
+    email: String,
+    // Add more fields as needed based on Google's response
+}
+
+use std::collections::HashMap;
+
+async fn exchange_code_for_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::error::Error> {
     let client = reqwest::Client::new();
-    let params = [
-        ("client_id", &oauth_config.google_client_id),
-        ("client_secret", &oauth_config.google_client_secret),
-        ("code", &code.to_string()), // Corrected to &String
-        ("grant_type", &"authorization_code".to_string()), // Corrected to &String
-        ("redirect_uri", &oauth_config.google_redirect_uri),
-    ];
+    let mut params = HashMap::new();
+    params.insert("client_id", oauth_config.google_client_id.as_str());
+    params.insert("client_secret", oauth_config.google_client_secret.as_str());
+    params.insert("code", code);
+    params.insert("grant_type", "authorization_code");
+    params.insert("redirect_uri", oauth_config.google_redirect_uri.as_str());
 
     let res = client.post("https://oauth2.googleapis.com/token")
         .form(&params)
         .send()
         .await
-        .map_err(|e| {
-            error!("Failed to send request: {}", e);
-            actix_web::error::ErrorInternalServerError(e.to_string())
-        })?
+        .map_err(|e| ErrorInternalServerError(e.to_string()))?
         .json::<TokenResponse>()
         .await
-        .map_err(|e| {
-            error!("Failed to parse response: {}", e);
-            actix_web::error::ErrorInternalServerError(e.to_string())
-        })?;
+        .map_err(|e| ErrorInternalServerError(e.to_string()))?;
 
     Ok(res)
 }
-
 async fn oauth_callback(
     query: web::Query<OAuthCallbackQuery>, 
     oauth_config: web::Data<OAuthConfig>
 ) -> impl Responder {
-    match exchange_code_for_token(&query.code, &oauth_config).await {
-        Ok(token_response) => HttpResponse::Ok().json(token_response),
+    let exchange_result = exchange_code_for_token(&query.code, &oauth_config).await;
+    
+    match exchange_result {
+        Ok(token_response) => {
+            let user_info_result = fetch_user_info(&token_response.access_token).await;
+            match user_info_result {
+                Ok(user_info) => HttpResponse::Ok().json(user_info), // Return real user info
+                Err(_) => HttpResponse::InternalServerError().finish(),
+            }
+        },
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
+async fn fetch_user_info(access_token: &str) -> Result<UserInfo, actix_web::error::Error> {
+    let client = reqwest::Client::new();
+    let user_info_response = client
+        .get("https://www.googleapis.com/oauth2/v3/userinfo")
+        .bearer_auth(access_token)
+        .send()
+        .await
+        .map_err(|e| ErrorInternalServerError(e.to_string()))?
+        .json::<UserInfo>()
+        .await
+        .map_err(|e| ErrorInternalServerError(e.to_string()))?;
 
+    Ok(user_info_response)
+}
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
