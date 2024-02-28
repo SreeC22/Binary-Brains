@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import MonacoEditor from 'react-monaco-editor';
 
 const validationSchema = Yup.object().shape({
+  sourceLanguage: Yup.string().required("Source language is required"),
   targetLanguage: Yup.string().required("Target language is required"),
 });
 
@@ -29,7 +30,7 @@ const CodeTranslationForm = () => {
   const handleConvert = (event) => {
     event.preventDefault();
 
-    validationSchema.validate({ targetLanguage }, { abortEarly: false })
+    validationSchema.validate({ sourceLanguage, targetLanguage }, { abortEarly: false })
       .then(() => {
         // Validate input code
         if (!inputCode.trim()) {
@@ -42,6 +43,7 @@ const CodeTranslationForm = () => {
 
         // Call the translation API or perform conversion logic here
         console.log("Input code:", inputCode);
+        console.log("Source language:", sourceLanguage);
         console.log("Target language:", targetLanguage);
         // Placeholder: Setting output code to a simple message
         setOutputCode(`Generated code in ${targetLanguage} goes here`);
