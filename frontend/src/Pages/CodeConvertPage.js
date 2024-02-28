@@ -1,3 +1,4 @@
+// TODO make pretty using css w/ pictures and stuff
 import React, { useState } from "react";
 import { Box, Button, FormControl, FormErrorMessage, FormLabel, Select, Text, VStack } from "@chakra-ui/react";
 import * as Yup from "yup";
