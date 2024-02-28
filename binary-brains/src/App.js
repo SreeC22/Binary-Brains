@@ -15,12 +15,10 @@ import OAuthCallbackHandler from './Components/OAuthCallbackHandler'; // Import 
 function App() {
   return (
     <Router>
-      <Navbar /> {/* Include the Navbar component */}
-
+      <Navbar />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/oauth_callback" element={<OAuthCallbackHandler />} /> {/* Add this line */}
-        {/* You can add more routes here */}
       </Routes>
     </Router>
   );
