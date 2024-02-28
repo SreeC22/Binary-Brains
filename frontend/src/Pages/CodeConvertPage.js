@@ -1,9 +1,7 @@
-// TODO Make everything look prettier w/ css
 import React, { useState } from "react";
 import { Box, Button, FormControl, FormErrorMessage, FormLabel, Select, Text, VStack } from "@chakra-ui/react";
 import * as Yup from "yup";
 import MonacoEditor from 'react-monaco-editor';
-import './CodeConvertPage.css';
 
 const validationSchema = Yup.object().shape({
   targetLanguage: Yup.string().required("Target language is required"),
@@ -82,6 +80,16 @@ const CodeTranslationForm = () => {
               color: '#fff', // Set the text color to white
             }}
           />
+          <FormControl isInvalid={Boolean(errors.sourceLanguage)} mt={4}>
+            <FormLabel htmlFor="sourceLanguage">Source Language</FormLabel>
+            <Select id="sourceLanguage" value={sourceLanguage} onChange={(event) => setSourceLanguage(event.target.value)}>
+              <option value="">Select</option>
+              {languages.map(lang => (
+                <option key={lang.value} value={lang.value}>{lang.label}</option>
+              ))}
+            </Select>
+            <FormErrorMessage>{errors.sourceLanguage}</FormErrorMessage>
+          </FormControl>
           <FormErrorMessage>{errors.inputCode}</FormErrorMessage>
         </Box>
         <Box width="48%">
@@ -98,28 +106,19 @@ const CodeTranslationForm = () => {
               readOnly: true,
             }}
           />
+          <FormControl isInvalid={Boolean(errors.targetLanguage)} mt={4}>
+            <FormLabel htmlFor="targetLanguage">Target Language</FormLabel>
+            <Select id="targetLanguage" value={targetLanguage} onChange={(event) => setTargetLanguage(event.target.value)}>
+              <option value="">Select</option>
+              {languages.map(lang => (
+                <option key={lang.value} value={lang.value}>{lang.label}</option>
+              ))}
+            </Select>
+            <FormErrorMessage>{errors.targetLanguage}</FormErrorMessage>
+          </FormControl>
         </Box>
       </Box>
-      <FormControl isInvalid={Boolean(errors.sourceLanguage)}>
-        <FormLabel htmlFor="sourceLanguage">Source Language</FormLabel>
-        <Select id="sourceLanguage" value={sourceLanguage} onChange={(event) => setSourceLanguage(event.target.value)}>
-          <option value="">Select</option>
-          {languages.map(lang => (
-            <option key={lang.value} value={lang.value}>{lang.label}</option>
-          ))}
-        </Select>
-        <FormErrorMessage>{errors.sourceLanguage}</FormErrorMessage>
-      </FormControl>
-      <FormControl isInvalid={Boolean(errors.targetLanguage)}>
-        <FormLabel htmlFor="targetLanguage">Target Language</FormLabel>
-        <Select id="targetLanguage" value={targetLanguage} onChange={(event) => setTargetLanguage(event.target.value)}>
-          <option value="">Select</option>
-          {languages.map(lang => (
-            <option key={lang.value} value={lang.value}>{lang.label}</option>
-          ))}
-        </Select>
-        <FormErrorMessage>{errors.targetLanguage}</FormErrorMessage>
-      </FormControl>
+      
       
       <Button 
         size="sm"
