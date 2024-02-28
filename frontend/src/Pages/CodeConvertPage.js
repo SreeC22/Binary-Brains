@@ -69,7 +69,7 @@ const CodeTranslationForm = () => {
           <FormLabel>Input Code</FormLabel>
           <MonacoEditor
             width="100%"
-            height={400}
+            height={1000}
             language="plaintext"
             value={inputCode}
             onChange={setInputCode}
@@ -99,7 +99,7 @@ const CodeTranslationForm = () => {
           <FormLabel>Converted Code</FormLabel>
           <MonacoEditor
             width="100%"
-            height={400}
+            height={1000}
             language="plaintext"
             value={outputCode}
             onChange={() => {}} // Output code is read-only
