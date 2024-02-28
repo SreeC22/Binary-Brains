@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Box, Button, FormControl, FormErrorMessage, FormLabel, Select, Text, VStack } from "@chakra-ui/react";
 import * as Yup from "yup";
 import MonacoEditor from 'react-monaco-editor';
+import './CodeConvertPage.css';
 
 const validationSchema = Yup.object().shape({
   targetLanguage: Yup.string().required("Target language is required"),
@@ -92,7 +93,7 @@ const CodeTranslationForm = () => {
             value={outputCode}
             onChange={() => {}} // Output code is read-only
             options={{
-              theme: "vs-light",
+              theme: "vs-dark",
               automaticLayout: true,
               readOnly: true,
             }}
