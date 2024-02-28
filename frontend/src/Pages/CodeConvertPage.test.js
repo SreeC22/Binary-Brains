@@ -1,53 +1,40 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import CodeTranslationForm from './CodeTranslationForm';
+import React from "react";
+import { render, fireEvent, waitFor } from "@testing-library/react";
+import CodeTranslationForm from "./CodeTranslationForm";
 
-describe('CodeTranslationForm', () => {
-  test('renders source language dropdown', () => {
-    render(<CodeTranslationForm />);
-    const sourceLanguageDropdown = screen.getByLabelText('Source Language');
-    expect(sourceLanguageDropdown).toBeInTheDocument();
-  });
-
-  test('renders target language dropdown', () => {
-    render(<CodeTranslationForm />);
-    const targetLanguageDropdown = screen.getByLabelText('Target Language');
-    expect(targetLanguageDropdown).toBeInTheDocument();
-  });
-
-  test('renders input code editor', () => {
-    render(<CodeTranslationForm />);
-    const inputCodeEditor = screen.getByLabelText('Input Code');
+describe("CodeTranslationForm", () => {
+  test("renders input and output code editors", () => {
+    const { getByLabelText } = render(<CodeTranslationForm />);
+    const inputCodeEditor = getByLabelText("Input Code");
+    const outputCodeEditor = getByLabelText("Converted Code");
     expect(inputCodeEditor).toBeInTheDocument();
-  });
-
-  test('renders output code editor', () => {
-    render(<CodeTranslationForm />);
-    const outputCodeEditor = screen.getByLabelText('Output Code');
     expect(outputCodeEditor).toBeInTheDocument();
   });
 
-  test('renders convert button', () => {
-    render(<CodeTranslationForm />);
-    const convertButton = screen.getByRole('button', { name: 'Convert' });
-    expect(convertButton).toBeInTheDocument();
+  test("displays error message if target language is not selected", async () => {
+    const { getByText } = render(<CodeTranslationForm />);
+    fireEvent.click(getByText("Convert"));
+    await waitFor(() => {
+      expect(getByText("Target language is required")).toBeInTheDocument();
+    });
   });
 
-  test('renders "How to use this tool?" text', () => {
-    render(<CodeTranslationForm />);
-    const howToUseText = screen.getByText(/How to use this tool?/i);
-    expect(howToUseText).toBeInTheDocument();
+  test("displays error message if input code is empty", async () => {
+    const { getByText, getByLabelText } = render(<CodeTranslationForm />);
+    fireEvent.change(getByLabelText("Target Language"), { target: { value: "python" } });
+    fireEvent.click(getByText("Convert"));
+    await waitFor(() => {
+      expect(getByText("Input code is required")).toBeInTheDocument();
+    });
   });
 
-  test('renders available languages list', () => {
-    render(<CodeTranslationForm />);
-    const availableLanguagesList = screen.getByText(/Available Languages:/i);
-    expect(availableLanguagesList).toBeInTheDocument();
-  });
-
-  test('clicking convert button triggers conversion process', () => {
-    render(<CodeTranslationForm />);
-    const convertButton = screen.getByRole('button', { name: 'Convert' });
-    fireEvent.click(convertButton);
-    // Add more assertions or mock API calls as needed to validate conversion process
+  test("displays converted code when convert button is clicked with valid input", async () => {
+    const { getByText, getByLabelText } = render(<CodeTranslationForm />);
+    fireEvent.change(getByLabelText("Input Code"), { target: { value: "print('Hello, world!')" } });
+    fireEvent.change(getByLabelText("Target Language"), { target: { value: "python" } });
+    fireEvent.click(getByText("Convert"));
+    await waitFor(() => {
+      expect(getByText("Generated code in python goes here")).toBeInTheDocument();
+    });
   });
 });
