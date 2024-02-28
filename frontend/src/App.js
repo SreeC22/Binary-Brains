@@ -1,26 +1,13 @@
-import logo from './logo.svg';
-import './App.css';
+// App.js
 import React from 'react';
-import Greeting from './Greeting';
+import { Box, Heading } from "@chakra-ui/react"; // Import Chakra UI components directly for simplicity
+import CodeConvertPage from './Pages/CodeConvertPage'; // Importing CodeConvertPage.js
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <Greeting />
-      </header>
+    <div>
+      <h1>Welcome to My Website!</h1>
+      <CodeConvertPage /> {/* Using CodeConvertPage directly within App */}
     </div>
   );
 }
