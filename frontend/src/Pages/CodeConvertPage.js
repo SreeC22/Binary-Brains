@@ -1,8 +1,8 @@
-
 import React from "react";
-import { Box, Button, FormControl, FormErrorMessage, FormLabel, Select, Textarea } from "@chakra-ui/react";
+import { Box, Button, FormControl, FormErrorMessage, FormLabel, Select } from "@chakra-ui/react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
+import MonacoEditor from 'react-monaco-editor';
 
 const validationSchema = Yup.object().shape({
   codeInput: Yup.string().required("Code input is required"),
@@ -17,25 +17,31 @@ const languages = [
   // Add more languages as needed
 ];
 
-const CodeTranslationForm = ({ onSubmit }) => {
+const CodeConvertPage = () => {
   const handleSubmit = (values, actions) => {
-    onSubmit(values);
+    // Handle form submission here
+    console.log("Form submitted with values:", values);
     actions.setSubmitting(false);
   };
 
   return (
     <Formik initialValues={{ codeInput: "", sourceLanguage: "", targetLanguage: "" }} onSubmit={handleSubmit} validationSchema={validationSchema}>
-      {({ errors, touched }) => (
+      {({ errors, touched, isSubmitting, setFieldValue }) => (
         <Form>
-          <Field name="codeInput">
-            {({ field }) => (
-              <FormControl isInvalid={errors.codeInput && touched.codeInput}>
-                <FormLabel htmlFor="codeInput">Code Input</FormLabel>
-                <Textarea {...field} id="codeInput" />
-                <FormErrorMessage>{errors.codeInput}</FormErrorMessage>
-              </FormControl>
-            )}
-          </Field>
+          <FormControl isInvalid={errors.codeInput && touched.codeInput}>
+            <FormLabel htmlFor="codeInput">Code Input</FormLabel>
+            <MonacoEditor
+              width="100%"
+              height="300"
+              language="javascript" // or use values.sourceLanguage dynamically
+              value={values.codeInput}
+              onChange={(value) => setFieldValue("codeInput", value)}
+              options={{
+                selectOnLineNumbers: true
+              }}
+            />
+            <FormErrorMessage>{errors.codeInput}</FormErrorMessage>
+          </FormControl>
           <Field name="sourceLanguage">
             {({ field }) => (
               <FormControl isInvalid={errors.sourceLanguage && touched.sourceLanguage}>
@@ -71,4 +77,4 @@ const CodeTranslationForm = ({ onSubmit }) => {
   );
 };
 
-export default CodeTranslationForm;
+export default CodeConvertPage;
