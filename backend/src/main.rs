@@ -1,11 +1,10 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder, middleware};
+use actix_web::{web, App, HttpResponse, HttpServer, middleware};
 use actix_cors::Cors;
 use serde::{Deserialize, Serialize};
-use std::env;
 use dotenv::dotenv;
-use std::collections::HashMap;
-
-mod db;
+use std::env;
+use log::{info, error};
+use actix_web::Responder;
 
 #[derive(Clone, Deserialize)]
 pub struct OAuthConfig {
@@ -13,69 +12,65 @@ pub struct OAuthConfig {
     pub google_client_secret: String,
     pub google_redirect_uri: String, 
 }
-
 async fn greet() -> impl Responder {
     HttpResponse::Ok().body("Welcome to our translation service!")
 }
-
-#[derive(Serialize, Deserialize)]
-struct TokenInfo {
-    access_token: String,
-}
-
-#[derive(Serialize)]
-struct TokenRequest {
-    client_id: String,
-    client_secret: String,
+#[derive(Deserialize)]
+struct OAuthCallbackQuery {
     code: String,
-    grant_type: String,
-    redirect_uri: String,
+    // Optionally, include other parameters like state
 }
 
 #[derive(Serialize, Deserialize)]
 struct TokenResponse {
     access_token: String,
+    // Include other fields as needed
 }
 
 async fn exchange_code_for_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::Error> {
     let client = reqwest::Client::new();
-    let params = TokenRequest {
-        client_id: oauth_config.google_client_id.clone(),
-        client_secret: oauth_config.google_client_secret.clone(),
-        code: code.to_string(),
-        grant_type: "authorization_code".to_string(),
-        redirect_uri: oauth_config.google_redirect_uri.clone(),
-    };
+    let params = [
+        ("client_id", &oauth_config.google_client_id),
+        ("client_secret", &oauth_config.google_client_secret),
+        ("code", &code.to_string()), // Corrected to &String
+        ("grant_type", &"authorization_code".to_string()), // Corrected to &String
+        ("redirect_uri", &oauth_config.google_redirect_uri),
+    ];
 
     let res = client.post("https://oauth2.googleapis.com/token")
-        .json(&params)
+        .form(&params)
         .send()
         .await
-        .map_err(|e| actix_web::error::ErrorInternalServerError(e.to_string()))?
+        .map_err(|e| {
+            error!("Failed to send request: {}", e);
+            actix_web::error::ErrorInternalServerError(e.to_string())
+        })?
         .json::<TokenResponse>()
         .await
-        .map_err(|e| actix_web::error::ErrorInternalServerError(e.to_string()))?;
+        .map_err(|e| {
+            error!("Failed to parse response: {}", e);
+            actix_web::error::ErrorInternalServerError(e.to_string())
+        })?;
 
     Ok(res)
 }
 
-async fn oauth_callback(query: web::Query<HashMap<String, String>>, data: web::Data<OAuthConfig>) -> impl Responder {
-    match query.get("code") {
-        Some(code) => {
-            match exchange_code_for_token(code, &data).await {
-                Ok(token_info) => HttpResponse::Ok().json(token_info),
-                Err(_) => HttpResponse::InternalServerError().body("Failed to exchange code for token"),
-            }
-        },
-        None => HttpResponse::BadRequest().body("Missing code parameter"),
+async fn oauth_callback(
+    query: web::Query<OAuthCallbackQuery>, 
+    oauth_config: web::Data<OAuthConfig>
+) -> impl Responder {
+    match exchange_code_for_token(&query.code, &oauth_config).await {
+        Ok(token_response) => HttpResponse::Ok().json(token_response),
+        Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
+    std::env::set_var("RUST_LOG", "actix_web=debug");
+    env_logger::init();
 
-    // Load OAuth configuration
     let oauth_config = OAuthConfig {
         google_client_id: env::var("GOOGLE_CLIENT_ID").expect("GOOGLE_CLIENT_ID must be set"),
         google_client_secret: env::var("GOOGLE_CLIENT_SECRET").expect("GOOGLE_CLIENT_SECRET must be set"),
@@ -92,7 +87,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(middleware::Logger::default())
-            .data(oauth_config.clone()) // Pass OAuth configuration as shared data
+            .app_data(web::Data::new(oauth_config.clone())) // Use .app_data with Data::new
             .route("/greet", web::get().to(greet))
             .route("/oauth_callback", web::get().to(oauth_callback))
     })
