@@ -6,7 +6,6 @@ import CodeConvertPage from './Pages/CodeConvertPage'; // Importing CodeConvertP
 function App() {
   return (
     <div>
-      <h1>Welcome to My Website!</h1>
       <CodeConvertPage /> {/* Using CodeConvertPage directly within App */}
     </div>
   );

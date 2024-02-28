@@ -27,5 +27,3 @@ test("Form submission with valid inputs", () => {
     targetLanguage: "python",
   });
 });
-
-// Write more tests for form validation as needed
