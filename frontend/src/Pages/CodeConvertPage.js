@@ -77,7 +77,7 @@ const CodeTranslationForm = () => {
               theme: 'vs-dark', // Use the dark theme
               automaticLayout: true,
               readOnly: false,
-              fontSize: 14,
+              fontSize: 20,
               fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace', // Choose the desired font family
               backgroundColor: '#000', // Set the background color to black
               color: '#fff', // Set the text color to white
@@ -102,11 +102,15 @@ const CodeTranslationForm = () => {
             height={1000}
             language="plaintext"
             value={outputCode}
-            onChange={() => {}} // Output code is read-only
+            onChange={setOutputCode}
             options={{
-              theme: "vs-dark",
+              theme: 'vs-dark', // Use the dark theme
               automaticLayout: true,
-              readOnly: true,
+              readOnly: false,
+              fontSize: 20,
+              fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace', // Choose the desired font family
+              backgroundColor: '#000', // Set the background color to black
+              color: '#fff', // Set the text color to white
             }}
           />
           <FormControl isInvalid={Boolean(errors.targetLanguage)} mt={4}>
