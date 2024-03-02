@@ -31,7 +31,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = `${process.env.REACT_APP_BACKEND_URL}/${isLogin ? 'login' : 'register'}`;
+    const url = `${process.env.REACT_APP_BACKEND_URL}${isLogin ? '/login' : '/register'}`; // Adjusted URL construction
     const payload = {
       email,
       password,
@@ -59,7 +59,7 @@ const Login = () => {
           alert('Registration successful. Please log in.');
           setIsLogin(true);
         } else {
-          if (data.error === 'UserAlreadyExists') {
+          if (data.message === 'User already exists') { // Updated check for existing user
             alert('User already registered. Please login.');
           } else {
             alert('Registration failed. Please try again.');
@@ -70,7 +70,8 @@ const Login = () => {
       console.error('Error:', error);
     }
   };
-
+  
+  
   return (
     <div>
       <div>

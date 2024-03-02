@@ -7,7 +7,7 @@ mod models; // Assuming this contains your data models like User, OAuthConfig, e
 mod handlers; // Contains your route handlers
 mod db; // Contains your database connection setup
 
-use crate::handlers::{login_or_register, oauth_callback, github_oauth_callback};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback};
 use crate::db::init_mongo; // Make sure this function returns a MongoDB Collection or similar
 
 #[actix_web::main]
@@ -36,16 +36,16 @@ async fn main() -> std::io::Result<()> {
             .allowed_headers(vec![actix_web::http::header::AUTHORIZATION, actix_web::http::header::ACCEPT, actix_web::http::header::CONTENT_TYPE])
             .max_age(3600);
 
-            App::new()
+        App::new()
             .wrap(cors)
             .wrap(middleware::Logger::default()) // For logging requests
             .app_data(web::Data::new(mongo_collection.clone())) // Pass MongoDB collection
             .app_data(web::Data::new(oauth_config.clone())) // Pass OAuth config
             // Define your application routes here
-            .route("/login", web::post().to(login_or_register)) // Use /login for both login and registration
+            .route("/login", web::post().to(login)) // Route for login and registration
+            .route("/register", web::post().to(register)) // Route for registration
             .route("/oauth_callback", web::get().to(oauth_callback)) // Google OAuth callback
             .route("/github_oauth_callback", web::get().to(github_oauth_callback)) // GitHub OAuth callback
-        
     })
     .bind("127.0.0.1:8080")?
     .run()

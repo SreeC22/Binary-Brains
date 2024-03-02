@@ -38,28 +38,45 @@ pub async fn github_oauth_callback(
     }
 }
 
-pub async fn login_or_register(
+
+
+pub async fn login(
     credentials: web::Json<User>,
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
-    let mut user_info = credentials.into_inner();
+    let user_info = credentials.into_inner();
 
     // Check if the email exists in the database
     if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &user_info.email}, None).await {
         // If the email exists, perform login
-        if let (Some(db_password), Some(login_password)) = (existing_user.password, user_info.password.take()) {
-            if verify(&login_password, &db_password).is_ok() {
-                // Login successful
-                return HttpResponse::Ok().json(json!({"message": "Login successful"}));
-            } else {
-                // Invalid credentials
-                return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
+        if let Some(db_password) = existing_user.password {
+            if let Some(login_password) = user_info.password {
+                if verify(&login_password, &db_password).is_ok() {
+                    // Login successful
+                    return HttpResponse::Ok().json(json!({"message": "Login successful"}));
+                }
             }
         }
     }
 
+    // Invalid credentials or user not found
+    HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
+}
+
+pub async fn register(
+    credentials: web::Json<User>,
+    db: web::Data<Collection<User>>,
+) -> impl Responder {
+    let user_info = credentials.into_inner();
+
+    // Check if the email already exists in the database
+    if let Ok(Some(_)) = db.find_one(doc! {"email": &user_info.email}, None).await {
+        // If the email exists, return error
+        return HttpResponse::Conflict().json(json!({"message": "User already exists"}));
+    }
+
     // If the email doesn't exist, proceed with registration
-    if let Some(password) = user_info.password.take() {
+    if let Some(password) = user_info.password {
         let hashed_password = match hash(&password, DEFAULT_COST) {
             Ok(hashed) => Some(hashed),
             Err(e) => {
@@ -71,7 +88,7 @@ pub async fn login_or_register(
         // Create a new User instance with all required fields
         let new_user = User {
             id: None, // Add proper value if required
-            username: None, // Add proper value if required
+            username: user_info.username, // Set username if provided
             email: user_info.email.clone(),
             password: hashed_password, // Wrap in Some()
             google_id: None, // Add proper value if required
@@ -95,7 +112,6 @@ pub async fn login_or_register(
         HttpResponse::BadRequest().json(json!({"message": "Password is required"}))
     }
 }
-
 
 
 
