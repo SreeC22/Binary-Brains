@@ -39,8 +39,7 @@ struct UserInfo {
 }
 #[derive(Serialize, Deserialize, Debug)]
 struct GitHubUserInfo {
-    login: String, // GitHub username
-    // Add more fields as per GitHub's response
+    login: String, 
 }
 
 use std::collections::HashMap;
