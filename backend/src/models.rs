@@ -10,7 +10,7 @@ pub struct User {
     pub id: Option<ObjectId>,
     pub username: Option<String>,
     pub email: String,
-    pub password: Option<String>, // Store hashed passwords only
+    pub password: Option<String>, 
     pub google_id: Option<String>,
     pub github_id: Option<String>,
 }

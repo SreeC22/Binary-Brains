@@ -3,19 +3,18 @@ use actix_cors::Cors;
 use dotenv::dotenv;
 use std::env;
 
-mod models; // Assuming this contains your data models like User, OAuthConfig, etc.
-mod handlers; // Contains your route handlers
-mod db; // Contains your database connection setup
+mod models;
+mod handlers;
+mod db;
 
 use crate::handlers::{login, register, oauth_callback, github_oauth_callback};
-use crate::db::init_mongo; // Make sure this function returns a MongoDB Collection or similar
+use crate::db::init_mongo;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    env_logger::init(); // If you're using env_logger for logging
+    env_logger::init();
 
-    // Load configuration settings from environment variables
     let oauth_config = models::OAuthConfig {
         google_client_id: env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID"),
         google_client_secret: env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET"),
@@ -25,12 +24,10 @@ async fn main() -> std::io::Result<()> {
         github_redirect_uri: env::var("GITHUB_REDIRECT_URI").expect("Missing GITHUB_REDIRECT_URI"),
     };
 
-    // Initialize database connection
     let mongo_collection = init_mongo().await.expect("Failed to initialize MongoDB");
 
-    // Set up and run the Actix web server
     HttpServer::new(move || {
-        let cors = Cors::default() // Configure CORS as needed
+        let cors = Cors::default()
             .allowed_origin("http://localhost:3000")
             .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![actix_web::http::header::AUTHORIZATION, actix_web::http::header::ACCEPT, actix_web::http::header::CONTENT_TYPE])
@@ -38,14 +35,13 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .wrap(cors)
-            .wrap(middleware::Logger::default()) // For logging requests
-            .app_data(web::Data::new(mongo_collection.clone())) // Pass MongoDB collection
-            .app_data(web::Data::new(oauth_config.clone())) // Pass OAuth config
-            // Define your application routes here
-            .route("/login", web::post().to(login)) // Route for login and registration
-            .route("/register", web::post().to(register)) // Route for registration
-            .route("/oauth_callback", web::get().to(oauth_callback)) // Google OAuth callback
-            .route("/github_oauth_callback", web::get().to(github_oauth_callback)) // GitHub OAuth callback
+            .wrap(middleware::Logger::default())
+            .app_data(web::Data::new(mongo_collection.clone()))
+            .app_data(web::Data::new(oauth_config.clone()))
+            .route("/login", web::post().to(login))
+            .route("/register", web::post().to(register))
+            .route("/oauth_callback", web::get().to(oauth_callback))
+            .route("/github_oauth_callback", web::get().to(github_oauth_callback))
     })
     .bind("127.0.0.1:8080")?
     .run()
