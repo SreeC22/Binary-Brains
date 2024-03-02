@@ -1,190 +1,53 @@
-// main.rs
-
-use actix_web::{web, App, HttpResponse, HttpServer, middleware, Responder, error::ErrorInternalServerError};
+use actix_web::{web, App, HttpServer, middleware};
 use actix_cors::Cors;
-use serde::{Deserialize, Serialize};
 use dotenv::dotenv;
 use std::env;
 
-use serde_json::json; 
+mod models; // Assuming this contains your data models like User, OAuthConfig, etc.
+mod handlers; // Contains your route handlers
+mod db; // Contains your database connection setup
 
-#[derive(Clone, Deserialize)]
-pub struct OAuthConfig {
-    pub google_client_id: String,
-    pub google_client_secret: String,
-    pub google_redirect_uri: String,
-    pub github_client_id: String,
-    pub github_client_secret: String,
-    pub github_redirect_uri: String,
-}
+use crate::handlers::{login_or_register, oauth_callback, github_oauth_callback};
+use crate::db::init_mongo; // Make sure this function returns a MongoDB Collection or similar
 
-async fn greet() -> impl Responder {
-    HttpResponse::Ok().body("Welcome to our translation service!")
-}
-
-#[derive(Deserialize)]
-struct OAuthCallbackQuery {
-    code: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct TokenResponse {
-    access_token: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct UserInfo {
-    name: String,
-    email: String,
-}
-#[derive(Serialize, Deserialize, Debug)]
-struct GitHubUserInfo {
-    login: String, 
-}
-
-use std::collections::HashMap;
-
-async fn exchange_code_for_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::error::Error> {
-    let client = reqwest::Client::new();
-    let mut params = HashMap::new();
-    params.insert("client_id", oauth_config.google_client_id.as_str());
-    params.insert("client_secret", oauth_config.google_client_secret.as_str());
-    params.insert("code", code);
-    params.insert("grant_type", "authorization_code");
-    params.insert("redirect_uri", oauth_config.google_redirect_uri.as_str());
-
-    let res = client.post("https://oauth2.googleapis.com/token")
-        .form(&params)
-        .send()
-        .await
-        .map_err(|e| ErrorInternalServerError(e.to_string()))?
-        .json::<TokenResponse>()
-        .await
-        .map_err(|e| ErrorInternalServerError(e.to_string()))?;
-
-    Ok(res)
-}
-
-async fn fetch_user_info(access_token: &str) -> Result<UserInfo, actix_web::error::Error> {
-    let client = reqwest::Client::new();
-    let user_info_response = client
-        .get("https://www.googleapis.com/oauth2/v3/userinfo")
-        .bearer_auth(access_token)
-        .send()
-        .await
-        .map_err(|e| ErrorInternalServerError(e.to_string()))?
-        .json::<UserInfo>()
-        .await
-        .map_err(|e| ErrorInternalServerError(e.to_string()))?;
-
-    Ok(user_info_response)
-}
-
-async fn oauth_callback(
-    query: web::Query<OAuthCallbackQuery>, 
-    oauth_config: web::Data<OAuthConfig>
-) -> impl Responder {
-    let exchange_result = exchange_code_for_token(&query.code, &oauth_config).await;
-    
-    match exchange_result {
-        Ok(token_response) => {
-            let user_info_result = fetch_user_info(&token_response.access_token).await;
-            match user_info_result {
-                Ok(user_info) => HttpResponse::Ok().json(user_info),
-                Err(_) => HttpResponse::InternalServerError().finish(),
-            }
-        },
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
-}
-
-async fn github_oauth_callback(
-    query: web::Query<OAuthCallbackQuery>, 
-    oauth_config: web::Data<OAuthConfig>
-) -> impl Responder {
-    let token_response = exchange_code_for_github_token(&query.code, &oauth_config).await;
-    
-    match token_response {
-        Ok(token_response) => {
-            let user_info_result = fetch_github_user_info(&token_response.access_token).await;
-            match user_info_result {
-                Ok(user_info) => HttpResponse::Ok().json(user_info),
-                Err(_) => HttpResponse::InternalServerError().finish(),
-            }
-        },
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
-}
-
-async fn exchange_code_for_github_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::error::Error> {
-    let client = reqwest::Client::new();
-    let params = [
-        ("client_id", oauth_config.github_client_id.as_str()),
-        ("client_secret", oauth_config.github_client_secret.as_str()),
-        ("code", &code.to_string()), 
-        ("redirect_uri", oauth_config.github_redirect_uri.as_str()),
-    ];
-
-    let res = client.post("https://github.com/login/oauth/access_token")
-        .form(&params)
-        .header("Accept", "application/json")
-        .send()
-        .await
-        .map_err(|e| ErrorInternalServerError(e.to_string()))?
-        .json::<TokenResponse>()
-        .await
-        .map_err(|e| ErrorInternalServerError(e.to_string()))?;
-
-    Ok(res)
-}
-
-
-async fn fetch_github_user_info(access_token: &str) -> Result<GitHubUserInfo, actix_web::error::Error> {
-    let client = reqwest::Client::new();
-    let user_info_response = client
-        .get("https://api.github.com/user")
-        .bearer_auth(access_token)
-        .header("User-Agent", "Actix-web")
-        .send()
-        .await
-        .map_err(|e| ErrorInternalServerError(e.to_string()))?
-        .json::<GitHubUserInfo>()
-        .await
-        .map_err(|e| ErrorInternalServerError(e.to_string()))?;
-
-    Ok(user_info_response)
-}
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().ok(); 
-    std::env::set_var("RUST_LOG", "actix_web=debug");
-    env_logger::init();
+    dotenv().ok();
+    env_logger::init(); // If you're using env_logger for logging
 
-    let oauth_config = OAuthConfig {
-        google_client_id: env::var("GOOGLE_CLIENT_ID").expect("GOOGLE_CLIENT_ID must be set"),
-        google_client_secret: env::var("GOOGLE_CLIENT_SECRET").expect("GOOGLE_CLIENT_SECRET must be set"),
-        google_redirect_uri: env::var("GOOGLE_REDIRECT_URI").expect("GOOGLE_REDIRECT_URI must be set"),
-        github_client_id: env::var("GITHUB_CLIENT_ID").expect("GITHUB_CLIENT_ID must be set"),
-        github_client_secret: env::var("GITHUB_CLIENT_SECRET").expect("GITHUB_CLIENT_SECRET must be set"),
-        github_redirect_uri: env::var("GITHUB_REDIRECT_URI").expect("GITHUB_REDIRECT_URI must be set"),
+    // Load configuration settings from environment variables
+    let oauth_config = models::OAuthConfig {
+        google_client_id: env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID"),
+        google_client_secret: env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET"),
+        google_redirect_uri: env::var("GOOGLE_REDIRECT_URI").expect("Missing GOOGLE_REDIRECT_URI"),
+        github_client_id: env::var("GITHUB_CLIENT_ID").expect("Missing GITHUB_CLIENT_ID"),
+        github_client_secret: env::var("GITHUB_CLIENT_SECRET").expect("Missing GITHUB_CLIENT_SECRET"),
+        github_redirect_uri: env::var("GITHUB_REDIRECT_URI").expect("Missing GITHUB_REDIRECT_URI"),
     };
 
+    // Initialize database connection
+    let mongo_collection = init_mongo().await.expect("Failed to initialize MongoDB");
+
+    // Set up and run the Actix web server
     HttpServer::new(move || {
-        let cors = Cors::default()
+        let cors = Cors::default() // Configure CORS as needed
             .allowed_origin("http://localhost:3000")
             .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![actix_web::http::header::AUTHORIZATION, actix_web::http::header::ACCEPT, actix_web::http::header::CONTENT_TYPE])
             .max_age(3600);
 
-        App::new()
+            App::new()
             .wrap(cors)
-            .wrap(middleware::Logger::default())
-            .app_data(web::Data::new(oauth_config.clone())) 
-            .route("/greet", web::get().to(greet)) 
-            .route("/oauth_callback", web::get().to(oauth_callback))
-            .route("/github_oauth_callback", web::get().to(github_oauth_callback)) 
+            .wrap(middleware::Logger::default()) // For logging requests
+            .app_data(web::Data::new(mongo_collection.clone())) // Pass MongoDB collection
+            .app_data(web::Data::new(oauth_config.clone())) // Pass OAuth config
+            // Define your application routes here
+            .route("/login", web::post().to(login_or_register)) // Use /login for both login and registration
+            .route("/oauth_callback", web::get().to(oauth_callback)) // Google OAuth callback
+            .route("/github_oauth_callback", web::get().to(github_oauth_callback)) // GitHub OAuth callback
+        
     })
-    .bind("127.0.0.1:8080")? 
-    .run() 
+    .bind("127.0.0.1:8080")?
+    .run()
     .await
 }
