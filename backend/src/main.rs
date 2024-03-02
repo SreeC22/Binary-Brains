@@ -37,6 +37,11 @@ struct UserInfo {
     name: String,
     email: String,
 }
+#[derive(Serialize, Deserialize, Debug)]
+struct GitHubUserInfo {
+    login: String, // GitHub username
+    // Add more fields as per GitHub's response
+}
 
 use std::collections::HashMap;
 
@@ -98,16 +103,61 @@ async fn github_oauth_callback(
     query: web::Query<OAuthCallbackQuery>, 
     oauth_config: web::Data<OAuthConfig>
 ) -> impl Responder {
-    // Handle GitHub OAuth callback here
-    HttpResponse::Ok().body("GitHub OAuth callback received")
+    let token_response = exchange_code_for_github_token(&query.code, &oauth_config).await;
+    
+    match token_response {
+        Ok(token_response) => {
+            let user_info_result = fetch_github_user_info(&token_response.access_token).await;
+            match user_info_result {
+                Ok(user_info) => HttpResponse::Ok().json(user_info),
+                Err(_) => HttpResponse::InternalServerError().finish(),
+            }
+        },
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+async fn exchange_code_for_github_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::error::Error> {
+    let client = reqwest::Client::new();
+    let params = [
+        ("client_id", oauth_config.github_client_id.as_str()),
+        ("client_secret", oauth_config.github_client_secret.as_str()),
+        ("code", &code.to_string()), 
+        ("redirect_uri", oauth_config.github_redirect_uri.as_str()),
+    ];
+
+    let res = client.post("https://github.com/login/oauth/access_token")
+        .form(&params)
+        .header("Accept", "application/json")
+        .send()
+        .await
+        .map_err(|e| ErrorInternalServerError(e.to_string()))?
+        .json::<TokenResponse>()
+        .await
+        .map_err(|e| ErrorInternalServerError(e.to_string()))?;
+
+    Ok(res)
 }
 
 
+async fn fetch_github_user_info(access_token: &str) -> Result<GitHubUserInfo, actix_web::error::Error> {
+    let client = reqwest::Client::new();
+    let user_info_response = client
+        .get("https://api.github.com/user")
+        .bearer_auth(access_token)
+        .header("User-Agent", "Actix-web")
+        .send()
+        .await
+        .map_err(|e| ErrorInternalServerError(e.to_string()))?
+        .json::<GitHubUserInfo>()
+        .await
+        .map_err(|e| ErrorInternalServerError(e.to_string()))?;
 
-
+    Ok(user_info_response)
+}
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().ok();
+    dotenv().ok(); 
     std::env::set_var("RUST_LOG", "actix_web=debug");
     env_logger::init();
 
@@ -130,12 +180,12 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(middleware::Logger::default())
-            .app_data(web::Data::new(oauth_config.clone()))
-            .route("/greet", web::get().to(greet))
+            .app_data(web::Data::new(oauth_config.clone())) 
+            .route("/greet", web::get().to(greet)) 
             .route("/oauth_callback", web::get().to(oauth_callback))
-            .route("/github_oauth_callback", web::get().to(github_oauth_callback))
+            .route("/github_oauth_callback", web::get().to(github_oauth_callback)) 
     })
-    .bind("127.0.0.1:8080")?
-    .run()
+    .bind("127.0.0.1:8080")? 
+    .run() 
     .await
 }
