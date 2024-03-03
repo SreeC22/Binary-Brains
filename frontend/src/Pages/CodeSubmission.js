@@ -65,7 +65,6 @@ const CustomAlert = ({ status, message, onClose }) => {
   );
 };
 
-
 const languages = [
   { label: "Python", value: "python", icon: <FaPython /> },
   { label: "Java", value: "java", icon: <FaJava /> },
@@ -140,6 +139,25 @@ const CodeSubmission = () => {
     </HStack>
   );
 
+  const monacoTheme = {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: 'comment', foreground: '87A1B1' },
+      { token: 'keyword', foreground: 'C678DD' },
+      { token: 'string', foreground: '98C379' },
+      { token: 'number', foreground: 'D19A66' },
+    ],
+    colors: {
+      'editor.foreground': '#ABB2BF',
+      'editor.background': '#282C34',
+      'editor.selectionBackground': '#3E4451',
+      'editor.lineHighlightBackground': '#2C313A',
+      'editorCursor.foreground': '#528BFF',
+      'editorWhitespace.foreground': '#3B4048',
+    },
+  };
+
   return (
     <>
       <HeadingSteps />
@@ -154,13 +172,21 @@ const CodeSubmission = () => {
         <Flex justifyContent="space-between">
           <Box position="relative">
             <Menu>
-              <MenuButton as={Button} rightIcon={<FaCog />} colorScheme="blue" zIndex={1} borderRadius='6'>
+              <MenuButton
+                as={Button}
+                rightIcon={<FaCog />}
+                colorScheme="blue"
+                zIndex={1}
+                borderRadius='6'
+                transition='all 0.3s'
+              >
                 {sourceLanguage ? languages.find(lang => lang.value === sourceLanguage)?.label || 'Source Language' : 'Source Language'}
               </MenuButton>
-              <MenuList zIndex={999} >
+              <MenuList zIndex={999}>
                 {languages.map(lang => (
                   <MenuItem key={lang.value} onClick={() => setSourceLanguage(lang.value)}>
-                    {lang.label}
+                    <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 24 })}</span>
+                    <span>{lang.label}</span> 
                   </MenuItem>
                 ))}
               </MenuList>
@@ -168,13 +194,21 @@ const CodeSubmission = () => {
           </Box>
           <Box position="relative">
             <Menu>
-              <MenuButton as={Button} rightIcon={<FaCog />} colorScheme="blue" zIndex={1} borderRadius='6'>
+              <MenuButton
+                as={Button}
+                rightIcon={<FaCog />}
+                colorScheme="blue"
+                zIndex={1}
+                borderRadius='6'
+                transition='all 0.3s'
+              >
                 {targetLanguage ? languages.find(lang => lang.value === targetLanguage)?.label || 'Target Language' : 'Target Language'}
               </MenuButton>
               <MenuList zIndex={999}>
                 {languages.map(lang => (
                   <MenuItem key={lang.value} onClick={() => setTargetLanguage(lang.value)}>
-                    {lang.label}
+                    <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 24 })}</span>
+                    <span>{lang.label}</span> {/* Label */}
                   </MenuItem>
                 ))}
               </MenuList>
@@ -191,11 +225,12 @@ const CodeSubmission = () => {
               value={inputCode}
               onChange={setInputCode}
               options={{
-                theme: 'vs-light',
+                theme: 'vs-dark', // Set the Monaco theme to vs-dark
                 readOnly: false,
                 fontSize: 14,
                 fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
               }}
+              theme={monacoTheme} // Pass the custom theme configuration
             />
           </Box>
           <Box width="48%">
@@ -207,11 +242,12 @@ const CodeSubmission = () => {
               value={outputCode}
               onChange={setOutputCode}
               options={{
-                theme: 'light',
+                theme: 'vs-dark', // Set the Monaco theme to vs-dark
                 readOnly: true,
                 fontSize: 14,
                 fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
               }}
+              theme={monacoTheme} // Pass the custom theme configuration
             />
           </Box>
         </Box>
