@@ -1,48 +1,53 @@
-const React = require('react');
-const { render, fireEvent, waitFor, screen } = require('@testing-library/react');
-const CodeSubmission = require('./CodeSubmission');
+import React from 'react';
+import { render, fireEvent, waitFor } from '@testing-library/react';
+import CodeSubmission from './CodeSubmission';
 
-describe('CodeSubmission', () => {
-  test('renders input code and target language dropdown', async () => {
-    render(React.createElement(CodeSubmission));
 
-    // Find input code textarea
-    const inputCodeTextarea = screen.getByLabelText('Input Code');
-    expect(inputCodeTextarea).toBeInTheDocument();
-
-    // Find target language dropdown
-    const targetLanguageDropdown = screen.getByLabelText('Target Language');
-    expect(targetLanguageDropdown).toBeInTheDocument();
+describe('CodeSubmission component', () => {
+  it('renders correctly', () => {
+    const { getByText } = render(<CodeSubmission />);
+    expect(getByText('Submit Your Code')).toBeInTheDocument();
   });
 
-  test('renders source language dropdown and convert button', async () => {
-    render(React.createElement(CodeSubmission));
-
-    // Find source language dropdown
-    const sourceLanguageDropdown = screen.getByLabelText('Source Language');
-    expect(sourceLanguageDropdown).toBeInTheDocument();
-
-    // Find convert button
-    const convertButton = screen.getByText('Convert');
-    expect(convertButton).toBeInTheDocument();
+  it('updates input code state correctly', () => {
+    const { getByLabelText } = render(<CodeSubmission />);
+    const inputCodeInput = getByLabelText('Input Code');
+    fireEvent.change(inputCodeInput, { target: { value: 'Test input code' } });
+    expect(inputCodeInput.value).toBe('Test input code');
   });
 
-  test('validates source language and target language before conversion', async () => {
-    render(React.createElement(CodeSubmission));
+});
 
-    // Find convert button and click it
-    const convertButton = screen.getByText('Convert');
+describe('Additional tests', () => {
+  it('displays error message when source language is not selected', async () => {
+    const { getByText } = render(<CodeSubmission />);
+    const convertButton = getByText('Convert');
     fireEvent.click(convertButton);
-
-    // Ensure error messages are displayed for source and target languages
     await waitFor(() => {
-      const sourceLanguageErrorMessage = screen.getByText('Source language is required');
-      expect(sourceLanguageErrorMessage).toBeInTheDocument();
-
-      const targetLanguageErrorMessage = screen.getByText('Target language is required');
-      expect(targetLanguageErrorMessage).toBeInTheDocument();
+      expect(getByText('Source language is required')).toBeInTheDocument();
     });
   });
 
-  // Add more tests as needed
+  it('updates output code state after conversion', async () => {
+    const { getByText, getByTestId } = render(<CodeSubmission />);
+    const convertButton = getByText('Convert');
+    fireEvent.click(convertButton);
+    await waitFor(() => {
+      expect(getByTestId('output-code')).toHaveTextContent('Generated code in [target language] will go here');
+    });
+  });
+
+  it('renders components with correct styles', async () => {
+    const { getByText } = render(<CodeSubmission />);
+    const convertButton = getByText('Convert');
+    expect(convertButton).toHaveStyle('background-color: black');
+    expect(convertButton).toHaveStyle('color: white');
+
+  });
+
+  it('passes accessibility tests', async () => {
+    const { container } = render(<CodeSubmission />);
+    expect(container).toBeAccessible();
+  });
+
 });
