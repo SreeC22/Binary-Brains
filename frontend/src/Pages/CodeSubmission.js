@@ -18,7 +18,7 @@ const languages = [
   // Add more languages as needed
 ];
 
-const CodeTranslationForm = () => {
+const CodeSubmission = () => {
   const [inputCode, setInputCode] = useState(`To use this tool, take the following steps -
 1. Select the programming language from the dropdown above
 2. Describe the code you want to generate here in this box
@@ -155,4 +155,4 @@ const CodeTranslationForm = () => {
   );
 };
 
-export default CodeTranslationForm;
+export default CodeSubmission;
