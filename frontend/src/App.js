@@ -1,26 +1,13 @@
-import './App.css';
-import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-} from "react-router-dom";
-
-import Login from './Components/Login';
-import Navbar from './Components/NavBar';
-
-import OAuthCallbackHandler from './Components/OAuthCallbackHandler'; // Import the handler
-// Other imports...
+// App.js
+import React from 'react';
+import { Box, Heading } from "@chakra-ui/react"; // Import Chakra UI components directly for simplicity
+import CodeSubmission from './Pages/CodeSubmission'; // Importing CodeConvertPage.js
 
 function App() {
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/oauth_callback" element={<OAuthCallbackHandler />} /> {/* Add this line */}
-      </Routes>
-    </Router>
+    <div>
+      <CodeSubmission /> {/* Using CodeSubmission directly within App */}
+    </div>
   );
 }
 
