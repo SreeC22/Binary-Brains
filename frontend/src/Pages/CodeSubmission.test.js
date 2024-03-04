@@ -2,7 +2,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import CodeSubmission from './CodeSubmission'; // Update the path as per your project structure
 describe('CodeSubmission', () => {
-  test('accepts input code', () => {
+  test('renders without crashing', () => {
     render(<CodeSubmission />);
   });
 
