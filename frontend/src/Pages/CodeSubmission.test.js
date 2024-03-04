@@ -1,14 +1,13 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import CodeSubmission from './CodeSubmission'; // Update the path as per your project structure
-
 describe('CodeSubmission', () => {
   test('renders without crashing', () => {
     render(<CodeSubmission />);
   });
 
   test('accepts input code', async () => {
-    const { getByLabelText, getByText, getByRole, getAllByText } = render(<CodeSubmission />);
+    const { getByLabelText, getByText, getByRole, getAllByText, getByTestId } = render(<CodeSubmission />);
     
     // Simulate selecting source language to use its aria label
     fireEvent.click(getByRole('button', { name: /Source Language/i }));
@@ -29,14 +28,14 @@ describe('CodeSubmission', () => {
   
     // Iterate over input codes and test each one
     inputCodes.forEach(inputCode => {
-      const monacoEditor = getByLabelText('Input Code');
-      monacoEditor.focus();
-      fireEvent.keyDown(monacoEditor, { key: 'End' });
+      const aceEditor= document.querySelector('.ace_editor');
+      aceEditor.focus();
+      fireEvent.keyDown(aceEditor, { key: 'End' });
       for (let i = 0; i < 999; i++) {
-        fireEvent.keyDown(monacoEditor, { key: 'Backspace' });
+        fireEvent.keyDown(aceEditor, { key: 'Backspace' });
       }
       inputCode.split('').forEach(char => {
-        fireEvent.keyDown(monacoEditor, { key: char });
+        fireEvent.keyDown(aceEditor, { key: char });
       });
 
     });

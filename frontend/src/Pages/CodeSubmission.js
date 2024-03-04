@@ -7,7 +7,6 @@ import { FaCode, FaCog, FaCube} from 'react-icons/fa';
 import { BiSolidDownArrowAlt } from "react-icons/bi";
 import {SiConvertio} from "react-icons/si";
 import { JavaOriginal, MatlabOriginal, PythonOriginal, JavascriptOriginal, RubyOriginal, SwiftOriginal, PerlOriginal, CsharpOriginal, TypescriptOriginal, RustOriginal, PhpOriginal, CplusplusOriginal } from 'devicons-react';
-import "ace-builds/webpack-resolver";
 
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/mode-java';
@@ -232,15 +231,18 @@ const CodeSubmission = () => {
           <Box width="48%">
             <FormLabel htmlFor="inputCode">Input Code <FaCode /></FormLabel>
             <AceEditor
-              id="inputCode"
-              
-              mode={sourceLanguage ? (sourceLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === sourceLanguage)?.value || "text") : "text"}
-              theme="monokai"
-              width="100%"
-              height="500px"
-              value={inputCode}
-              onChange={setInputCode}
-            />
+  id="inputCode"
+  name="input"
+  aria-label="Input Code" // Add aria-label here
+  mode={sourceLanguage ? (sourceLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === sourceLanguage)?.value || "text") : "text"}
+  theme="monokai"
+  width="100%"
+  height="500px"
+  value={inputCode}
+  onChange={setInputCode}
+ 
+/>
+
           </Box>
           <Box width="48%">
             <FormLabel htmlFor="outputCode">Converted Code <FaCode /></FormLabel>
