@@ -1,5 +1,5 @@
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react';
 import CodeSubmission from './CodeSubmission'; // Update the path as per your project structure
 describe('CodeSubmission', () => {
   test('renders without crashing', () => {
@@ -7,11 +7,11 @@ describe('CodeSubmission', () => {
   });
 
   test('accepts input code', async () => {
-    const { getByLabelText, getByText, getByRole, getAllByText, getByTestId } = render(<CodeSubmission />);
+    const { getByRole, getAllByText} = render(<CodeSubmission />);
     
     // Simulate selecting source language to use its aria label
     fireEvent.click(getByRole('button', { name: /Source Language/i }));
-    const sourceLanguage = 'Javascript';
+    const sourceLanguage = 'Java';
     const sourceLanguageElements = getAllByText(sourceLanguage);
     sourceLanguageElements.forEach(element => {
       fireEvent.click(getByRole('button', { name: /Source Language/i }));

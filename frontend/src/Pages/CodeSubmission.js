@@ -1,27 +1,27 @@
 
-import React, { useState, useEffect } from "react";
-import { Box, FormLabel, Menu, MenuButton, MenuList, MenuItem, Text, VStack, HStack, Flex, Alert, AlertIcon, AlertDescription, CloseButton, AlertTitle } from "@chakra-ui/react";
-import{Button as CustomButton} from "@chakra-ui/react"
-import AceEditor from 'react-ace';
-import { FaCode, FaCog, FaCube} from 'react-icons/fa'; 
-import { BiSolidDownArrowAlt } from "react-icons/bi";
-import {SiConvertio} from "react-icons/si";
-import { JavaOriginal, MatlabOriginal, PythonOriginal, JavascriptOriginal, RubyOriginal, SwiftOriginal, PerlOriginal, CsharpOriginal, TypescriptOriginal, RustOriginal, PhpOriginal, CplusplusOriginal } from 'devicons-react';
-
-import 'ace-builds/src-noconflict/mode-python';
-import 'ace-builds/src-noconflict/mode-java';
+import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Menu, MenuButton, MenuItem, MenuList, Text, VStack } from "@chakra-ui/react";
+import ace from 'ace-builds/src-noconflict/ace';
 import 'ace-builds/src-noconflict/mode-c_cpp';
-import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/mode-csharp';
+import 'ace-builds/src-noconflict/mode-java';
+import 'ace-builds/src-noconflict/mode-matlab';
+import 'ace-builds/src-noconflict/mode-perl';
+import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/mode-ruby';
 import 'ace-builds/src-noconflict/mode-rust';
-import 'ace-builds/src-noconflict/mode-typescript';
-import 'ace-builds/src-noconflict/mode-csharp';
-import 'ace-builds/src-noconflict/mode-perl';
 import 'ace-builds/src-noconflict/mode-swift';
-import 'ace-builds/src-noconflict/mode-matlab';
+import 'ace-builds/src-noconflict/mode-typescript';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
-import 'ace-builds/src-min-noconflict/mode-php';
+import jsonWorkerUrl from "ace-builds/src-noconflict/worker-json";
+import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
+import React, { useEffect, useState } from "react";
+import AceEditor from 'react-ace';
+import { BiSolidDownArrowAlt } from "react-icons/bi";
+import { FaCode, FaCog, FaCube } from 'react-icons/fa';
+import { SiConvertio } from "react-icons/si";
+ace.config.setModuleUrl("ace/mode/json_worker", jsonWorkerUrl)
+
 
 
 
@@ -87,9 +87,7 @@ const languages = [
   { label: "Python", value: "python", icon: <PythonOriginal /> },
   { label: "Java", value: "java", icon: <JavaOriginal /> },
   { label: "C++", value: "cpp", icon: <CplusplusOriginal/> },
-  { label: "Javascript", value: "javascript", icon: <JavascriptOriginal /> },
   { label: "Ruby", value: "ruby", icon: <RubyOriginal /> },
-  { label: "PHP", value: "php", icon: <PhpOriginal /> },
   { label: "Rust", value: "rust", icon: <RustOriginal /> },
   { label: "Typescript", value: "typescript", icon: <TypescriptOriginal /> },
   { label: "C#", value: "csharp", icon: <CsharpOriginal /> },
@@ -240,6 +238,7 @@ const CodeSubmission = () => {
   height="500px"
   value={inputCode}
   onChange={setInputCode}
+  useWorker={false}
  
 />
 
@@ -254,6 +253,7 @@ const CodeSubmission = () => {
               height="500px"
               value={outputCode}
               readOnly={true}
+              useWorker={false}
             />
           </Box>
         </Box>
