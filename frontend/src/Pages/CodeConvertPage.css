@@ -1,0 +1,283 @@
+.CodeTranslation {
+  width: 1801px;
+  height: 3816px;
+  background: #fbf2e3;
+}
+.Layout233 {
+  display: flex;
+  /* width: 1758px;
+  height: 476px; */
+  padding: 112px 64px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 80px;
+  flex-shrink: 0;
+  background: var(--Default, #fbf2e3);
+  .Content233 {
+    display: flex;
+    align-items: flex-start;
+    gap: 48px;
+    align-self: stretch;
+  }
+  .Column233 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--24, 24px);
+    flex: 1 0 0;
+  }
+  .SectionTitle233 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--24, 24px);
+    align-self: stretch;
+  }
+  .Icon233 {
+    width: var(--48, 48px);
+    height: var(--48, 48px);
+  }
+  .Content2333 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--24, 24px);
+
+    align-self: stretch;
+  }
+  .Heading233 {
+    align-self: stretch;
+    color: var(--Text-primary, #000);
+    font-family: Roboto;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 130%; /* 41.6px */
+  }
+  .Text233 {
+    align-self: stretch;
+    color: var(--Text-primary, #000);
+    /* Text/Regular/Normal */
+    font-family: Roboto;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 150%; /* 24px */
+  }
+}
+.textbox {
+  display: flex;
+  width: 472.541px;
+  height: 69.75px;
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #000;
+
+  font-family: "Poppins", sans-serif;
+  font-size: 22.938px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 34.408px; /* 150% */
+  letter-spacing: 0.688px;
+}
+.Rectangle6 {
+  fill: rgba(223, 211, 211, 0.23);
+  width: 1640px;
+  height: 88px;
+  flex-shrink: 0;
+}
+.CodeInterface {
+  /* width: 500.769px;
+  height: 217.184px; */
+  flex-shrink: 0;
+  display: flex; /* This will align the child divs in a row */
+  justify-content: space-around; /* This will space out the icons evenly */
+  align-items: center; /* This will center the icons vertically */
+  background: var(--Default, #fbf2e3); /* Example background color */
+  padding: 10px; 
+}
+
+.Python {
+  width: 91.031px;
+  height: 83.284px;
+  flex-shrink: 0;
+}
+.Java {
+  width: 80.802px;
+  height: 83.284px;
+  flex-shrink: 0;
+}
+.JavaScript {
+  width: 93.076px;
+  height: 88.489px;
+  flex-shrink: 0;
+}
+.C {
+  width: 83.871px;
+  height: 85.366px;
+  flex-shrink: 0;
+}
+.Ruby {
+  width: 85.916px;
+  height: 85.366px;
+  flex-shrink: 0;
+}
+.Rectangle1 {
+  width: 1766px;
+  height: 1334px;
+  flex-shrink: 0;
+  fill: #fbf2e3;
+  .Card {
+    display: flex;
+    width: 810px;
+    height: 762px;
+    padding: var(--24, 24px);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--8, 8px);
+    flex-shrink: 0;
+    border-radius: var(--16, 16px);
+    background: var(--white-100, #1c1c1c);
+    /* BG blur 40 */
+    backdrop-filter: blur(20px);
+    .Content2 {
+      display: flex;
+      align-items: flex-start;
+      align-content: flex-start;
+      gap: 8px var(--8, 8px);
+      align-self: stretch;
+      flex-wrap: wrap;
+      border-radius: var(--8, 8px);
+      .Text2 {
+        display: flex;
+        align-items: flex-start;
+        align-content: flex-start;
+        gap: 8px var(--8, 8px);
+        flex: 1 0 0;
+        flex-wrap: wrap;
+        border-radius: var(--8, 8px);
+        .text2 {
+          color: var(--black-20, rgba(255, 255, 255, 0.2));
+          font-feature-settings: "cv11" on, "cv01" on, "ss01" on;
+          font-family: "Source Code Pro";
+          font-size: 14px;
+          font-style: normal;
+          font-weight: 400;
+          line-height: 20px; /* 142.857% */
+        }
+      }
+    }
+    .Group {
+      display: flex;
+      align-items: center;
+      align-content: center;
+      gap: 8px var(--8, 8px);
+      flex-wrap: wrap;
+      position: absolute;
+      right: 16px;
+
+      top: 16px;
+      border-radius: var(--8, 8px);
+
+      .Button {
+        display: flex;
+        padding: var(--4, 4px);
+        justify-content: center;
+        align-items: center;
+        gap: var(--4, 4px);
+        border-radius: var(--8, 8px);
+        .IconSet {
+          border-radius: var(--Radius-8, 8px);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: var(--4, 4px);
+          .Clipboard {
+            width: var(--Size-20, 20px);
+            height: var(--Size-20, 20px);
+          }
+        }
+      }
+    }
+  }
+  .Card2 {
+    border-radius: 20px;
+    background: var(--Primary-Light, #f7f9fb);
+    display: flex;
+    width: 861px;
+    height: 762px;
+    padding: var(--24, 24px);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--8, 8px);
+    flex-shrink: 0;
+    .Content22 {
+      display: flex;
+      align-items: flex-start;
+      align-content: flex-start;
+      gap: 8px var(--8, 8px);
+      align-self: stretch;
+      flex-wrap: wrap;
+      border-radius: var(--8, 8px);
+      .Text22 {
+        display: flex;
+        align-items: flex-start;
+        align-content: flex-start;
+        gap: 8px var(--8, 8px);
+        flex: 1 0 0;
+        flex-wrap: wrap;
+        border-radius: var(--8, 8px);
+        .text22 {
+          color: var(--black-20, rgba(28, 28, 28, 0.2));
+          font-feature-settings: "cv11" on, "cv01" on, "ss01" on;
+          font-family: "Source Code Pro";
+          font-size: 14px;
+          font-style: normal;
+          font-weight: 400;
+          line-height: 20px; /* 142.857% */
+        }
+      }
+    }
+    .Group2 {
+      display: flex;
+      align-items: center;
+      align-content: center;
+      gap: 8px var(--8, 8px);
+      flex-wrap: wrap;
+      position: absolute;
+      right: 16px;
+
+      top: 16px;
+      border-radius: var(--8, 8px);
+
+      .Button2 {
+        display: flex;
+        padding: var(--4, 4px);
+        justify-content: center;
+        align-items: center;
+        gap: var(--4, 4px);
+        border-radius: var(--8, 8px);
+        .IconSet2 {
+          border-radius: var(--Radius-8, 8px);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: var(--4, 4px);
+          .Clipboard2 {
+            width: var(--Size-20, 20px);
+            height: var(--Size-20, 20px);
+          }
+        }
+      }
+    }
+  }
+}
+.Rectangle2{
+
+  height: 600px;
+  flex-shrink: 0;
+  fill: #fbf2e3;
+  padding: 50px 50px 50px 50px;
+  
+}
