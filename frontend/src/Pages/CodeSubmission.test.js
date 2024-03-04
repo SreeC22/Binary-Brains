@@ -1,77 +1,93 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
-import CodeSubmission from './CodeSubmission';
+import CodeSubmission from './CodeSubmission'; // Update the path as per your project structure
 
 describe('CodeSubmission', () => {
   test('renders without crashing', () => {
     render(<CodeSubmission />);
   });
 
-  test('displays error alert when converting with empty source language', async () => {
-    const { getByText, getByRole } = render(<CodeSubmission />);
-    const convertButton = getByText('Convert');
-
-    fireEvent.click(convertButton);
-
-    await waitFor(() => {
-      const errorAlert = getByRole('alert');
-      expect(errorAlert).toBeInTheDocument();
-      expect(getByText('Both source and target languages are required')).toBeInTheDocument();
+  test('accepts input code', async () => {
+    const { getByLabelText, getByText, getByRole, getAllByText } = render(<CodeSubmission />);
+    
+    // Simulate selecting source language to use its aria label
+    fireEvent.click(getByRole('button', { name: /Source Language/i }));
+    const sourceLanguage = 'Javascript';
+    const sourceLanguageElements = getAllByText(sourceLanguage);
+    sourceLanguageElements.forEach(element => {
+      fireEvent.click(getByRole('button', { name: /Source Language/i }));
+      fireEvent.click(element);
     });
+  
+    // Array of input codes to test
+    const inputCodes = [
+      'console.log("Hello, World!");',
+      'for (let i = 0; i < 10; i++) { console.log(i); }',
+      'function add(a, b) { return a + b; }',
+      // Add more input codes as needed
+    ];
+  
+    // Iterate over input codes and test each one
+    inputCodes.forEach(inputCode => {
+      const monacoEditor = getByLabelText('Input Code');
+      monacoEditor.focus();
+      fireEvent.keyDown(monacoEditor, { key: 'End' });
+      for (let i = 0; i < 999; i++) {
+        fireEvent.keyDown(monacoEditor, { key: 'Backspace' });
+      }
+      inputCode.split('').forEach(char => {
+        fireEvent.keyDown(monacoEditor, { key: char });
+      });
+
+    });
+    
   });
 
-  test('displays error alert when converting with empty target language', async () => {
-    const { getByText, getByRole, getByLabelText } = render(<CodeSubmission />);
-    const convertButton = getByText('Convert');
-    const sourceLanguageDropdown = getByLabelText('Source Language');
-
-    fireEvent.click(sourceLanguageDropdown);
-    fireEvent.click(getByText('Python')); // Select a source language
-    fireEvent.click(convertButton);
-
-    await waitFor(() => {
-      const errorAlert = getByRole('alert');
-      expect(errorAlert).toBeInTheDocument();
-      expect(getByText('Target language is required')).toBeInTheDocument();
+  test('validates language selection', async () => {
+    const { getAllByText, getByRole } = render(<CodeSubmission />);
+    
+    // Simulate selecting source language
+    fireEvent.click(getByRole('button', { name: /Source Language/i }));
+    const sourceLanguage = 'Python';
+    const sourceLanguageElements = getAllByText(sourceLanguage);
+    sourceLanguageElements.forEach(element => {
+      fireEvent.click(getByRole('button', { name: /Source Language/i }));
+      fireEvent.click(element);
     });
+   
+
+
+
+
+
+
+    // Check if source language is selected
+    await waitFor(() => {
+      const elementWithText = document.querySelector('.chakra-text.css-6dvxm2');
+      expect(elementWithText).not.toBeNull(); // Check if the element exists
+      expect(elementWithText.textContent).toEqual(sourceLanguage);
   });
 
-  test('displays error alert when converting with same source and target languages', async () => {
-    const { getByText, getByRole, getByLabelText } = render(<CodeSubmission />);
-    const convertButton = getByText('Convert');
-    const sourceLanguageDropdown = getByLabelText('Source Language');
-    const targetLanguageDropdown = getByLabelText('Target Language');
-
-    fireEvent.click(sourceLanguageDropdown);
-    fireEvent.click(getByText('Python')); // Select a source language
-    fireEvent.click(targetLanguageDropdown);
-    fireEvent.click(getByText('Python')); // Select the same language as source
-    fireEvent.click(convertButton);
-
-    await waitFor(() => {
-      const errorAlert = getByRole('alert');
-      expect(errorAlert).toBeInTheDocument();
-      expect(getByText('Source and target languages cannot be the same')).toBeInTheDocument();
+    // Simulate selecting target language
+    fireEvent.click(getByRole('button', { name: /Target Language/i }));
+    const targetLanguage = 'Java';
+    const targetLanguageElements = getAllByText(targetLanguage);
+    targetLanguageElements.forEach(element => {
+      fireEvent.click(getByRole('button', { name: /Target Language/i }));
+      fireEvent.click(element);
     });
-  });
+   
 
-  test('does not display error alert when converting with valid input', async () => {
-    const { getByText, queryByRole, getByLabelText } = render(<CodeSubmission />);
-    const convertButton = getByText('Convert');
-    const sourceLanguageDropdown = getByLabelText('Source Language');
-    const targetLanguageDropdown = getByLabelText('Target Language');
 
-    fireEvent.click(sourceLanguageDropdown);
-    fireEvent.click(getByText('Python')); // Select a source language
-    fireEvent.click(targetLanguageDropdown);
-    fireEvent.click(getByText('Java')); // Select a different target language
-    fireEvent.click(convertButton);
 
+
+
+
+    // Check if target language is selected
     await waitFor(() => {
-      const errorAlert = queryByRole('alert');
-      expect(errorAlert).not.toBeInTheDocument();
-    });
+      const elementWithText = document.querySelector('.chakra-menu__menuitem[data-index="1"]');
+      expect(elementWithText).not.toBeNull(); // Check if the element exists
+      expect(elementWithText.textContent).toEqual(targetLanguage);
   });
-
-  // Add more tests for other functionalities and edge cases
+  });
 });

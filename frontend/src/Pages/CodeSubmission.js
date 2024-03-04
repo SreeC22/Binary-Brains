@@ -1,12 +1,14 @@
+
+
 import React, { useState, useEffect } from "react";
-import { Box, Button, FormLabel, Menu, MenuButton, MenuList, MenuItem, Text, VStack, HStack, Flex, Alert, AlertIcon, AlertDescription, CloseButton, AlertTitle } from "@chakra-ui/react";
+import { Box, FormLabel, Menu, MenuButton, MenuList, MenuItem, Text, VStack, HStack, Flex, Alert, AlertIcon, AlertDescription, CloseButton, AlertTitle } from "@chakra-ui/react";
+import{Button as CustomButton} from "@chakra-ui/react"
 import MonacoEditor from 'react-monaco-editor';
-import { FaCode, FaCog, FaPython, FaJava, FaCube, FaPhp, FaRust, FaSwift } from 'react-icons/fa'; 
-import { FaGolang } from "react-icons/fa6";
+import { FaCode, FaCog, FaCube} from 'react-icons/fa'; 
 import { BiSolidDownArrowAlt } from "react-icons/bi";
-import { DiRuby } from "react-icons/di";
-import { SiJavascript, SiConvertio, SiTypescript, SiCsharp, SiPerl, SiAssemblyscript } from "react-icons/si";
-import { TbBrandCpp } from "react-icons/tb";
+import {SiConvertio} from "react-icons/si";
+import { JavaOriginal, PythonOriginal, JavascriptOriginal, RubyOriginal, SwiftOriginal, PerlOriginal, GolandOriginal, CsharpOriginal, TypescriptOriginal, RustOriginal, PhpOriginal, CplusplusOriginal } from 'devicons-react';
+
 
 const CustomAlert = ({ status, message, onClose }) => {
   const [visible, setVisible] = useState(true);
@@ -65,21 +67,19 @@ const CustomAlert = ({ status, message, onClose }) => {
   );
 };
 
-
 const languages = [
-  { label: "Python", value: "python", icon: <FaPython /> },
-  { label: "Java", value: "java", icon: <FaJava /> },
-  { label: "C++", value: "cpp", icon: <TbBrandCpp /> },
-  { label: "Javascript", value: "javascript", icon: <SiJavascript /> },
-  { label: "Ruby", value: "ruby", icon: <DiRuby /> },
-  { label: "PHP", value: "php", icon: <FaPhp /> },
-  { label: "Rust", value: "rust", icon: <FaRust /> },
-  { label: "Typescript", value: "typescript", icon: <SiTypescript /> },
-  { label: "C#", value: "csharp", icon: <SiCsharp /> },
-  { label: "Perl", value: "perl", icon: <SiPerl /> },
-  { label: "Golang", value: "golang", icon: <FaGolang  /> },
-  { label: "Swift", value: "swift", icon: <FaSwift  /> },
-  { label: "Assembly", value: "assembly", icon: <SiAssemblyscript  /> },
+  { label: "Python", value: "python", icon: <PythonOriginal /> },
+  { label: "Java", value: "java", icon: <JavaOriginal /> },
+  { label: "C++", value: "cpp", icon: <CplusplusOriginal/> },
+  { label: "Javascript", value: "javascript", icon: <JavascriptOriginal /> },
+  { label: "Ruby", value: "ruby", icon: <RubyOriginal /> },
+  { label: "PHP", value: "php", icon: <PhpOriginal /> },
+  { label: "Rust", value: "rust", icon: <RustOriginal /> },
+  { label: "Typescript", value: "typescript", icon: <TypescriptOriginal /> },
+  { label: "C#", value: "csharp", icon: <CsharpOriginal /> },
+  { label: "Perl", value: "perl", icon: <PerlOriginal/> },
+  { label: "Goland", value: "goland", icon: <GolandOriginal  /> },
+  { label: "Swift", value: "swift", icon: <SwiftOriginal  /> },
 ];
 
 const CodeSubmission = () => {
@@ -112,7 +112,7 @@ const CodeSubmission = () => {
     console.log("Input code:", inputCode);
     console.log("Source language:", sourceLanguage);
     console.log("Target language:", targetLanguage);
-    setOutputCode(`Generated code in ${targetLanguage} will go here`);
+    setOutputCode(`Generated code in the target language will go here`);
     setError("");
   };
 
@@ -140,6 +140,8 @@ const CodeSubmission = () => {
     </HStack>
   );
 
+  
+
   return (
     <>
       <HeadingSteps />
@@ -148,101 +150,133 @@ const CodeSubmission = () => {
           <CustomAlert status="error" message={error} onClose={handleCloseAlert}  />
         )}
         <Box width="47.75%" bg="#DFD3D33B" p={4} borderRadius="16" textAlign="center">
-          <Text fontFamily="Roboto" marginBottom={0}>Drop your code here!</Text>
-          <BiSolidDownArrowAlt />
+          <Text fontFamily="Roboto" marginBottom={0} fontSize={24}>Drop your code here!</Text>
+          <BiSolidDownArrowAlt  size={32}/>
         </Box>
         <Flex justifyContent="space-between">
           <Box position="relative">
             <Menu>
-              <MenuButton as={Button} rightIcon={<FaCog />} colorScheme="blue" zIndex={1} borderRadius='6'>
-                {sourceLanguage ? languages.find(lang => lang.value === sourceLanguage)?.label || 'Source Language' : 'Source Language'}
-              </MenuButton>
-              <MenuList zIndex={999} >
+            <MenuButton
+  as={CustomButton}
+  aria-label="Source Language" // Add aria-label attribute
+  leftIcon={<FaCog />}
+  colorScheme="blue"
+  zIndex={1}
+  borderRadius='6'
+  transition='all 0.3s'
+  padding="12px 16px"
+  ml="20"
+>
+  {sourceLanguage ? languages.find(lang => lang.value === sourceLanguage)?.label || 'Source Language' : 'Source Language'}
+</MenuButton>
+
+              <MenuList zIndex={999}>
                 {languages.map(lang => (
-                  <MenuItem key={lang.value} onClick={() => setSourceLanguage(lang.value)}>
-                    {lang.label}
-                  </MenuItem>
+                  <MenuItem key={lang.value} data-testid={`language-option-${lang.value}`} onClick={() => setSourceLanguage(lang.value)}>
+                  <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 36 })}</span>
+                  <span>{lang.label}</span>
+                </MenuItem>
                 ))}
               </MenuList>
             </Menu>
           </Box>
           <Box position="relative">
             <Menu>
-              <MenuButton as={Button} rightIcon={<FaCog />} colorScheme="blue" zIndex={1} borderRadius='6'>
-                {targetLanguage ? languages.find(lang => lang.value === targetLanguage)?.label || 'Target Language' : 'Target Language'}
-              </MenuButton>
-              <MenuList zIndex={999}>
-                {languages.map(lang => (
-                  <MenuItem key={lang.value} onClick={() => setTargetLanguage(lang.value)}>
-                    {lang.label}
-                  </MenuItem>
-                ))}
-              </MenuList>
+            <MenuButton
+  as={CustomButton}
+  aria-label="Target Language" // Add aria-label attribute
+  leftIcon={<FaCog />}
+  colorScheme="blue"
+  zIndex={1}
+  borderRadius='6'
+  transition='all 0.3s'
+  padding="12px 16px"
+  mr="20"
+>
+  {targetLanguage ? languages.find(lang => lang.value === targetLanguage)?.label || 'Target Language' : 'Target Language'}
+</MenuButton>
+
+<MenuList data-testid="source-language-dropdown">
+  {languages.map(lang => (
+    <MenuItem key={lang.value} onClick={() => setSourceLanguage(lang.value)}>
+      <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 36 })}</span>
+      <span>{lang.label}</span>
+    </MenuItem>
+  ))}
+</MenuList>
             </Menu>
           </Box>
         </Flex>
         <Box display="flex" justifyContent="space-between">
           <Box width="48%">
-            <FormLabel>Input Code <FaCode /></FormLabel>
-            <MonacoEditor
-              width="100%"
-              height={500}
-              language={sourceLanguage}
-              value={inputCode}
-              onChange={setInputCode}
-              options={{
-                theme: 'vs-light',
-                readOnly: false,
-                fontSize: 14,
-                fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
-              }}
-            />
+          <FormLabel htmlFor="inputCode">Input Code <FaCode /></FormLabel>
+          <div aria-label="Input Code">
+  <MonacoEditor
+    id="inputCode"
+    width="100%"
+    height={500}
+    language={sourceLanguage}
+    value={inputCode}
+    onChange={setInputCode}
+    options={{
+      theme: 'vs-dark',
+      readOnly: false,
+      fontSize: 14,
+      fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
+    }}
+    theme={'vs-dark'}
+  />
+</div>
+
+
           </Box>
           <Box width="48%">
             <FormLabel>Converted Code <FaCode /></FormLabel>
             <MonacoEditor
-              width="100%"
-              height={500}
-              language={targetLanguage}
-              value={outputCode}
-              onChange={setOutputCode}
-              options={{
-                theme: 'light',
-                readOnly: true,
-                fontSize: 14,
-                fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
-              }}
-            />
+              data-testid="monaco-editor2" // Add data-testid attribute
+  width="100%"
+  height={500}
+  language={targetLanguage}// Set the language identifier for the target code
+  value={outputCode}
+  onChange={setOutputCode}
+  options={{
+    theme: 'vs-dark',
+    readOnly: true,
+    fontSize: 14,
+    fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
+  }}
+  theme={'vs-dark'}
+/>
           </Box>
         </Box>
-        <Button 
+        <CustomButton 
           backgroundColor="black"
           color="white" 
           fontFamily={'Inter'}
           onClick={handleConvert}
           mx="auto"
           leftIcon={<SiConvertio />}
-          fontSize="32"
-          paddingX="80px"
+          fontSize="16"
+          paddingX="50px"
           paddingY="32px"
           mt={16}
           borderRadius="16"
         >
           Convert
-        </Button>
-        <Text mt={4} fontSize="19" fontFamily="Roboto">
+        </CustomButton>
+        <Text mt={4} fontSize="22" fontFamily="Roboto">
           How to use this tool?<br />
         </Text>
-        <Text mt={4} fontSize="16" fontFamily="Roboto">
+        <Text mt={4} fontSize="19" fontFamily="Roboto">
           This free online code generator lets you generate code in the programming language of your choice with a click of a button. To use this tool, take the following steps - <br />
         </Text>
-        <Text mt={4} fontSize="15" fontFamily="Roboto">
+        <Text mt={4} fontSize="18" fontFamily="Roboto">
           &nbsp;&nbsp;&nbsp;1. Select the programming language from the dropdown above<br />
           &nbsp;&nbsp;&nbsp;2. Describe the code you want to generate here in this box<br />
           &nbsp;&nbsp;&nbsp;3. Click convert
         </Text>
         <Box>
-          <Text fontSize="xl">Try our Code Generators in other languages:</Text>
+          <Text fontSize="21">Try our Code Generators in other languages:</Text>
           <Flex>
             {languages.map(lang => (
               <Box key={lang.value} bg="white" p={4} borderRadius="md" textAlign="center" mr={4} width="100px" height="80px">
