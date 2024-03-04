@@ -324,7 +324,6 @@ dependencies = [
  "serde_json",
  "serde_with",
  "tokio",
- "uuid 0.8.2",
 ]
 
 [[package]]
@@ -454,7 +453,7 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "time",
- "uuid 1.7.0",
+ "uuid",
 ]
 
 [[package]]
@@ -1306,7 +1305,7 @@ dependencies = [
  "trust-dns-proto",
  "trust-dns-resolver",
  "typed-builder",
- "uuid 1.7.0",
+ "uuid",
  "webpki-roots",
 ]
 
@@ -2401,15 +2400,6 @@ dependencies = [
  "form_urlencoded",
  "idna 0.5.0",
  "percent-encoding",
-]
-
-[[package]]
-name = "uuid"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
-dependencies = [
- "getrandom",
 ]
 
 [[package]]
