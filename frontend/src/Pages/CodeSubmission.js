@@ -1,6 +1,6 @@
 
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Menu, MenuButton, MenuItem, MenuList, Text, VStack } from "@chakra-ui/react";
-import ace from 'ace-builds/src-noconflict/ace';
+import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
 import 'ace-builds/src-noconflict/mode-c_cpp';
 import 'ace-builds/src-noconflict/mode-csharp';
 import 'ace-builds/src-noconflict/mode-java';
@@ -13,14 +13,13 @@ import 'ace-builds/src-noconflict/mode-swift';
 import 'ace-builds/src-noconflict/mode-typescript';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
-import jsonWorkerUrl from "ace-builds/src-noconflict/worker-json";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
 import React, { useEffect, useState } from "react";
 import AceEditor from 'react-ace';
 import { BiSolidDownArrowAlt } from "react-icons/bi";
-import { FaCode, FaCog, FaCube } from 'react-icons/fa';
+import { FaCode, FaCog, FaCube, FaPaste } from 'react-icons/fa';
 import { SiConvertio } from "react-icons/si";
-ace.config.setModuleUrl("ace/mode/json_worker", jsonWorkerUrl)
+
 
 
 
@@ -112,6 +111,7 @@ const CodeSubmission = () => {
       setError("Both source and target languages are required");
       return;
     }
+    
 
     if (sourceLanguage === targetLanguage) {
       setError("Source and target languages cannot be the same");
@@ -130,7 +130,11 @@ const CodeSubmission = () => {
     setOutputCode(`Generated code in the target language will go here`);
     setError("");
   };
-
+  const handlePaste = () => {
+    navigator.clipboard.readText().then(text => {
+      setInputCode(text);
+    })
+  };
   const handleCloseAlert = () => {
     setError("");
   };
@@ -226,23 +230,43 @@ const CodeSubmission = () => {
           </Box>
         </Flex>
         <Box display="flex" justifyContent="space-between">
-          <Box width="48%">
-            <FormLabel htmlFor="inputCode">Input Code <FaCode /></FormLabel>
-            <AceEditor
-  id="inputCode"
-  name="input"
-  aria-label="Input Code" // Add aria-label here
-  mode={sourceLanguage ? (sourceLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === sourceLanguage)?.value || "text") : "text"}
-  theme="monokai"
-  width="100%"
-  height="500px"
-  value={inputCode}
-  onChange={setInputCode}
-  useWorker={false}
- 
-/>
+        <Box width="48%">
+  <FormLabel htmlFor="inputCode">Input Code <FaCode /></FormLabel>
+  {/* Container for Ace editor and paste button */}
+  <div style={{ position: 'relative' }}>
+    {/* Paste button */}
+    <button
+      style={{
+        position: 'absolute',
+        top: '8px',
+        right: '8px',
+        zIndex: '999', // Ensure the button is above the Ace editor
+        backgroundColor: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        color: 'white',
+      }}
+      onClick={handlePaste}
+    >
+      <FaPaste size={36} />
+    </button>
 
-          </Box>
+    {/* Ace editor */}
+    <AceEditor
+      id="inputCode"
+      name="input"
+      aria-label="Input Code"
+      mode={sourceLanguage ? (sourceLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === sourceLanguage)?.value || "text") : "text"}
+      theme="monokai"
+      width="100%"
+      height="500px"
+      value={inputCode}
+      onChange={setInputCode}
+      useWorker={false}
+    />
+  </div>
+</Box>
+          
           <Box width="48%">
             <FormLabel htmlFor="outputCode">Converted Code <FaCode /></FormLabel>
             <AceEditor
