@@ -1,17 +1,20 @@
-use mongodb::{options::ClientOptions, Client, Database};
+use mongodb::{Client, Collection, options::ClientOptions};
+use std::env;
 
-pub async fn establish_connection() -> mongodb::error::Result<Database> {
-    //mongo db uri
-    let mongodb_uri = "mongodb+srv://sc354:cs490mdb@cluster01.ik8tfsj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster01";
+use crate::models::User;
+use mongodb::Database;
+use crate::models::Feedback;
 
-    //parsing connection string
-    let client_options = ClientOptions::parse(mongodb_uri).await?;
-    
-    //client setup
+
+pub async fn init_mongo() -> mongodb::error::Result<Collection<User>> {
+    dotenv::dotenv().ok();
+    let mongo_uri = env::var("MONGO_URI").expect("MONGO_URI must be set");
+    let client_options = ClientOptions::parse(&mongo_uri).await?;
     let client = Client::with_options(client_options)?;
+    let database = client.database("my_app");
+    Ok(database.collection::<User>("users"))
+}
 
-    //db to work with 
-    let db = client.database("Cluster01");
-
-    Ok(db)
+pub async fn get_feedback_collection(db: &Database) -> Collection<Feedback> {
+    db.collection::<Feedback>("feedback")
 }

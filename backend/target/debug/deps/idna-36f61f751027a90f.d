@@ -1,0 +1,10 @@
+/Users/sreekareechityala/Desktop/NJIT/2023-2024/Spring 2024/CS490/Binary Brains/Binary-Brains/backend/target/debug/deps/libidna-36f61f751027a90f.rmeta: /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs
+
+/Users/sreekareechityala/Desktop/NJIT/2023-2024/Spring 2024/CS490/Binary Brains/Binary-Brains/backend/target/debug/deps/libidna-36f61f751027a90f.rlib: /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs
+
+/Users/sreekareechityala/Desktop/NJIT/2023-2024/Spring 2024/CS490/Binary Brains/Binary-Brains/backend/target/debug/deps/idna-36f61f751027a90f.d: /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs
+
+/Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs:
+/Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs:
+/Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs:
+/Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs:
