@@ -1,13 +1,30 @@
 
-
 import React, { useState, useEffect } from "react";
 import { Box, FormLabel, Menu, MenuButton, MenuList, MenuItem, Text, VStack, HStack, Flex, Alert, AlertIcon, AlertDescription, CloseButton, AlertTitle } from "@chakra-ui/react";
 import{Button as CustomButton} from "@chakra-ui/react"
-import MonacoEditor from 'react-monaco-editor';
+import AceEditor from 'react-ace';
 import { FaCode, FaCog, FaCube} from 'react-icons/fa'; 
 import { BiSolidDownArrowAlt } from "react-icons/bi";
 import {SiConvertio} from "react-icons/si";
-import { JavaOriginal, PythonOriginal, JavascriptOriginal, RubyOriginal, SwiftOriginal, PerlOriginal, GolandOriginal, CsharpOriginal, TypescriptOriginal, RustOriginal, PhpOriginal, CplusplusOriginal } from 'devicons-react';
+import { JavaOriginal, MatlabOriginal, PythonOriginal, JavascriptOriginal, RubyOriginal, SwiftOriginal, PerlOriginal, CsharpOriginal, TypescriptOriginal, RustOriginal, PhpOriginal, CplusplusOriginal } from 'devicons-react';
+import "ace-builds/webpack-resolver";
+
+import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/mode-java';
+import 'ace-builds/src-noconflict/mode-c_cpp';
+import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/mode-ruby';
+import 'ace-builds/src-noconflict/mode-rust';
+import 'ace-builds/src-noconflict/mode-typescript';
+import 'ace-builds/src-noconflict/mode-csharp';
+import 'ace-builds/src-noconflict/mode-perl';
+import 'ace-builds/src-noconflict/mode-swift';
+import 'ace-builds/src-noconflict/mode-matlab';
+import 'ace-builds/src-noconflict/theme-github';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-min-noconflict/mode-php';
+
+
 
 
 const CustomAlert = ({ status, message, onClose }) => {
@@ -78,8 +95,9 @@ const languages = [
   { label: "Typescript", value: "typescript", icon: <TypescriptOriginal /> },
   { label: "C#", value: "csharp", icon: <CsharpOriginal /> },
   { label: "Perl", value: "perl", icon: <PerlOriginal/> },
-  { label: "Goland", value: "goland", icon: <GolandOriginal  /> },
   { label: "Swift", value: "swift", icon: <SwiftOriginal  /> },
+  { label: "MatLab", value: "matlab", icon: <MatlabOriginal  /> },
+
 ];
 
 const CodeSubmission = () => {
@@ -167,6 +185,7 @@ const CodeSubmission = () => {
   padding="12px 16px"
   ml="20"
 >
+  
   {sourceLanguage ? languages.find(lang => lang.value === sourceLanguage)?.label || 'Source Language' : 'Source Language'}
 </MenuButton>
 
@@ -196,57 +215,44 @@ const CodeSubmission = () => {
   {targetLanguage ? languages.find(lang => lang.value === targetLanguage)?.label || 'Target Language' : 'Target Language'}
 </MenuButton>
 
-<MenuList data-testid="source-language-dropdown">
+<MenuList zIndex={999} data-testid="target-language-dropdown">
   {languages.map(lang => (
-    <MenuItem key={lang.value} onClick={() => setSourceLanguage(lang.value)}>
+    <MenuItem key={lang.value} onClick={() => setTargetLanguage(lang.value)}>
       <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 36 })}</span>
       <span>{lang.label}</span>
     </MenuItem>
   ))}
+
+
 </MenuList>
             </Menu>
           </Box>
         </Flex>
         <Box display="flex" justifyContent="space-between">
           <Box width="48%">
-          <FormLabel htmlFor="inputCode">Input Code <FaCode /></FormLabel>
-          <div aria-label="Input Code">
-  <MonacoEditor
-    id="inputCode"
-    width="100%"
-    height={500}
-    language={sourceLanguage}
-    value={inputCode}
-    onChange={setInputCode}
-    options={{
-      theme: 'vs-dark',
-      readOnly: false,
-      fontSize: 14,
-      fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
-    }}
-    theme={'vs-dark'}
-  />
-</div>
-
-
+            <FormLabel htmlFor="inputCode">Input Code <FaCode /></FormLabel>
+            <AceEditor
+              id="inputCode"
+              
+              mode={sourceLanguage ? (sourceLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === sourceLanguage)?.value || "text") : "text"}
+              theme="monokai"
+              width="100%"
+              height="500px"
+              value={inputCode}
+              onChange={setInputCode}
+            />
           </Box>
           <Box width="48%">
-            <FormLabel>Converted Code <FaCode /></FormLabel>
-            <MonacoEditor
-              data-testid="monaco-editor2" // Add data-testid attribute
-  width="100%"
-  height={500}
-  language={targetLanguage}// Set the language identifier for the target code
-  value={outputCode}
-  onChange={setOutputCode}
-  options={{
-    theme: 'vs-dark',
-    readOnly: true,
-    fontSize: 14,
-    fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
-  }}
-  theme={'vs-dark'}
-/>
+            <FormLabel htmlFor="outputCode">Converted Code <FaCode /></FormLabel>
+            <AceEditor
+              id="outputCode"
+              mode={targetLanguage ? (targetLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === targetLanguage)?.value || "text") : "text"}
+              theme="github"
+              width="100%"
+              height="500px"
+              value={outputCode}
+              readOnly={true}
+            />
           </Box>
         </Box>
         <CustomButton 
@@ -275,6 +281,7 @@ const CodeSubmission = () => {
           &nbsp;&nbsp;&nbsp;2. Describe the code you want to generate here in this box<br />
           &nbsp;&nbsp;&nbsp;3. Click convert
         </Text>
+        
         <Box>
           <Text fontSize="21">Try our Code Generators in other languages:</Text>
           <Flex>
@@ -293,7 +300,9 @@ const CodeSubmission = () => {
         </Box>
       </VStack>
     </>
+    
   );
+  
 };
 
 export default CodeSubmission;
