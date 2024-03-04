@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext'; // Ensure this path is correct
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -8,9 +7,6 @@ const Login = () => {
   const [name, setName] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
-
-  // Destructure setUser from useAuth hook
-  const { setUser } = useAuth();
 
   const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
   const GITHUB_CLIENT_ID = process.env.REACT_APP_GITHUB_CLIENT_ID;
@@ -27,14 +23,15 @@ const Login = () => {
   const handleGitHubLogin = () => {
     const state = Math.random().toString(36).substring(2, 15);
     const scope = "openid email profile";
-    const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=user`;
+
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&redirect_uri=${process.env.REACT_APP_GITHUB_REDIRECT_URI}&scope=user`;
 
     window.location.href = authUrl;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = `${process.env.REACT_APP_BACKEND_URL}${isLogin ? '/login' : '/register'}`;
+    const url = `${process.env.REACT_APP_BACKEND_URL}${isLogin ? '/login' : '/register'}`; // Adjusted URL construction
     const payload = {
       email,
       password,
@@ -48,25 +45,32 @@ const Login = () => {
         body: JSON.stringify(payload),
       });
   
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Login/Register Response Data:", data); // Debugging line
+      const data = await response.json();
+      console.log(data); // Add this line to log the response data
   
-        localStorage.setItem('token', data.token); // Assuming token is always returned
-        setUser(data.user); // Assuming user data is part of the response
-  
-        navigate('/'); // Navigate to home page
+      if (isLogin) {
+        if (response.ok) {
+          navigate('/');
+        } else {
+          alert('Login failed. Please check your credentials.');
+        }
       } else {
-        // Handle cases where response is not ok
-        const errorData = await response.json();
-        console.error("Login/Register Failed:", errorData.message);
-        alert(`Authentication failed: ${errorData.message}`);
+        if (response.ok) {
+          alert('Registration successful. Please log in.');
+          setIsLogin(true);
+        } else {
+          if (data.message === 'User already exists') { // Updated check for existing user
+            alert('User already registered. Please login.');
+          } else {
+            alert('Registration failed. Please try again.');
+          }
+        }
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('An error occurred. Please try again later.');
     }
   };
+  
   
   return (
     <div>

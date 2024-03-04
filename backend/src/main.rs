@@ -6,9 +6,8 @@ use std::env;
 mod models;
 mod handlers;
 mod db;
-mod auth;
 
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback};
 use crate::db::init_mongo;
 
 #[actix_web::main]
@@ -43,9 +42,6 @@ async fn main() -> std::io::Result<()> {
             .route("/register", web::post().to(register))
             .route("/oauth_callback", web::get().to(oauth_callback))
             .route("/github_oauth_callback", web::get().to(github_oauth_callback))
-            .route("/logout", web::get().to(logout))
-            .route("/api/user/profile", web::get().to(get_user_profile))
-
     })
     .bind("127.0.0.1:8080")?
     .run()

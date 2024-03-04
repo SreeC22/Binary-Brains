@@ -6,23 +6,23 @@ const OAuthCallbackHandler = () => {
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     const code = queryParams.get('code');
-    console.log('OAuth code:', code); // Check if the code is correctly retrieved
     if (code) {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/oauth_callback?code=${encodeURIComponent(code)}`;
-      console.log('Fetching from:', url); // Verify the fetch URL
-      fetch(url, { method: 'GET' })
-        .then(response => {
-          console.log('Response received:', response); // Inspect the raw response
-          return response.json();
-        })
-        .then(data => {
-          console.log('Data:', data); // Inspect the parsed data
-          localStorage.setItem('user', JSON.stringify(data)); // Store user info
-          navigate('/'); // Redirect to home page
-        })
-        .catch(error => console.error('Error:', error));
+      fetch(`${process.env.REACT_APP_BACKEND_URL}/oauth_callback?code=${encodeURIComponent(code)}`, {
+        method: 'GET', // Assuming your backend expects a GET request
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('User info received:', data);
+        // Store the user info in localStorage or state management library
+        localStorage.setItem('user', JSON.stringify(data));
+        navigate('/'); // Redirect to home page or dashboard
+    })
+    
+      .catch(error => console.error('Error:', error));
     }
   }, [navigate]);
+
+  return <div>Processing OAuth callback...</div>;
 };
 
 export default OAuthCallbackHandler;

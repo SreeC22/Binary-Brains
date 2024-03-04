@@ -1,8 +1,3 @@
-use crate::db::{find_or_create_user_by_google_id, find_or_create_user_by_github_id};
-use crate::db::get_user_by_email;
-use crate::auth::decode_jwt;
-use crate::auth::generate_jwt;
-
 use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError};
 use bcrypt::{hash, DEFAULT_COST, verify};
 use mongodb::{Collection, bson::doc};
@@ -11,37 +6,15 @@ use std::collections::HashMap;
 use mongodb::bson;
 use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery};
 
-
-use actix_web_httpauth::extractors::bearer::BearerAuth;
-
-pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
-    match decode_jwt(auth.token()) {
-        Ok(claims) => {
-            match get_user_by_email(&db, &claims.email).await {
-                Ok(Some(user)) => HttpResponse::Ok().json(user),
-                Ok(None) => HttpResponse::NotFound().json("User not found"),
-                Err(_) => HttpResponse::InternalServerError().finish(),
-            }
-        },
-        Err(_) => HttpResponse::Unauthorized().json("Invalid token"),
-    }
-}
 // google oauth callback
 pub async fn oauth_callback(
     query: web::Query<OAuthCallbackQuery>, 
-    oauth_config: web::Data<OAuthConfig>,
-    db: web::Data<Collection<User>>, // Assuming you pass the MongoDB collection as needed
+    oauth_config: web::Data<OAuthConfig>
 ) -> impl Responder {
     match exchange_code_for_token(&query.code, &oauth_config).await {
         Ok(token_response) => {
             match fetch_user_info(&token_response.access_token).await {
-                Ok(user_info) => {
-                    // Now user_info is available in this scope
-                    match find_or_create_user_by_google_id(&db, &user_info).await {
-                        Ok(user) => HttpResponse::Ok().json(user),
-                        Err(_) => HttpResponse::InternalServerError().finish(),
-                    }
-                },
+                Ok(user_info) => HttpResponse::Ok().json(user_info),
                 Err(_) => HttpResponse::InternalServerError().finish(),
             }
         },
@@ -52,27 +25,18 @@ pub async fn oauth_callback(
 // github oauth callback
 pub async fn github_oauth_callback(
     query: web::Query<OAuthCallbackQuery>, 
-    oauth_config: web::Data<OAuthConfig>,
-    db: web::Data<Collection<User>>,
+    oauth_config: web::Data<OAuthConfig>
 ) -> impl Responder {
     match exchange_code_for_github_token(&query.code, &oauth_config).await {
         Ok(token_response) => {
-            // Correctly fetch GitHubUserInfo from the token response
             match fetch_github_user_info(&token_response.access_token).await {
-                Ok(github_user_info) => {
-                    // Now github_user_info is correctly defined and available
-                    match find_or_create_user_by_github_id(&db, &github_user_info).await {
-                        Ok(user) => HttpResponse::Ok().json(user),
-                        Err(_) => HttpResponse::InternalServerError().finish(),
-                    }
-                },
+                Ok(user_info) => HttpResponse::Ok().json(user_info),
                 Err(_) => HttpResponse::InternalServerError().finish(),
             }
         },
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
-
 
 // login user
 pub async fn login(
@@ -82,21 +46,10 @@ pub async fn login(
     let user_info = credentials.into_inner();
 
     if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &user_info.email}, None).await {
-        if let Some(db_password) = &existing_user.password {
-            if let Some(login_password) = &user_info.password {
-                if verify(login_password, db_password).is_ok() {
-                    // Generate a token for the user
-                    let token = generate_jwt(&existing_user.email).unwrap(); // Handle error appropriately
-
-                    // Return both the token and user data (simplified version for demonstration)
-                    return HttpResponse::Ok().json(json!({
-                        "message": "Login successful",
-                        "token": token,
-                        "user": {
-                            "email": existing_user.email,
-                            // Include other user fields as necessary
-                        }
-                    }));
+        if let Some(db_password) = existing_user.password {
+            if let Some(login_password) = user_info.password {
+                if verify(&login_password, &db_password).is_ok() {
+                    return HttpResponse::Ok().json(json!({"message": "Login successful"}));
                 }
             }
         }
@@ -105,15 +58,6 @@ pub async fn login(
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
 }
 
-
-pub async fn logout(
-    // Removed the unused `req: web::HttpRequest` parameter for simplicity
-) -> impl Responder {
-    // Since there's no session or token invalidation logic implemented yet,
-    // this endpoint simply returns a success message.
-    // In a real-world scenario, you would invalidate the user's session or token here.
-    HttpResponse::Ok().json(json!({"message": "Logged out successfully"}))
-}
 // register user
 pub async fn register(
     credentials: web::Json<User>,
