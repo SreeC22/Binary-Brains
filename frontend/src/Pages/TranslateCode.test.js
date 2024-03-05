@@ -1,13 +1,13 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
-import CodeSubmission from './CodeSubmission'; // Update the path as per your project structure
-describe('CodeSubmission', () => {
+import TranslateCode from './TranslateCode'; // Update the path as per your project structure
+describe('TranslateCode', () => {
   test('renders without crashing', () => {
-    render(<CodeSubmission />);
+    render(<TranslateCode />);
   });
 
   test('accepts input code', async () => {
-    const { getByRole, getAllByText} = render(<CodeSubmission />);
+    const { getByRole, getAllByText} = render(<TranslateCode />);
     
     // Simulate selecting source language to use its aria label
     fireEvent.click(getByRole('button', { name: /Source Language/i }));
@@ -43,7 +43,7 @@ describe('CodeSubmission', () => {
   });
 
   test('validates language selection', async () => {
-    const { getAllByText, getByRole } = render(<CodeSubmission />);
+    const { getAllByText, getByRole } = render(<TranslateCode />);
     
     // Simulate selecting source language
     fireEvent.click(getByRole('button', { name: /Source Language/i }));

@@ -1,11 +1,11 @@
 // App.js
 import React from 'react';
-import CodeSubmission from './Pages/CodeSubmission'; // Importing CodeConvertPage.js
+import TranslateCode from './Pages/TranslateCode'; // Importing CodeConvertPage.js
 
 function App() {
   return (
     <div>
-      <CodeSubmission /> {/* Using CodeSubmission directly within App */}
+      <TranslateCode /> {/* Using TranslateCode directly within App */}
     </div>
   );
 }
