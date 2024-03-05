@@ -1,3 +1,4 @@
+// NavBar.js
 import React from 'react';
 import {
   Flex,
@@ -29,23 +30,33 @@ const NavBar = () => {
 
   const toggleIcon = colorMode === 'light' ? <FaMoon /> : <FaSun />;
 
-  const bg = useColorModeValue('gray.100', 'gray.700'); // Example color values
-  const menuButtonBg = useColorModeValue('white', 'gray.700');
+  // Using Chakra UI's useColorModeValue to set colors based on the theme
+  const bg = useColorModeValue('#fbf2e3', 'gray.700'); // Navbar background color
+  const darkerShade = useColorModeValue('#e0ccb0', 'gray.600'); // A darker shade for buttons
+  const buttonTextColor = useColorModeValue('black', 'white'); // Button text color
 
   return (
-    <Flex as="nav" align="center" justify="space-between" wrap="wrap" padding="1.5rem" bg={bg} color="black">
+    <Flex
+      as="nav"
+      align="center"
+      justify="space-between"
+      wrap="wrap"
+      padding="1.5rem"
+      bg={bg}
+      color={buttonTextColor}
+    >
       <Box>
         <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
           Binary Brains
         </RouterLink>
       </Box>
       <Box display="flex" alignItems="center">
-        <RouterLink to="/translate" style={{ marginRight: '20px' }}>Translate Code</RouterLink>
-        <RouterLink to="/code-conversion" style={{ marginRight: '20px' }}>Code Conversion</RouterLink>
-        <RouterLink to="/feedback" style={{ marginRight: '20px' }}>Feedback</RouterLink>
+        <RouterLink to="/translate" style={{ marginRight: '20px', color: 'inherit' }}>Translate Code</RouterLink>
+        <RouterLink to="/code-conversion" style={{ marginRight: '20px', color: 'inherit' }}>Code Conversion</RouterLink>
+        <RouterLink to="/feedback" style={{ marginRight: '20px', color: 'inherit' }}>Feedback</RouterLink>
 
         <Menu>
-          <MenuButton as={Button} rightIcon={<ChevronDownIcon />} bg={menuButtonBg}>
+          <MenuButton as={Button} rightIcon={<ChevronDownIcon />} bg={darkerShade}>
             More
           </MenuButton>
           <MenuList>
@@ -59,14 +70,14 @@ const NavBar = () => {
       <Box display="flex" alignItems="center">
         {user ? (
           <>
-            <Button onClick={handleLogout} size="sm" mr="4">
+            <Button onClick={handleLogout} size="sm" mr="4" bg={darkerShade} color={buttonTextColor}>
               Logout
             </Button>
             <span>Hi, {user.name || user.email}</span>
           </>
         ) : (
           <RouterLink to="/login">
-            <Button size="sm">Login</Button>
+            <Button size="sm" bg={darkerShade} color={buttonTextColor}>Login</Button>
           </RouterLink>
         )}
         <IconButton

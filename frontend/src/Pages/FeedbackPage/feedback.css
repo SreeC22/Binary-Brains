@@ -1,16 +1,57 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    /* Set background to black for night mode */
+    height: 100%;
+    /* Ensure the html and body are at least the height of the viewport */
+    box-sizing: border-box;
+}
+
 .feedback-layout {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
     padding: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border: 1px solid #ddd;
-    background-color: #fff;
+    background-color: #fbf2e3;
     border-radius: 8px;
     position: relative;
-    margin-bottom: 20px;
+    width: 100%;
+    /* Stretch to the full width */
+    min-height: 100vh;
+    /* Use at least the full viewport height */
+    box-sizing: border-box;
+    /* Include padding in the box's dimensions */
+    margin-top: 0;
+    /* Remove any additional top margin */
+    padding-top: 0;
 }
+
+.feedback-layout.night-mode {
+    background-color: #000;
+    /* Set the background to black */
+    color: #fff;
+    /* Change text color to white for better readability */
+}
+
+.header-class {
+    /* Example class name for your header/nav */
+    /* Existing styles */
+    margin-bottom: 0;
+    /* Adjust this as necessary */
+}
+
+.feedback-layout h1 {
+    font-size: 32px;
+    /* Adjust to your preference */
+    /* More styles if necessary */
+}
+
 
 .feedback-emoji {
     width: 100px;
@@ -67,14 +108,16 @@
 .submission-message {
     text-align: center;
     padding: 20px;
-    background-color: #f0f0f0;
+    background-color: #fbf2e3;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-top: 20px;
+
 }
 
 .submission-message p {
     font-size: 1.2rem;
     color: #333;
     margin-bottom: 20px;
+    height: auto;
 }
