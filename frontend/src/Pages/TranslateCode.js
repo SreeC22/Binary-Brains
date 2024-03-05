@@ -245,12 +245,13 @@ const TranslateCode = () => {
               <Alert 
                 status="error" 
                 variant="solid" 
+                fontFamily="Roboto"
                 flexDirection="column" 
                 alignItems="center" 
                 justifyContent="center" 
                 textAlign="center" 
                 height="200px"
-                style={{pointerEvents: 'auto' }} // Enable pointer events for the alert
+                style={{pointerEvents: 'auto' }}
               >
                 <AlertIcon boxSize="40px" mr={0} />
                 <AlertTitle mt={4} mb={1} fontSize="lg">
