@@ -9,7 +9,7 @@ pub struct OAuthConfig {
 
 impl OAuthConfig {
     pub fn load() -> OAuthConfig {
-        dotenv().ok(); // Load environment variables from .env file
+        dotenv().ok();
 
         let google_client_id = env::var("GOOGLE_CLIENT_ID")
             .expect("GOOGLE_CLIENT_ID must be set in .env");
