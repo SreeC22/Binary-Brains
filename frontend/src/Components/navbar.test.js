@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+//import '@testing-library/jest-dom/extend-expect';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react';
 import NavBar from './NavBar'; // Adjust the import path to your NavBar component
@@ -53,5 +53,12 @@ describe('NavBar Component', () => {
         });
         expect(colorModeButton).toBeInTheDocument();
         fireEvent.click(colorModeButton);
+
+        // Note: This test checks for the presence and clickability of the toggle.
+        // Verifying the actual change in color mode might require integration testing
+        // or manual verification, as it involves style changes not directly testable
+        // through the DOM.
     });
+
+    // Add any additional tests specific to your application's requirements
 });
