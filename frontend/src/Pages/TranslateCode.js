@@ -309,7 +309,7 @@ const TranslateCode = () => {
         <CustomButton 
           backgroundColor="black"
           color="white" 
-          fontFamily={'Inter'}
+          fontFamily="Roboto"
           onClick={handleConvert}
           mx="auto"
           leftIcon={<SiConvertio />}
@@ -342,13 +342,13 @@ const TranslateCode = () => {
               <Box key={lang.value} bg="white" p={4} borderRadius="md" textAlign="center" mr={4} width="100px" height="80px">
                 <VStack spacing={0}>
                   {React.cloneElement(lang.icon, { size: 42 })} {/* Adjust size of the icon */}
-                  <Text fontSize="16" color={textColor}> {lang.label}</Text> {/* Adjust font size of the label */}
+                  <Text fontSize="16" fontFamily="Roboto" color={textColor}> {lang.label}</Text> {/* Adjust font size of the label */}
                 </VStack>
               </Box>
             ))}
           </Flex>
         </Box>
-        <Box mt="auto" py={4} textAlign="center" borderTop="1px solid" borderTopColor="gray.300">
+        <Box mt="auto" py={4} fontFamily="Roboto" textAlign="center" borderTop="1px solid" borderTopColor="gray.300">
           © 2024 Binary Brains. All rights reserved.
         </Box>
       </VStack>
