@@ -12,7 +12,7 @@ import TutorialPage from './Pages/TutorialPage';
 import FAQsPage from './Pages/FAQsPage';
 import AboutUS from './Pages/AboutUsPage';
 import Contactus from './Pages/ContactUs';
-import TranslatePage from './Pages/TranslatePage';
+import TranslateCode from './Pages/TranslateCode';
 
 function App() {
   return (
@@ -30,7 +30,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/AboutUs" element={<AboutUS />} />
           <Route path="/ContactUs" element={<Contactus />} />
-          <Route path="/translate" element={<TranslatePage />} />
+          <Route path="/translate" element={<TranslateCode />} />
         </Routes>
         </AuthProvider>
 

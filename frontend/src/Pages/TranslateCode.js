@@ -13,12 +13,18 @@ import 'ace-builds/src-noconflict/mode-swift';
 import 'ace-builds/src-noconflict/mode-typescript';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
+import { ChakraProvider } from '@chakra-ui/react';
+
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
 import React, { useEffect, useState } from "react";
 import AceEditor from 'react-ace';
 import { BiSolidDownArrowAlt } from "react-icons/bi";
 import { FaCode, FaCog, FaCube, FaPaste } from 'react-icons/fa';
 import { SiConvertio } from "react-icons/si";
+
+import { useColorMode } from '@chakra-ui/react';
+
+
 
 
 
@@ -97,6 +103,10 @@ const languages = [
 ];
 
 const TranslateCode = () => {
+  const { colorMode } = useColorMode(); // Access color mode
+
+  // Use the appropriate text color based on the color mode
+  const textColor = colorMode === "light" ? "black" : "white";
   const [inputCode, setInputCode] = useState(`To use this tool, take the following steps -
 1. Select the programming language from the dropdown above
 2. Describe the code you want to generate here in this box
@@ -105,6 +115,7 @@ const TranslateCode = () => {
   const [targetLanguage, setTargetLanguage] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState("");
   const [error, setError] = useState("");
+  
 
   const handleConvert = () => {
     if (!sourceLanguage || !targetLanguage) {
@@ -140,38 +151,44 @@ const TranslateCode = () => {
   };
 
   const HeadingSteps = () => (
-    <HStack spacing={16} justify="center" backgroundColor="#fbf2e3"> {/* Increased spacing */}
-      <VStack align="center" spacing={2}>
-        <FaCube size={24} color="gray.600" />
-        <Text fontSize="lg" fontWeight="bold">Step-by-Step Code Translation Process</Text>
-        <Text fontSize="md" color="gray.600" marginTop={0}>Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
+    <Box backgroundColor="#fbf2e3" paddingY={4} ml="auto">
+    <HStack spacing={16} justify="center" backgroundColor="#fbf2e3" marginTop={16}> {/* Increased spacing */}
+      <VStack align="left" spacing={2}>
+        <FaCube size={40} color="gray.600" />
+        <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Step-by-Step Code Translation Process</Text>
+        <Text fontSize="16" color="gray.600" marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
       </VStack>
-      <VStack align="center" spacing={2}>
-        <FaCube size={24} color="gray.600" />
-        <Text fontSize="lg" fontWeight="bold">Submit Your Code</Text>
-        <Text fontSize="md" color="gray.600" marginTop={0}>Easily submit your code and select the desired language.</Text> {/* Removed space */}
+      <VStack align="left" spacing={2}>
+        <FaCube size={40} color="gray.600" />
+        <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Submit Your Code</Text>
+        <Text fontSize="16" color="gray.600" marginTop={0} fontFamily="Roboto">Easily submit your code and select the desired language.</Text> {/* Removed space */}
       </VStack>
-      <VStack align="center" spacing={2}>
-        <FaCube size={24} color="gray.600" />
-        <Text fontSize="lg" fontWeight="bold">Translation Output</Text>
-        <Text fontSize="md" color="gray.600" marginTop={0}>View the translated code with enhanced readability features.</Text> {/* Removed space */}
+      <VStack align="left" spacing={2}>
+        <FaCube size={40} color="gray.600" />
+        <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Translation Output</Text>
+        <Text fontSize="16" color="gray.600" marginTop={0} fontFamily="Roboto">View the translated code with enhanced readability features.</Text> {/* Removed space */}
       </VStack>
     </HStack>
+    </Box>
   );
 
   
 
   return (
     <>
+       <ChakraProvider>
+    
       <HeadingSteps />
-      <VStack spacing={4} align="stretch" style={{ backgroundColor: "#fbf2e3", minHeight: "100vh" }}>
+      <VStack spacing={4} align="stretch" style={{ backgroundColor: "#fbf2e3", minHeight: "120vh" }}>
         {error && (
           <CustomAlert status="error" message={error} onClose={handleCloseAlert}  />
         )}
-        <Box width="47.75%" bg="#DFD3D33B" p={4} borderRadius="16" textAlign="center">
-          <Text fontFamily="Roboto" marginBottom={0} fontSize={24}>Drop your code here!</Text>
-          <BiSolidDownArrowAlt  size={32}/>
-        </Box>
+        <Box width="47.75%" bg="#DFD3D33B" p={4} borderRadius="16" textAlign="center" display="flex" alignItems="center" justifyContent="center">
+  <Text fontFamily="Roboto" marginBottom={0} fontSize={24}>Drop your code here!</Text>
+  <Box ml={2}>
+    <BiSolidDownArrowAlt size={32} />
+  </Box>
+</Box>
         <Flex justifyContent="space-between">
           <Box position="relative">
             <Menu>
@@ -184,7 +201,7 @@ const TranslateCode = () => {
   borderRadius='6'
   transition='all 0.3s'
   padding="12px 16px"
-  ml="20"
+  ml="5"
 >
   
   {sourceLanguage ? languages.find(lang => lang.value === sourceLanguage)?.label || 'Source Language' : 'Source Language'}
@@ -211,7 +228,7 @@ const TranslateCode = () => {
   borderRadius='6'
   transition='all 0.3s'
   padding="12px 16px"
-  mr="20"
+  mr="5"
 >
   {targetLanguage ? languages.find(lang => lang.value === targetLanguage)?.label || 'Target Language' : 'Target Language'}
 </MenuButton>
@@ -231,7 +248,12 @@ const TranslateCode = () => {
         </Flex>
         <Box display="flex" justifyContent="space-between">
         <Box width="48%">
-  <FormLabel htmlFor="inputCode">Input Code <FaCode /></FormLabel>
+        <FormLabel htmlFor="inputCode" display="flex" alignItems="center">
+  Input Code
+  <Box ml={2}>
+    <FaCode />
+  </Box>
+</FormLabel>
   {/* Container for Ace editor and paste button */}
   <div style={{ position: 'relative' }}>
     {/* Paste button */}
@@ -268,7 +290,12 @@ const TranslateCode = () => {
 </Box>
           
           <Box width="48%">
-            <FormLabel htmlFor="outputCode">Converted Code <FaCode /></FormLabel>
+          <FormLabel htmlFor="outputCode" display="flex" alignItems="center">
+  Converted Code
+  <Box ml={2}>
+    <FaCode />
+  </Box>
+</FormLabel>
             <AceEditor
               id="outputCode"
               mode={targetLanguage ? (targetLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === targetLanguage)?.value || "text") : "text"}
@@ -293,10 +320,12 @@ const TranslateCode = () => {
           paddingY="32px"
           mt={16}
           borderRadius="16"
+          _hover={{ bg: "blue.500" }}
+
         >
           Convert
         </CustomButton>
-        <Text mt={4} fontSize="22" fontFamily="Roboto">
+        <Text color={textColor} mt={4} fontSize="22" fontFamily="Roboto">
           How to use this tool?<br />
         </Text>
         <Text mt={4} fontSize="19" fontFamily="Roboto">
@@ -325,6 +354,7 @@ const TranslateCode = () => {
           © 2024 Binary Brains. All rights reserved.
         </Box>
       </VStack>
+      </ChakraProvider>,
     </>
     
   );
