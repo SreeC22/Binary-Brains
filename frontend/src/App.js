@@ -13,9 +13,12 @@ import FAQsPage from './Pages/FAQsPage';
 import AboutUS from './Pages/AboutUsPage';
 import Contactus from './Pages/ContactUs';
 import TranslateCode from './Pages/TranslateCode';
+import { ColorModeProvider } from "./Pages/ColorModeContext";
 
 function App() {
   return (
+    <ColorModeProvider>
+
       <Router>
             <AuthProvider> {/* Wrap the Router and all child components in AuthProvider */}
 
@@ -35,6 +38,8 @@ function App() {
         </AuthProvider>
 
       </Router>
+      </ColorModeProvider>
+
   );
 }
 

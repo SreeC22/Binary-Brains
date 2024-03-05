@@ -14,7 +14,7 @@ import 'ace-builds/src-noconflict/mode-typescript';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
 import { ChakraProvider } from '@chakra-ui/react';
-
+import { useColorModeContext } from "./ColorModeContext";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
 import React, { useEffect, useState } from "react";
 import AceEditor from 'react-ace';
@@ -103,10 +103,9 @@ const languages = [
 ];
 
 const TranslateCode = () => {
-  const { colorMode } = useColorMode(); // Access color mode
-
-  // Use the appropriate text color based on the color mode
-  const textColor = colorMode === "light" ? "black" : "white";
+  const { colorMode } = useColorMode();
+  const backgroundColor = colorMode === "light" ? "#fbf2e3" : "#2D3748";
+  const textColor = colorMode === "light" ? "black" : "black";
   const [inputCode, setInputCode] = useState(`To use this tool, take the following steps -
 1. Select the programming language from the dropdown above
 2. Describe the code you want to generate here in this box
@@ -151,22 +150,22 @@ const TranslateCode = () => {
   };
 
   const HeadingSteps = () => (
-    <Box backgroundColor="#fbf2e3" paddingY={4} ml="auto">
-    <HStack spacing={16} justify="center" backgroundColor="#fbf2e3" marginTop={16}> {/* Increased spacing */}
-      <VStack align="left" spacing={2}>
-        <FaCube size={40} color="gray.600" />
+    <Box paddingY={4} ml="auto" style={{ backgroundColor }}>
+    <HStack spacing={16} justify="center" marginTop={16}style={{ backgroundColor }}> {/* Increased spacing */}
+      <VStack align="left" spacing={2} >
+        <FaCube size={40} color={!textColor} />
         <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Step-by-Step Code Translation Process</Text>
-        <Text fontSize="16" color="gray.600" marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
+        <Text fontSize="16" color={!textColor} marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
       </VStack>
       <VStack align="left" spacing={2}>
-        <FaCube size={40} color="gray.600" />
+        <FaCube size={40} color={!textColor} />
         <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Submit Your Code</Text>
-        <Text fontSize="16" color="gray.600" marginTop={0} fontFamily="Roboto">Easily submit your code and select the desired language.</Text> {/* Removed space */}
+        <Text fontSize="16" color={!textColor} marginTop={0} fontFamily="Roboto">Easily submit your code and select the desired language.</Text> {/* Removed space */}
       </VStack>
       <VStack align="left" spacing={2}>
-        <FaCube size={40} color="gray.600" />
+        <FaCube size={40} color={!textColor} />
         <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Translation Output</Text>
-        <Text fontSize="16" color="gray.600" marginTop={0} fontFamily="Roboto">View the translated code with enhanced readability features.</Text> {/* Removed space */}
+        <Text fontSize="16" color={!textColor} marginTop={0} fontFamily="Roboto">View the translated code with enhanced readability features.</Text> {/* Removed space */}
       </VStack>
     </HStack>
     </Box>
@@ -179,7 +178,7 @@ const TranslateCode = () => {
        <ChakraProvider>
     
       <HeadingSteps />
-      <VStack spacing={4} align="stretch" style={{ backgroundColor: "#fbf2e3", minHeight: "120vh" }}>
+      <VStack spacing={4} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}>
         {error && (
           <CustomAlert status="error" message={error} onClose={handleCloseAlert}  />
         )}
@@ -299,7 +298,7 @@ const TranslateCode = () => {
             <AceEditor
               id="outputCode"
               mode={targetLanguage ? (targetLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === targetLanguage)?.value || "text") : "text"}
-              theme="github"
+              theme="monokai"
               width="100%"
               height="500px"
               value={outputCode}
@@ -325,7 +324,7 @@ const TranslateCode = () => {
         >
           Convert
         </CustomButton>
-        <Text color={textColor} mt={4} fontSize="22" fontFamily="Roboto">
+        <Text  mt={4} fontSize="22" fontFamily="Roboto">
           How to use this tool?<br />
         </Text>
         <Text mt={4} fontSize="19" fontFamily="Roboto">
@@ -343,8 +342,8 @@ const TranslateCode = () => {
             {languages.map(lang => (
               <Box key={lang.value} bg="white" p={4} borderRadius="md" textAlign="center" mr={4} width="100px" height="80px">
                 <VStack spacing={0}>
-                  {React.cloneElement(lang.icon, { size: 40 })} {/* Adjust size of the icon */}
-                  <Text fontSize="xl">{lang.label}</Text> {/* Adjust font size of the label */}
+                  {React.cloneElement(lang.icon, { size: 42 })} {/* Adjust size of the icon */}
+                  <Text fontSize="16" color={textColor}> {lang.label}</Text> {/* Adjust font size of the label */}
                 </VStack>
               </Box>
             ))}
