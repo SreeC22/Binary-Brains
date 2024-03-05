@@ -45,3 +45,15 @@ pub struct GitHubUserInfo {
 pub struct OAuthCallbackQuery {
     pub code: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Feedback {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    pub firstName: String,
+    pub lastName: String,
+    pub email: String,
+    pub phoneNumber: String,
+    pub message: String,
+    pub rating: i32,
+}

@@ -234,3 +234,20 @@ async fn fetch_github_user_info(access_token: &str) -> Result<GitHubUserInfo, ac
 
     Ok(user_info_response)
 }
+
+
+use crate::models::Feedback;
+use crate::db::insert_feedback;
+
+pub async fn submit_feedback(
+    feedback_data: web::Json<Feedback>,
+    db: web::Data<Collection<Feedback>>,
+) -> impl Responder {
+    match insert_feedback(&db, feedback_data.into_inner()).await {
+        Ok(_) => HttpResponse::Ok().json("Feedback submitted successfully"),
+        Err(e) => {
+            eprintln!("Failed to insert feedback: {}", e);
+            HttpResponse::InternalServerError().finish()
+        },
+    }
+}

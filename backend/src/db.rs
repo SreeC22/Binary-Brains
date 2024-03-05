@@ -1,5 +1,5 @@
 use mongodb::{bson::{doc, Document}, Client, Collection, options::ClientOptions, error::Result as MongoResult};
-use crate::models::{User, UserInfo, GitHubUserInfo};
+use crate::models::{User, UserInfo, GitHubUserInfo, Feedback};
 use std::env;
 use dotenv::dotenv;
 use mongodb::error::Error;
@@ -53,4 +53,18 @@ pub async fn find_or_create_user_by_github_id(db: &Collection<User>, github_user
 
 pub async fn get_user_by_email(db: &Collection<User>, email: &str) -> MongoResult<Option<User>> {
     db.find_one(doc! {"email": email}, None).await
+}
+
+
+pub async fn init_feedback_collection() -> mongodb::error::Result<Collection<Feedback>> {
+    let mongo_uri = env::var("MONGO_URI").expect("MONGO_URI must be set");
+    let client_options = ClientOptions::parse(&mongo_uri).await?;
+    let client = Client::with_options(client_options)?;
+    let database = client.database("my_app");
+    Ok(database.collection::<Feedback>("feedback"))
+}
+
+pub async fn insert_feedback(db: &Collection<Feedback>, feedback: Feedback) -> mongodb::error::Result<()> {
+    db.insert_one(feedback, None).await?;
+    Ok(())
 }

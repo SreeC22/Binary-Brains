@@ -12,6 +12,7 @@ import { AuthProvider } from './Components/AuthContext'; // Adjust path as neces
 import HomePage from './Pages/HomePage';
 import OAuthCallbackHandler from './Components/OAuthCallbackHandler'; // Import the handler
 // Other imports...
+import FeedbackPage from './Pages/FeedbackPage/FeedbackPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/oauth_callback" element={<OAuthCallbackHandler />} /> {/* Add this line */}
         <Route path="/" element={<HomePage />} /> {/* Define the route to HomePage */}
+        <Route path="/feedback" element={<FeedbackPage />} />
 
       </Routes>
       </AuthProvider>
