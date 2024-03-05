@@ -62,11 +62,10 @@ describe('TranslateCode', () => {
 
     // Check if source language is selected
     await waitFor(() => {
-      const elementWithText = document.querySelector('.chakra-text.css-6dvxm2');
+      const elementWithText = document.querySelector('.chakra-menu__menuitem[data-index="0"]');
       expect(elementWithText).not.toBeNull(); // Check if the element exists
       expect(elementWithText.textContent).toEqual(sourceLanguage);
   });
-
     // Simulate selecting target language
     fireEvent.click(getByRole('button', { name: /Target Language/i }));
     const targetLanguage = 'Java';

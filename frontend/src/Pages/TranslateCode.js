@@ -14,7 +14,6 @@ import 'ace-builds/src-noconflict/mode-typescript';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
 import { ChakraProvider } from '@chakra-ui/react';
-import { useColorModeContext } from "./ColorModeContext";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
 import React, { useEffect, useState } from "react";
 import AceEditor from 'react-ace';
@@ -153,19 +152,19 @@ const TranslateCode = () => {
     <Box paddingY={4} ml="auto" style={{ backgroundColor }}>
     <HStack spacing={16} justify="center" marginTop={16}style={{ backgroundColor }}> {/* Increased spacing */}
       <VStack align="left" spacing={2} >
-        <FaCube size={40} color={!textColor} />
+        <FaCube size={40} color={"black"} />
         <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Step-by-Step Code Translation Process</Text>
-        <Text fontSize="16" color={!textColor} marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
+        <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
       </VStack>
       <VStack align="left" spacing={2}>
-        <FaCube size={40} color={!textColor} />
+        <FaCube size={40} color={"black"}  />
         <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Submit Your Code</Text>
-        <Text fontSize="16" color={!textColor} marginTop={0} fontFamily="Roboto">Easily submit your code and select the desired language.</Text> {/* Removed space */}
+        <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"}  marginTop={0} fontFamily="Roboto">Easily submit your code and select the desired language.</Text> {/* Removed space */}
       </VStack>
       <VStack align="left" spacing={2}>
-        <FaCube size={40} color={!textColor} />
+        <FaCube size={40} color={"black"}  />
         <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Translation Output</Text>
-        <Text fontSize="16" color={!textColor} marginTop={0} fontFamily="Roboto">View the translated code with enhanced readability features.</Text> {/* Removed space */}
+        <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"}  marginTop={0} fontFamily="Roboto">View the translated code with enhanced readability features.</Text> {/* Removed space */}
       </VStack>
     </HStack>
     </Box>
