@@ -1,8 +1,7 @@
 //defining user model.
-use mongodb::bson::{doc, oid::ObjectId,DateTime};
+use mongodb::bson::{doc, oid::ObjectId};
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
-
 
 #[skip_serializing_none]
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -47,12 +46,14 @@ pub struct OAuthCallbackQuery {
     pub code: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Feedback {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    pub code: String,
+    pub firstName: String,
+    pub lastName: String,
+    pub email: String,
+    pub phoneNumber: String,
+    pub message: String,
     pub rating: i32,
-    pub comments: Option<String>,
-    pub created_at: DateTime, // Ensure this field is present
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext'; // Adjust the import path as necessary
 import { FaMoon, FaSun } from 'react-icons/fa';
 import './navbar.css'; // Ensure this is the correct path to your CSS file
 
@@ -9,6 +10,21 @@ const NavBar = () => {
         const savedMode = localStorage.getItem('darkMode');
         return savedMode === 'true' || (!savedMode && window.matchMedia('(prefers-color-scheme: dark)').matches);
     });
+
+    const { user, setUser } = useAuth(); // Use AuthContext
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem('token'); // Clear the token
+        setUser(null); // Clear user context
+        setIsDarkMode(false); // Optionally reset dark mode preference
+        navigate('/login'); // Redirect to login page
+    };
+
+    // Function to extract name or identifier from user object
+    const getUserName = (user) => {
+        return user?.name || user?.email.split('@')[0] || "User";
+    };
 
     useEffect(() => {
         // Update body class and local storage when dark mode state changes
@@ -40,7 +56,14 @@ const NavBar = () => {
                 </div>
             </div>
             <div className="Actions">
-                <NavLink to="/login" className="Button">Login</NavLink>
+                {user ? (
+                    <>
+                        <span className="UserGreeting">Hi {getUserName(user)}</span>
+                        <button onClick={handleLogout} className="Button">Logout</button>
+                    </>
+                ) : (
+                    <NavLink to="/login" className="Button">Login</NavLink>
+                )}
                 <button onClick={toggleColorMode} className="ToggleModeButton">
                     {isDarkMode ? <FaSun className="icon" /> : <FaMoon className="icon" />}
                 </button>

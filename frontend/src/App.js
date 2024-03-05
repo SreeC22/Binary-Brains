@@ -1,29 +1,34 @@
-import React from 'react';
+import './App.css';
+import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
 } from "react-router-dom";
-import logo from './logo.svg';
-import './App.css';
-import HomePage from './Pages/HomePage';
-import FeedbackPage from './Pages/FeedbackPage/FeedbackPage';
-import NavBar from './Components/NavBar';
+
 import Login from './Components/Login';
-import OAuthCallbackHandler from './Components/OAuthCallbackHandler';
+import Navbar from './Components/NavBar';
+import { AuthProvider } from './Components/AuthContext'; // Adjust path as necessary
+import HomePage from './Pages/HomePage';
+import OAuthCallbackHandler from './Components/OAuthCallbackHandler'; // Import the handler
+// Other imports...
+import FeedbackPage from './Pages/FeedbackPage/FeedbackPage';
 
 function App() {
   return (
     <Router>
-      <div className="App">
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<HomePage />} exact />
-          <Route path="/feedback" element={<FeedbackPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/oauth_callback" element={<OAuthCallbackHandler />} />
-        </Routes>
-      </div>
+            <AuthProvider> {/* Ensure this wraps Navbar and other components */}
+
+      <Navbar />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/oauth_callback" element={<OAuthCallbackHandler />} /> {/* Add this line */}
+        <Route path="/" element={<HomePage />} /> {/* Define the route to HomePage */}
+        <Route path="/feedback" element={<FeedbackPage />} />
+
+      </Routes>
+      </AuthProvider>
+
     </Router>
   );
 }
