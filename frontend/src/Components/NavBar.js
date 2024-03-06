@@ -77,7 +77,7 @@ const NavBar = () => {
           </>
         ) : (
           <RouterLink to="/login">
-            <Button size="sm" bg={darkerShade} color={buttonTextColor}>Login</Button>
+            <Button size="sm" bg={darkerShade} color={buttonTextColor}>Login/Register</Button>
           </RouterLink>
         )}
         <IconButton
