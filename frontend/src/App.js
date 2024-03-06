@@ -20,25 +20,25 @@ function App() {
     <ColorModeProvider>
 
       <Router>
-            <AuthProvider> {/* Wrap the Router and all child components in AuthProvider */}
+        <AuthProvider> {/* Wrap the Router and all child components in AuthProvider */}
 
-        <NavBar /> {/* This will be displayed on every page */}
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/code-conversion" element={<CodeConvertPage />} />
-          <Route path="/feedback" element={<FeedbackPage />} />
-          <Route path="/documentation" element={<DocumentationPage />} />
-          <Route path="/tutorial" element={<TutorialPage />} />
-          <Route path="/faqs" element={<FAQsPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/AboutUs" element={<AboutUS />} />
-          <Route path="/ContactUs" element={<Contactus />} />
-          <Route path="/translate" element={<TranslateCode />} />
-        </Routes>
+          <NavBar /> {/* This will be displayed on every page */}
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/code-conversion" element={<CodeConvertPage />} />
+            <Route path="/feedback" element={<FeedbackPage />} />
+            <Route path="/documentation" element={<DocumentationPage />} />
+            <Route path="/tutorial" element={<TutorialPage />} />
+            <Route path="/faqs" element={<FAQsPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/AboutUs" element={<AboutUS />} />
+            <Route path="/ContactUs" element={<Contactus />} />
+            <Route path="/translate" element={<TranslateCode />} />
+          </Routes>
         </AuthProvider>
 
       </Router>
-      </ColorModeProvider>
+    </ColorModeProvider>
 
   );
 }

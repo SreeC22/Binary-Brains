@@ -16,21 +16,21 @@ const OAuthCallbackHandler = () => {
       fetch(`${process.env.REACT_APP_BACKEND_URL}/oauth_callback?code=${encodeURIComponent(code)}`, {
         method: 'GET',
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to exchange code for user information.');
-        }
-        return response.json();
-      })
-      .then(data => {
-        localStorage.setItem('user', JSON.stringify(data)); // Consider security implications
-        navigate('/'); // Redirect to home page or dashboard
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        setError('Failed to login. Please try again.');
-        // Optionally navigate to an error page or show an error message
-      });
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to exchange code for user information.');
+          }
+          return response.json();
+        })
+        .then(data => {
+          localStorage.setItem('user', JSON.stringify(data)); // Consider security implications
+          navigate('/'); // Redirect to home page or dashboard
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          setError('Failed to login. Please try again.');
+          // Optionally navigate to an error page or show an error message
+        });
     } else {
       setError('No authorization code found. Please try again.');
       // Optionally navigate to an error page or show an error message
