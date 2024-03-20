@@ -8,7 +8,7 @@ mod handlers;
 mod db;
 mod auth;
 
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, test_gpt3_endpoint};
 use crate::db::init_mongo;
 use crate::models::{Feedback}; 
 
@@ -50,6 +50,7 @@ async fn main() -> std::io::Result<()> {
             .route("/logout", web::get().to(logout))
             .route("/api/user/profile", web::get().to(get_user_profile))
             .route("/submit_feedback", web::post().to(handlers::submit_feedback))
+            .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
 
 
     })

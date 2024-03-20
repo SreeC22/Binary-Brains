@@ -251,3 +251,53 @@ pub async fn submit_feedback(
         },
     }
 }
+
+//gpt3 connection
+use reqwest::header::{HeaderMap, AUTHORIZATION};
+use std::env;
+pub async fn test_gpt3_endpoint() -> impl Responder {
+    let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
+    let client = reqwest::Client::new();
+    let mut headers = HeaderMap::new();
+    headers.insert(AUTHORIZATION, format!("Bearer {}", api_key).parse().unwrap());
+
+    // Structuring payload for chat-based interaction
+    let payload = json!({
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {"role": "user", "content": "Write a factorial function in Rust language."},
+            {"role": "system", "content": ""}
+        ]
+    }
+    );
+
+    // Using the chat completion endpoint
+    let response = client
+        .post("https://api.openai.com/v1/chat/completions")
+        .headers(headers)
+        .json(&payload)
+        .send()
+        .await;
+
+    match response {
+        Ok(resp) => {
+            let status = resp.status();
+            match resp.text().await {
+                Ok(body) => {
+                    if status.is_success() {
+                        HttpResponse::Ok().content_type("application/json").body(body)
+                    } else {
+                        eprintln!("GPT-3 API Error: {}", &body);
+                        HttpResponse::BadRequest().json("Failed to call GPT-3 API")
+                    }
+                },
+                Err(_) => HttpResponse::InternalServerError().json("Failed
+to read response body"),
+}
+},
+Err(e) => {
+eprintln!("HTTP Client Error: {}", e);
+HttpResponse::InternalServerError().json("Internal server error")
+}
+}
+}
