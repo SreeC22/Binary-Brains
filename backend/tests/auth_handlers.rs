@@ -3,6 +3,7 @@ use reqwest::{Client, header};
 use serde_json::{json, Value};
 use uuid::Uuid;
 
+// registers a new user with the provided details
 async fn register_user(client: &Client, base_url: &str, user_data: &Value) -> reqwest::Response {
     client
         .post(format!("{}/register", base_url))
@@ -11,7 +12,7 @@ async fn register_user(client: &Client, base_url: &str, user_data: &Value) -> re
         .await
         .expect("Failed to send registration request")
 }
-
+// logs in a user with given email and password
 async fn login_user(client: &Client, base_url: &str, email: &str, password: &str) -> reqwest::Response {
     client
         .post(format!("{}/login", base_url))
@@ -77,4 +78,51 @@ async fn test_register_with_existing_email() {
 
     let second_register_response = register_user(&client, base_url, &user_data).await;
     assert_eq!(second_register_response.status().as_u16(), 409, "Expected conflict due to existing email");
+}
+
+
+#[tokio::test]
+async fn test_feedback_submission_success() {
+    let base_url = "http://127.0.0.1:8080";
+    let client = Client::new();
+    let feedback_data = json!({
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john.doe@example.com",
+        "phoneNumber": "1234567890",
+        "message": "Great service!",
+        "rating": 5,
+    });
+
+    let response = client
+        .post(format!("{}/submit_feedback", base_url))
+        .json(&feedback_data)
+        .send()
+        .await
+        .expect("Failed to send feedback submission request");
+
+    assert_eq!(response.status().as_u16(), 200, "Feedback submission failed");
+}
+
+#[tokio::test]
+async fn test_feedback_submission_invalid_data() {
+    let base_url = "http://127.0.0.1:8080";
+    let client = Client::new();
+    // Missing 'message' and 'rating' fields
+    let feedback_data = json!({
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane.doe@example.com",
+        "phoneNumber": "0987654321",
+    });
+
+    let response = client
+        .post(format!("{}/submit_feedback", base_url))
+        .json(&feedback_data)
+        .send()
+        .await
+        .expect("Failed to send feedback submission request");
+
+    // Assuming your endpoint validates input and returns a 400 Bad Request for invalid data
+    assert_eq!(response.status().as_u16(), 400, "Expected failure due to invalid data");
 }

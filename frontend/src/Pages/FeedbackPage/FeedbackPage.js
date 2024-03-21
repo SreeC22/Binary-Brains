@@ -47,7 +47,7 @@ const FeedbackPage = () => {
                 },
                 body: JSON.stringify(feedbackData),
             });
-            
+
 
             if (response.ok) {
                 // If the response is successful, trigger the confetti and update the submitted state
@@ -109,6 +109,7 @@ const FeedbackPage = () => {
             </form>
 
         </div>
+
     );
 };
 
