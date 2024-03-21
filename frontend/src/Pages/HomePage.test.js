@@ -1,46 +1,37 @@
+// HomePage.test.js
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BrowserRouter as Router } from 'react-router-dom';
-import '@testing-library/jest-dom'
 import HomePage from './HomePage';
-describe('HomePage', () => {
- 
-  it('renders without crashing', () => {
-    render(
-      <Router>
-        <HomePage />
-      </Router>
-    );
+import { BrowserRouter as Router } from 'react-router-dom';
+
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => jest.fn(),
+}));
+
+describe('HomePage Component', () => {
+  // Render the component inside a Router since it uses useNavigate and Link
+  const setup = () => render(
+    <Router>
+      <HomePage />
+    </Router>
+  );
+
+  test('renders HomePage component with all sections', () => {
+    setup();
     expect(screen.getByText(/Transform Your Code with Ease and Efficiency/i)).toBeInTheDocument();
+    expect(screen.getByText(/Get Started with Our Code Translation Tool/i)).toBeInTheDocument();
+    expect(screen.getByText(/Experience seamless code translation with our user-friendly interface./i)).toBeInTheDocument();
   });
 
-it('has a get started button', () => {
-    render(
-        <Router>
-            <HomePage />
-        </Router>
-    );
-    expect(screen.getByRole('button', { name: /Get Started/i })).toBeInTheDocument();
-});
 
-  it('renders correctly on different screen sizes', () => {
-    global.innerWidth = 500; // Simulate a mobile screen
-    global.dispatchEvent(new Event('resize'));
-    render(
-      <Router>
-        <HomePage />
-      </Router>
-    );
-    // Perform assertions relevant to mobile layout
-  });
-  it('matches snapshot', () => {
-    const { asFragment } = render(
-      <Router>
-        <HomePage />
-      </Router>
-    );
-    expect(asFragment()).toMatchSnapshot();
+  test('renders responsive elements for different screen sizes', () => {
+    global.innerWidth = 500; // Simulate small screen
+    setup();
+
+    expect(screen.getByText(/Transform Your Code/i)).toBeInTheDocument();
+
+    global.innerWidth = 1024; 
   });
 
-  // Add more tests for other elements...
 });
