@@ -13,6 +13,7 @@ jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedNavigate,
 }));
 
+// Optional: Mock the useAuth hook if your NavBar component uses it
 jest.mock('./AuthContext', () => ({
     useAuth: () => ({
         user: null, // or whatever default state you want for your tests
@@ -52,6 +53,12 @@ describe('NavBar Component', () => {
         });
         expect(colorModeButton).toBeInTheDocument();
         fireEvent.click(colorModeButton);
+
+        // Note: This test checks for the presence and clickability of the toggle.
+        // Verifying the actual change in color mode might require integration testing
+        // or manual verification, as it involves style changes not directly testable
+        // through the DOM.
     });
 
+    // Add any additional tests specific to your application's requirements
 });
