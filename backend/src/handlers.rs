@@ -2,7 +2,8 @@ use crate::db::{find_or_create_user_by_google_id, find_or_create_user_by_github_
 use crate::db::get_user_by_email;
 use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
-
+use crate::models::Feedback;
+use actix_web::get;
 use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError};
 use bcrypt::{hash, DEFAULT_COST, verify};
 use mongodb::{Collection, bson::doc};
@@ -236,9 +237,17 @@ async fn fetch_github_user_info(access_token: &str) -> Result<GitHubUserInfo, ac
 }
 
 
-use crate::models::Feedback;
 use crate::db::insert_feedback;
 
+pub mod feedback {
+    use super::*;
+
+    #[get("/feedback")]
+    pub async fn get_feedback() -> impl Responder {
+        // Implementation of your feedback endpoint
+        HttpResponse::Ok().body("Feedback data")
+    }
+}
 pub async fn submit_feedback(
     feedback_data: web::Json<Feedback>,
     db: web::Data<Collection<Feedback>>,

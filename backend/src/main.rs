@@ -7,10 +7,10 @@ mod models;
 mod handlers;
 mod db;
 mod auth;
-
+use handlers::feedback::get_feedback; // Import the `get_feedback` function
 use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback};
 use crate::db::init_mongo;
-use crate::models::{Feedback}; 
+use crate::models::Feedback;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -49,8 +49,7 @@ async fn main() -> std::io::Result<()> {
             .route("/github_oauth_callback", web::get().to(github_oauth_callback))
             .route("/logout", web::get().to(logout))
             .route("/api/user/profile", web::get().to(get_user_profile))
-            .route("/submit_feedback", web::post().to(handlers::submit_feedback))
-
+            .service(handlers::feedback::get_feedback) // Use the endpoint function from the feedback module
 
     })
     .bind("127.0.0.1:8080")?
