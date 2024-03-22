@@ -57,3 +57,9 @@ pub struct Feedback {
     pub message: String,
     pub rating: i32,
 }
+
+#[derive(Deserialize)]
+pub struct CodeTranslationRequest {
+    pub source_code: String,
+    pub target_language: String,
+}
