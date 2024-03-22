@@ -16,3 +16,5 @@ backend/target/debug/deps/auth_handlers-9e0ea38b1cfbbb50 filter=lfs diff=lfs mer
 backend/target/debug/backend.pdb filter=lfs diff=lfs merge=lfs -text
 backend/target/debug/deps/libmongodb-5d4f1403b78931af.rlib filter=lfs diff=lfs merge=lfs -text
 backend/target/debug/deps/backend.pdb filter=lfs diff=lfs merge=lfs -text
+backend/target/debug/deps/libreqwest-a148a9e945d69c41.rlib filter=lfs diff=lfs merge=lfs -text
+backend/target/debug/deps/feedback_test-3c4772858228bbed.pdb filter=lfs diff=lfs merge=lfs -text
