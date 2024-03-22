@@ -8,44 +8,42 @@ import CodeEditorWindow from '../Components/CodeEditorWindow'; // Adjust the imp
 jest.mock('../Components/CodeEditorWindow', () => jest.fn());
 
 describe('CodeConvertPage', () => {
-    beforeEach(() => {
-        // Provide a default implementation for the mock that can be overridden in specific tests
-        CodeEditorWindow.mockImplementation(({ onOriginalChange, language, defaultValue }) => (
-            <div>
-                <textarea
-                    data-testid="original-code-input"
-                    value={defaultValue}
-                    onChange={(e) => onOriginalChange(e.target.value)}
-                />
-                <button data-testid="copy-button" onClick={() => navigator.clipboard.writeText('mocked code')}>
-                    Copy
-                </button>
-            </div>
-        ));
+  beforeEach(() => {
+    CodeEditorWindow.mockImplementation(({ onOriginalChange, language, defaultValue }) => (
+      <div>
+        <textarea
+          data-testid="original-code-input"
+          value={defaultValue}
+          onChange={(e) => onOriginalChange(e.target.value)}
+        />
+        <button data-testid="copy-button" onClick={() => navigator.clipboard.writeText('mocked code')}>
+          Copy
+        </button>
+      </div>
+    ));
+  });
+
+  it('copies code to clipboard successfully', async () => {
+    render(<CodeConvertPage />);
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: jest.fn().mockResolvedValue('mocked code'),
+      },
     });
 
-    it('copies code to clipboard successfully', async () => {
-        render(<CodeConvertPage />);
-        // Mock clipboard functionality
-        Object.assign(navigator, {
-            clipboard: {
-                writeText: jest.fn().mockResolvedValue('mocked code'),
-            },
-        });
+    const copyButton = screen.getByTestId('copy-button');
+    userEvent.click(copyButton);
 
-        const copyButton = screen.getByTestId('copy-button');
-        userEvent.click(copyButton);
-
-        await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalledWith('mocked code'));
-    });
+    await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalledWith('mocked code'));
+  });
 });
 
-describe('CodeEditorWindow', () => {
+  describe('CodeEditorWindow', () => {
     const testCodes = [
-        { label: 'short code', value: '// Short code example\nconsole.log("Hello, world!");' },
-        {
-            label: 'typical code',
-            value: `
+      { label: 'short code', value: '// Short code example\nconsole.log("Hello, world!");' },
+      {
+        label: 'typical code',
+        value: `
           // A more typical length example
           function greet(name) {
             console.log("Hello, " + name + "!");
@@ -53,17 +51,17 @@ describe('CodeEditorWindow', () => {
           
           greet("Developer");
         `
-        },
-        {
-            label: 'long code',
-            value: '// Very long code example\n' + new Array(1000).fill('console.log("Hello, world!");').join('\n')
-        }
+      },
+      {
+        label: 'long code',
+        value: '// Very long code example\n' + new Array(1000).fill('console.log("Hello, world!");').join('\n')
+      }
     ];
-
+  
     testCodes.forEach(({ label, value }) => {
-        it(`displays ${label} correctly in the output editor`, () => {
-            render(<CodeEditorWindow defaultValue={value} language="javascript" />);
-            expect(true).toBe(true);
-        });
+      it(`displays ${label} correctly in the output editor`, () => {
+        render(<CodeEditorWindow defaultValue={value} language="javascript" />);
+        expect(true).toBe(true);
+      });
     });
-});
+  });
