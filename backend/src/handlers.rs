@@ -4,6 +4,7 @@ use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
 use crate::models::Feedback;
 use actix_web::get;
+use futures_util::stream::TryStreamExt;
 use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError};
 use bcrypt::{hash, DEFAULT_COST, verify};
 use mongodb::{Collection, bson::doc};
@@ -241,11 +242,41 @@ use crate::db::insert_feedback;
 
 pub mod feedback {
     use super::*;
+    use futures_util::stream::TryStreamExt;
+    use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError};
+    use mongodb::{Collection};
 
     #[get("/feedback")]
-    pub async fn get_feedback() -> impl Responder {
-        // Implementation of your feedback endpoint
-        HttpResponse::Ok().body("Feedback data")
+    pub async fn get_feedback(db: web::Data<Collection<Feedback>>) -> impl Responder {
+        // Query feedback data from MongoDB collection
+        let mut cursor = db.find(None, None)
+            .await
+            .expect("Failed to execute find operation");
+
+        // Initialize a vector to hold feedback data
+        let mut feedback_data = vec![];
+
+        // Iterate over the cursor to fetch feedback data
+        while let Some(result) = TryStreamExt::try_next(&mut cursor).await.expect("Failed to iterate cursor") {
+            // Access fields directly from Feedback struct
+            let id = result.id;
+            let phoneNumber = result.phoneNumber;
+            let rating = result.rating;
+            let email = result.email;
+            let firstName = result.firstName;
+            let lastName = result.lastName;
+            let message = result.message;
+
+            // Format feedback data as desired (example: concatenating fields)
+            let formatted_feedback = format!("Name: {} {}, Email: {}, Phone Number: {}, Rating: {},  Message: {}", firstName, lastName, email, phoneNumber, rating, message);
+            feedback_data.push(formatted_feedback);
+        }
+
+        // Format feedback data as a string
+        let feedback_list = feedback_data.join("\n");
+
+        // Return the response with formatted feedback data
+        HttpResponse::Ok().body(feedback_list)
     }
 }
 pub async fn submit_feedback(
