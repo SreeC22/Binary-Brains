@@ -57,3 +57,15 @@ pub struct Feedback {
     pub message: String,
     pub rating: i32,
 }
+
+#[derive(Deserialize)]
+pub struct PasswordChangeForm {
+    pub current_password: String,
+    pub new_password: String,
+}
+
+#[derive(Deserialize)]
+pub struct UserProfileUpdateForm {
+    pub username: Option<String>,
+    pub email: Option<String>,
+}

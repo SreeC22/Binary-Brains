@@ -2,6 +2,8 @@ use crate::db::{find_or_create_user_by_google_id, find_or_create_user_by_github_
 use crate::db::get_user_by_email;
 use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
+use crate::auth::{hash_password, verify_password};
+use crate::db::{update_user_password, update_user_profile, delete_user, get_user_by_email};
 
 use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError};
 use bcrypt::{hash, DEFAULT_COST, verify};
@@ -9,7 +11,7 @@ use mongodb::{Collection, bson::doc};
 use serde_json::json;
 use std::collections::HashMap;
 use mongodb::bson;
-use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery};
+use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery,PasswordChangeForm, UserProfileUpdateForm};
 
 
 use actix_web_httpauth::extractors::bearer::BearerAuth;
@@ -249,5 +251,55 @@ pub async fn submit_feedback(
             eprintln!("Failed to insert feedback: {}", e);
             HttpResponse::InternalServerError().finish()
         },
+    }
+}
+
+pub async fn change_password_handler(
+    email: web::Path<String>,
+    form: web::Json<PasswordChangeForm>,
+    db: web::Data<Database>,
+) -> HttpResponse {
+    let user = if let Ok(user) = get_user_by_email(&email.into_inner(), &db).await {
+        user
+    } else {
+        return HttpResponse::NotFound().json("User not found");
+    };
+
+    if !verify_password(&form.current_password, user.password.as_ref().unwrap()).await {
+        return HttpResponse::Unauthorized().json("Invalid current password");
+    }
+
+    let new_hashed = hash_password(&form.new_password).await.expect("Failed to hash password");
+    match update_user_password(&email.into_inner(), &new_hashed, &db).await {
+        Ok(_) => HttpResponse::Ok().json("Password updated successfully"),
+        Err(_) => HttpResponse::InternalServerError().json("Failed to update password"),
+    }
+}
+
+pub async fn update_user_profile_handler(
+    form: web::Json<UserProfileUpdateForm>,
+    db: web::Data<mongodb::Database>,
+    // Extract the user's current identification (e.g., email or ID) from the session or JWT
+    user_id: web::Path<String>, // Example placeholder
+) -> impl Responder {
+    // Optionally, verify that the new email is not already in use
+    if let Some(ref new_email) = form.email {
+        if let Ok(Some(_)) = get_user_by_email(new_email, &db).await {
+            return HttpResponse::BadRequest().json(json!({"error": "Email is already in use"}));
+        }
+    }
+
+    match update_user_profile(&user_id, &form.into_inner(), &db).await {
+        Ok(_) => HttpResponse::Ok().json(json!({"message": "Profile updated successfully"})),
+        Err(e) => HttpResponse::InternalServerError().json(json!({"error": e.to_string()})),
+    }
+}
+pub async fn delete_account_handler(
+    email: web::Path<String>,
+    db: web::Data<Database>,
+) -> HttpResponse {
+    match delete_user(&email.into_inner(), &db).await {
+        Ok(_) => HttpResponse::Ok().json("Account deleted successfully"),
+        Err(_) => HttpResponse::InternalServerError().json("Failed to delete account"),
     }
 }

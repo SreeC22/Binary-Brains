@@ -32,7 +32,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin("http://localhost:3000")
-            .allowed_methods(vec!["GET", "POST"])
+            .allowed_methods(vec!["GET", "POST","PUT", "DELETE"])
             .allowed_headers(vec![actix_web::http::header::AUTHORIZATION, actix_web::http::header::ACCEPT, actix_web::http::header::CONTENT_TYPE])
             .max_age(3600);
 
@@ -42,7 +42,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(mongo_collection.clone()))
             .app_data(web::Data::new(oauth_config.clone()))
             .app_data(web::Data::new(feedback_collection.clone()))
-
+            
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
             .route("/oauth_callback", web::get().to(oauth_callback))
@@ -50,6 +50,10 @@ async fn main() -> std::io::Result<()> {
             .route("/logout", web::get().to(logout))
             .route("/api/user/profile", web::get().to(get_user_profile))
             .route("/submit_feedback", web::post().to(handlers::submit_feedback))
+            // Added routes for account management
+            .route("/api/user/change_password", web::post().to(change_password))
+            .route("/api/user/update_profile", web::put().to(update_user_profile))
+            .route("/api/user/delete", web::delete().to(delete_account))
 
 
     })

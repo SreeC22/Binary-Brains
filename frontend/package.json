@@ -19,6 +19,7 @@
     "framer-motion": "^11.0.8",
     "jest-webpack-resolver": "^0.3.0",
     "monaco-editor": "^0.44.0",
+    "node": "^21.7.1",
     "prism-react-renderer": "^2.3.1",
     "react": "^18.2.0",
     "react-ace": "^10.1.0",

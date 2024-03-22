@@ -1,5 +1,5 @@
-use mongodb::{bson::{doc, Document}, Client, Collection, options::ClientOptions, error::Result as MongoResult};
-use crate::models::{User, UserInfo, GitHubUserInfo, Feedback};
+use mongodb::{bson::{doc, Document}, Client, Database, Collection, options::ClientOptions, error::Result as MongoResult};
+use crate::models::{User, UserInfo, GitHubUserInfo, Feedback, UserProfileUpdateForm,  PasswordChangeForm};
 use std::env;
 use dotenv::dotenv;
 use mongodb::error::Error;
@@ -72,5 +72,41 @@ pub async fn init_feedback_collection() -> mongodb::error::Result<Collection<Fee
 // inserts feedback into the database
 pub async fn insert_feedback(db: &Collection<Feedback>, feedback: Feedback) -> mongodb::error::Result<()> {
     db.insert_one(feedback, None).await?;
+    Ok(())
+}
+
+pub async fn update_user_password(email: &str, new_hashed_password: &str) -> mongodb::error::Result<()> {
+    let user_collection = init_mongo().await?; // Assuming `init_mongo` returns a Collection<User>
+    user_collection.update_one(
+        doc! { "email": email },
+        doc! { "$set": { "password": new_hashed_password } },
+        None
+    ).await?;
+    Ok(())
+}
+
+pub async fn update_user_profile(user_id: &str, form: &UserProfileUpdateForm, db: &Database) -> mongodb::error::Result<()> {
+    let users_collection = db.collection::<User>("users");
+
+    let mut update_doc = doc! {};
+    if let Some(username) = &form.username {
+        update_doc.insert("username", username);
+    }
+    if let Some(email) = &form.email {
+        update_doc.insert("email", email);
+    }
+
+    users_collection.update_one(
+        doc! { "_id": user_id },
+        doc! { "$set": update_doc },
+        None
+    ).await?;
+
+    Ok(())
+}
+
+pub async fn delete_user(email: &str, db: &Database) -> mongodb::error::Result<()> {
+    let users_collection = db.collection::<User>("users");
+    users_collection.delete_one(doc! { "email": email }, None).await?;
     Ok(())
 }
