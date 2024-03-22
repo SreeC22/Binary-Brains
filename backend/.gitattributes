@@ -1,4 +1,4 @@
 *.psd filter=lfs diff=lfs merge=lfs -text
-backend/target/debug/deps/libreqwest-a148a9e945d69c41.rlib
-backend/target/debug/deps/libmongodb-5d4f1403b78931af.rlib is 144.15
-backend/target/debug/backend.pdb
+backend/target/debug/deps/libreqwest-a148a9e945d69c41.rlib filter=lfs diff=lfs merge=lfs -text
+backend/target/debug/deps/libmongodb-5d4f1403b78931af.rlib filter=lfs diff=lfs merge=lfs -text
+backend/target/debug/backend.pdb filter=lfs diff=lfs merge=lfs -text
