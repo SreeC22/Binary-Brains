@@ -70,10 +70,15 @@ const NavBar = () => {
       <Box display="flex" alignItems="center">
         {user ? (
           <>
-            <Button onClick={handleLogout} size="sm" mr="4" bg={darkerShade} color={buttonTextColor}>
-              Logout
-            </Button>
-            <span>Hi, {user.name || user.email}</span>
+            <Menu>
+              <MenuButton as={Button} rightIcon={<ChevronDownIcon />} bg={darkerShade} color={buttonTextColor}>
+                {user.name || user.email} {/* Display user's name or email */}
+              </MenuButton>
+              <MenuList>
+                <MenuItem as={RouterLink} to="/profile-settings">Profile Settings</MenuItem>
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              </MenuList>
+            </Menu>
           </>
         ) : (
           <RouterLink to="/login">

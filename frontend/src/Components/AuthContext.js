@@ -1,7 +1,7 @@
-// src/Components/AuthContext.js
+// src/components/AuthContext.js
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -9,50 +9,119 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const navigate = useNavigate(); // Use the useNavigate hook
+    const navigate = useNavigate();
 
-    const login = (userData, token) => {
-        // Assuming the userData and token are provided when this function is called
-        localStorage.setItem('token', token); // Store the token in localStorage
-        setUser(userData); // Update the user state
-        navigate('/'); // Redirect the user to the homepage
+    const login = async (userData, token) => {
+        localStorage.setItem('token', token);
+        setUser(userData);
+        navigate('/');
     };
 
     const logout = () => {
-        localStorage.removeItem('token'); // Remove the token from localStorage
-        setUser(null); // Clear the user state
-        navigate('/'); // Redirect to the login page
+        localStorage.removeItem('token');
+        setUser(null);
+        navigate('/login');
     };
 
-    const fetchUserData = async () => {
-        const token = localStorage.getItem('token');
-        if (token) {
+    // Fetch user data
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                logout();
+                return;
+            }
             try {
                 const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/profile`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                        'Authorization': `Bearer ${token}`,
+                    },
                 });
                 if (response.ok) {
                     const userData = await response.json();
-                    setUser(userData); // Set the user state with the fetched data
-                    navigate('/'); // Redirect to the homepage upon successful fetch
+                    setUser(userData);
                 } else {
-                    console.error("Failed to fetch user data");
-                    logout(); // Logout the user if fetch is unsuccessful
+                    logout();
                 }
             } catch (error) {
                 console.error("Error fetching user data:", error);
-                logout(); // Logout the user on error
+                logout();
             }
-        }
-    };
+        };
 
-    useEffect(() => {
         fetchUserData();
     }, []);
 
-    const value = { user, setUser, login, logout };
+    // Update user profile
+    const updateProfile = async (profileData) => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/update_profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(profileData),
+            });
+            if (response.ok) {
+                // Optionally, update the user state with new profile data
+                alert('Profile updated successfully');
+            } else {
+                alert('Failed to update profile');
+            }
+        } catch (error) {
+            console.error("Error updating profile:", error);
+        }
+    };
+
+    // Change user password
+    const changePassword = async (currentPassword, newPassword) => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/change_password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ currentPassword, newPassword }),
+            });
+            if (response.ok) {
+                alert('Password changed successfully. Please log in again.');
+                logout(); // Consider logging the user out after password change
+            } else {
+                alert('Failed to change password');
+            }
+        } catch (error) {
+            console.error("Error changing password:", error);
+        }
+    };
+
+    // Delete user account
+    const deleteAccount = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (response.ok) {
+                alert('Account deleted successfully');
+                logout(); // Log the user out and clear state
+            } else {
+                alert('Failed to delete account');
+            }
+        } catch (error) {
+            console.error("Error deleting account:", error);
+        }
+    };
+
+    const value = {
+        user, login, logout, updateProfile, changePassword, deleteAccount
+    };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
