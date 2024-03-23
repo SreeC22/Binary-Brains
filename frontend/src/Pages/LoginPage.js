@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Components/AuthContext'; 
 import {
   Box, Text, Button, VStack, Input, FormControl, FormLabel,
-  useColorModeValue, Switch, Divider, HStack, Link
+  useColorModeValue, Switch, Divider, HStack, Link, FormErrorMessage
 } from '@chakra-ui/react';
 import { useToast } from '@chakra-ui/react';
+
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
@@ -17,6 +19,12 @@ const LoginPage = () => {
   const [remember_me, setRememberMe] = useState(false);
   const toast = useToast();
 
+  const isEmailValid = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isPasswordValid = password => password.length >= 8; // Example validation
+  const doesPasswordMatch = () => isLogin || (password === confirmPassword);
+  const isFormValid = () => isEmailValid(email) && isPasswordValid(password) && doesPasswordMatch();
+  
+  
   const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
   const GITHUB_CLIENT_ID = process.env.REACT_APP_GITHUB_CLIENT_ID;
   const REDIRECT_URI = process.env.REACT_APP_BACKEND_URL + '/oauth_callback';
@@ -98,8 +106,8 @@ const LoginPage = () => {
   };
   
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" w="full" p={{ base: "6", md: "8", lg: "28" }} gap={{ base: "6", md: "8", lg: "20" }} bg={useColorModeValue('#fbf2e3', 'white')}>
-      <VStack spacing={4} w="full" maxW="md" p={8} boxShadow="lg" as="form" onSubmit={handleSubmit}>
+    <Box display="flex" flexDirection="column" alignItems="center" w="full" p={8} bg={useColorModeValue('gray.100', 'gray.700')}>
+      <VStack spacing={4} w="full" maxW="md" as="form" onSubmit={handleSubmit} boxShadow="xl" p="6" rounded="lg" bg={useColorModeValue('white', 'gray.800')}>
         <Text fontSize="2xl" fontWeight="bold">{isLogin ? 'Login' : 'Register'}</Text>
         {!isLogin && (
           <FormControl id="name" isRequired>
@@ -107,30 +115,38 @@ const LoginPage = () => {
             <Input type="text" value={name} onChange={(e) => setName(e.target.value)} />
           </FormControl>
         )}
-        <FormControl id="email" isRequired>
+        <FormControl id="email" isRequired isInvalid={!isEmailValid(email) && email.length > 0}>
           <FormLabel>Email</FormLabel>
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          {!isEmailValid(email) && email.length > 0 && <FormErrorMessage>Email is invalid.</FormErrorMessage>}
         </FormControl>
-        <FormControl id="password" isRequired>
+        <FormControl id="password" isRequired isInvalid={!isPasswordValid(password) && password.length > 0}>
           <FormLabel>Password</FormLabel>
           <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          {!isPasswordValid(password) && password.length > 0 && <FormErrorMessage>Password must be at least 8 characters.</FormErrorMessage>}
         </FormControl>
+        {!isLogin && (
+          <FormControl isRequired isInvalid={!doesPasswordMatch() && confirmPassword}>
+            <FormLabel>Confirm Password</FormLabel>
+            <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            {!doesPasswordMatch() && confirmPassword && <FormErrorMessage>Passwords must match.</FormErrorMessage>}
+          </FormControl>
+        )}
         <FormControl display="flex" alignItems="center">
           <FormLabel htmlFor="remember-me" mb="0">
             Remember Me
           </FormLabel>
           <Switch id="remember-me" isChecked={remember_me} onChange={(e) => setRememberMe(e.target.checked)} />
         </FormControl>
-
-        <Button type="submit" colorScheme="teal" w="full">{isLogin ? 'Login' : 'Register'}</Button>
-        <Switch isChecked={!isLogin} onChange={() => setIsLogin(!isLogin)} mt="4">Switch to {isLogin ? 'Register' : 'Login'}</Switch>
+        <Button type="submit" colorScheme="teal" w="full" isDisabled={!isFormValid()}>{isLogin ? 'Login' : 'Register'}</Button>
+        <Button mt="4" w="full" variant="outline" onClick={() => setIsLogin(!isLogin)}>{isLogin ? 'Register' : 'Login'}</Button>
       </VStack>
       <Divider my="6" />
       <VStack spacing="4">
         <Text>Or login with</Text>
         <HStack spacing="4">
-          <Button onClick={handleGoogleLogin} colorScheme="red">Login with Google</Button>
-          <Button onClick={handleGitHubLogin} colorScheme="blue">Login with GitHub</Button>
+          <Button onClick={handleGoogleLogin} colorScheme="red">Google</Button>
+          <Button onClick={handleGitHubLogin} colorScheme="blue">GitHub</Button>
         </HStack>
       </VStack>
       {isLogin && (
