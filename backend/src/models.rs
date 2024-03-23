@@ -69,9 +69,8 @@ pub struct BlacklistedToken {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub email: String,
-    pub exp: usize, // Ensure this is consistent with how you're handling timestamps
+    pub exp: i64, // Ensure this matches the type expected by the JWT library, which is typically i64 for Unix timestamps
 }
-
 
 #[derive(Deserialize)]
 pub struct LoginRequest {

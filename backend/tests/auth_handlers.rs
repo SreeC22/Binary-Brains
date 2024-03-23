@@ -1,6 +1,8 @@
 use reqwest::Client;
 use serde_json::{json, Value};
 use uuid::Uuid;
+use jsonwebtoken::{decode, DecodingKey, Validation};
+use std::env;
 
 // Registers a new user with the provided details
 async fn register_user(client: &Client, base_url: &str, user_data: &Value) -> reqwest::Response {
@@ -47,17 +49,24 @@ async fn test_user_registration_login_and_logout_flow() {
         "password": "testpassword",
     });
 
+    // Attempt to register a new user
     let register_response = register_user(&client, base_url, &user_data).await;
     assert_eq!(register_response.status().as_u16(), 200, "Failed to register user");
 
+    // Attempt to login
     let login_response = login_user(&client, base_url, &user_data["email"].as_str().unwrap(), "testpassword", false).await;
     assert_eq!(login_response.status().as_u16(), 200, "Failed to login user");
 
+    // Extract token from login response
     let login_response_body = login_response.json::<Value>().await.expect("Failed to parse login response");
     let token = login_response_body["token"].as_str().expect("Token missing in login response");
 
+    // Attempt to logout
     let logout_response = logout_user(&client, base_url, token).await;
-    assert_eq!(logout_response.status().as_u16(), 200, "Failed to logout user");
+    if logout_response.status().as_u16() != 200 {
+        let error_message = logout_response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+        panic!("Failed to logout user: {}", error_message);
+    }
 }
 
 #[tokio::test]
@@ -123,17 +132,22 @@ async fn test_feedback_submission_invalid_data() {
 
     assert_eq!(response.status().as_u16(), 400, "Expected failure due to invalid data");
 }
+use std::time::{SystemTime, UNIX_EPOCH};
+const REMEMBER_ME_DURATION: i64 = 30 * 24 * 60 * 60; // Example: 30 days in seconds
 
 #[tokio::test]
 async fn test_remember_me_functionality() {
-    let base_url = "http://127.0.0.1:8080";
+    dotenv::dotenv().ok();
     let client = Client::new();
-    // Test data for login with "remember_me" set to true
+    let base_url = "http://127.0.0.1:8080";
+    let email = format!("user_{}@example.com", Uuid::new_v4());
     let user_data = json!({
-        "email": "user@example.com",
+        "email": email,
         "password": "password",
         "remember_me": true,
     });
+
+    register_user(&client, base_url, &user_data).await;
 
     let login_response = client
         .post(format!("{}/login", base_url))
@@ -141,9 +155,28 @@ async fn test_remember_me_functionality() {
         .send()
         .await
         .expect("Failed to send login request");
-
     assert_eq!(login_response.status().as_u16(), 200, "Failed to login with remember_me");
+
+    let login_response_body = login_response.json::<Value>().await.expect("Failed to parse login response");
+    let token = login_response_body["token"].as_str().expect("Token missing in login response");
+
+    let secret_key = env::var("JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
+    let token_data = decode::<Value>(&token, &DecodingKey::from_secret(secret_key.as_ref()), &Validation::default())
+        .expect("Failed to decode token");
+    let exp_claim = token_data.claims.get("exp").and_then(|v| v.as_i64()).expect("Expiration claim missing");
+
+    let current_time = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards").as_secs() as i64;
+    let expected_expiration = current_time + REMEMBER_ME_DURATION;
+    let leeway = 60;
+
+    assert!(
+        exp_claim > expected_expiration - leeway && exp_claim <= expected_expiration + leeway,
+        "Token expiration not correctly extended for 'Remember Me' functionality. Expected expiration around {}, got {}.",
+        expected_expiration,
+        exp_claim
+    );
 }
+
 
 #[tokio::test]
 async fn test_login_with_invalid_email() {

@@ -105,30 +105,33 @@ pub async fn login(
 use chrono::{Duration, Utc};
 use crate::models::BlacklistedToken;
 use mongodb::Database;
-
+use mongodb::bson::Document;
 pub async fn logout(
-    db: web::Data<Database>,
+    db: web::Data<Collection<Document>>, // This is already a collection
     auth: BearerAuth,
 ) -> Result<HttpResponse, actix_web::Error> {
     let token = auth.token();
-
-    // Manually handle JWT error and convert it to actix_web::Error
-    let claims = decode_jwt(token)
-        .map_err(|_| ErrorUnauthorized("Invalid token"))?;
-
-    let blacklisted_token = BlacklistedToken {
-        token: token.to_string(),
-        expiry: (Utc::now() + Duration::weeks(2)).timestamp(),
+    let claims = match decode_jwt(token) {
+        Ok(claims) => claims,
+        Err(_) => return Err(actix_web::error::ErrorUnauthorized("Invalid token")),
     };
 
-    let blacklist_collection: Collection<BlacklistedToken> = db.collection("blacklisted_tokens");
-    blacklist_collection
-        .insert_one(blacklisted_token, None)
-        .await
-        .map_err(|_| ErrorInternalServerError("Could not insert token into blacklist"))?;
+    let blacklisted_token_doc = doc! {
+        "token": token.to_string(),
+        "expiry": (Utc::now() + Duration::weeks(2)).timestamp(),
+    };
 
-    Ok(HttpResponse::Ok().json("Logged out successfully"))
+    // Directly use `db` to insert the document
+    match db.insert_one(blacklisted_token_doc, None).await {
+        Ok(_) => Ok(HttpResponse::Ok().json("Logged out successfully")),
+        Err(e) => {
+            eprintln!("Could not insert token into blacklist: {}", e);
+            Err(actix_web::error::ErrorInternalServerError("Could not insert token into blacklist"))
+        },
+    }
 }
+
+
 
 // register user
 pub async fn register(
