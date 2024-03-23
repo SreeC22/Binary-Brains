@@ -12,17 +12,22 @@ mod tests {
     async fn test_get_feedback() {
         // Initialize a test MongoDB database
         let db = initialize_test_database().await;
-
+    
         // Make a GET request to retrieve feedback
         let req = test::TestRequest::get().uri("/feedback").to_request();
         let resp = test::call_service(&mut test_app_with_db(db.clone()), req).await;
         
         // Assert response status code
         assert_eq!(resp.status(), StatusCode::OK);
-
+    
+        // Convert the response body to a Vec<u8>
+        let body = test::read_body(resp).await.to_vec();
+    
+        // Convert the Vec<u8> to a String
+        let body_str = String::from_utf8(body).unwrap();
+    
         // Assert response body contains expected data
-        let body = test::read_body(resp).await;
-        assert!(String::from_utf8(body).unwrap().contains("expected feedback data"));
+        assert!(body_str.contains("expected feedback data"));
     }
 
     #[actix_rt::test]
@@ -69,6 +74,6 @@ mod tests {
     }
 
     fn test_app_with_db(db: Database) -> App {
-        App::new().data(db)
+        App::new().app_data(Data::new(val))
     }
 }
