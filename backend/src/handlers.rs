@@ -4,13 +4,11 @@ use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
 use crate::models::Feedback;
 use actix_web::get;
-use futures_util::stream::TryStreamExt;
 use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError};
 use bcrypt::{hash, DEFAULT_COST, verify};
 use mongodb::{Collection, bson::doc};
 use serde_json::json;
 use std::collections::HashMap;
-use mongodb::bson;
 use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery};
 
 
@@ -243,7 +241,7 @@ use crate::db::insert_feedback;
 pub mod feedback {
     use super::*;
     use futures_util::stream::TryStreamExt;
-    use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError};
+    use actix_web::{web, HttpResponse, Responder};
     use mongodb::{Collection};
 
     #[get("/feedback")]
@@ -259,7 +257,6 @@ pub mod feedback {
         // Iterate over the cursor to fetch feedback data
         while let Some(result) = TryStreamExt::try_next(&mut cursor).await.expect("Failed to iterate cursor") {
             // Access fields directly from Feedback struct
-            let id = result.id;
             let phoneNumber = result.phoneNumber;
             let rating = result.rating;
             let email = result.email;

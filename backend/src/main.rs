@@ -7,10 +7,8 @@ mod models;
 mod handlers;
 mod db;
 mod auth;
-use handlers::feedback::get_feedback; // Import the `get_feedback` function
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile};
 use crate::db::init_mongo;
-use crate::models::Feedback;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
