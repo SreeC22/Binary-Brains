@@ -13,6 +13,7 @@ import FAQsPage from './Pages/FAQsPage';
 import AboutUS from './Pages/AboutUsPage';
 import Contactus from './Pages/ContactUs';
 import TranslateCode from './Pages/TranslateCode';
+import HelpPage from './Pages/HelpPage';
 import { ColorModeProvider } from "./Pages/ColorModeContext";
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
             <Route path="/AboutUs" element={<AboutUS />} />
             <Route path="/ContactUs" element={<Contactus />} />
             <Route path="/translate" element={<TranslateCode />} />
+            <Route path="/help" element={<HelpPage />} />
           </Routes>
         </AuthProvider>
 
