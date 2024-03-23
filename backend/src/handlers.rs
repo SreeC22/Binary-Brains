@@ -3,13 +3,16 @@ use crate::db::get_user_by_email;
 use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
 
-use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError};
+use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode};
+use actix_web_httpauth::headers::authorization::Authorization;
+use actix_web::error::{ErrorUnauthorized};
+
 use bcrypt::{hash, DEFAULT_COST, verify};
 use mongodb::{Collection, bson::doc};
-use serde_json::json;
 use std::collections::HashMap;
 use mongodb::bson;
-use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery};
+use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery, LoginRequest};
+use serde_json::json;
 
 
 use actix_web_httpauth::extractors::bearer::BearerAuth;
@@ -57,10 +60,8 @@ pub async fn github_oauth_callback(
 ) -> impl Responder {
     match exchange_code_for_github_token(&query.code, &oauth_config).await {
         Ok(token_response) => {
-            // Correctly fetch GitHubUserInfo from the token response
             match fetch_github_user_info(&token_response.access_token).await {
                 Ok(github_user_info) => {
-                    // Now github_user_info is correctly defined and available
                     match find_or_create_user_by_github_id(&db, &github_user_info).await {
                         Ok(user) => HttpResponse::Ok().json(user),
                         Err(_) => HttpResponse::InternalServerError().finish(),
@@ -76,47 +77,62 @@ pub async fn github_oauth_callback(
 
 // login user
 pub async fn login(
-    credentials: web::Json<User>,
+    credentials: web::Json<LoginRequest>,
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
-    let user_info = credentials.into_inner();
+    let login_request = credentials.into_inner();
 
-    if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &user_info.email}, None).await {
+    if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
         if let Some(db_password) = &existing_user.password {
-            if let Some(login_password) = &user_info.password {
-                if verify(login_password, db_password).is_ok() {
-                    // Generate a token for the user
-                    let token = generate_jwt(&existing_user.email).unwrap(); // Handle error appropriately
-
-                    // Return both the token and user data (simplified version for demonstration)
-                    return HttpResponse::Ok().json(json!({
-                        "message": "Login successful",
-                        "token": token,
-                        "user": {
-                            "email": existing_user.email,
-                            // Include other user fields as necessary
-                        }
-                    }));
-                }
+            if verify(&login_request.password, db_password).is_ok() {
+                // Here, ensure login_request.remember_me is correctly used
+                let token = generate_jwt(&existing_user.email, login_request.remember_me).unwrap();
+                return HttpResponse::Ok().json(json!({
+                    "message": "Login successful",
+                    "token": token,
+                    "user": {
+                        "email": existing_user.email,
+                    }
+                }));
             }
         }
+        
     }
 
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
 }
 
+use chrono::{Duration, Utc};
+use crate::models::BlacklistedToken;
+use mongodb::Database;
 
 pub async fn logout(
-    // Removed the unused `req: web::HttpRequest` parameter for simplicity
-) -> impl Responder {
-    // Since there's no session or token invalidation logic implemented yet,
-    // this endpoint simply returns a success message.
-    // In a real-world scenario, you would invalidate the user's session or token here.
-    HttpResponse::Ok().json(json!({"message": "Logged out successfully"}))
+    db: web::Data<Database>,
+    auth: BearerAuth,
+) -> Result<HttpResponse, actix_web::Error> {
+    let token = auth.token();
+
+    // Manually handle JWT error and convert it to actix_web::Error
+    let claims = decode_jwt(token)
+        .map_err(|_| ErrorUnauthorized("Invalid token"))?;
+
+    let blacklisted_token = BlacklistedToken {
+        token: token.to_string(),
+        expiry: (Utc::now() + Duration::weeks(2)).timestamp(),
+    };
+
+    let blacklist_collection: Collection<BlacklistedToken> = db.collection("blacklisted_tokens");
+    blacklist_collection
+        .insert_one(blacklisted_token, None)
+        .await
+        .map_err(|_| ErrorInternalServerError("Could not insert token into blacklist"))?;
+
+    Ok(HttpResponse::Ok().json("Logged out successfully"))
 }
+
 // register user
 pub async fn register(
-    credentials: web::Json<User>,
+    credentials: web::Json<User>, 
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
     let user_info = credentials.into_inner();
@@ -125,37 +141,36 @@ pub async fn register(
         return HttpResponse::Conflict().json(json!({"message": "User already exists"}));
     }
 
-    if let Some(password) = user_info.password {
-        let hashed_password = match hash(&password, DEFAULT_COST) {
-            Ok(hashed) => Some(hashed),
+    if let Some(password) = &user_info.password {
+        let hashed_password = match hash(password, DEFAULT_COST) {
+            Ok(h) => h,
             Err(e) => {
                 eprintln!("Error hashing password: {}", e);
                 return HttpResponse::InternalServerError().finish();
-            }
+            },
         };
 
         let new_user = User {
             id: None,
             username: user_info.username,
             email: user_info.email.clone(),
-            password: hashed_password,
+            password: Some(hashed_password),
             google_id: None,
             github_id: None,
         };
 
         match db.insert_one(new_user.clone(), None).await {
-            Ok(_) => {
-                HttpResponse::Ok().json(json!({"message": "User registered successfully", "user": new_user}))
-            }
+            Ok(_) => HttpResponse::Ok().json(json!({"message": "User registered successfully", "user": new_user})),
             Err(e) => {
                 eprintln!("Failed to register user: {}", e);
-                HttpResponse::InternalServerError().finish()
+                return HttpResponse::InternalServerError().finish();
             }
         }
     } else {
-        HttpResponse::BadRequest().json(json!({"message": "Password is required"}))
+        return HttpResponse::BadRequest().json(json!({"message": "Password is required"}));
     }
 }
+
 
 // exchange google code for token
 async fn exchange_code_for_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::error::Error> {

@@ -10,7 +10,7 @@ pub async fn test_gpt3_api() -> Result<(), Box<dyn std::error::Error>> {
     headers.insert(AUTHORIZATION, format!("Bearer {}", api_key).parse().unwrap());
 
     let payload = json!({
-        "model": "text-davinci-003",
+        "model": "gpt-3.5-turbo",
         "prompt": "The following is a list of interesting facts about the moon:",
         "temperature": 0.5,
         "max_tokens": 60

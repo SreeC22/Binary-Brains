@@ -11,46 +11,49 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate(); // Use the useNavigate hook
 
-    const login = (userData, token) => {
-        // Assuming the userData and token are provided when this function is called
-        localStorage.setItem('token', token); // Store the token in localStorage
-        setUser(userData); // Update the user state
-        navigate('/'); // Redirect the user to the homepage
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token'); // Remove the token from localStorage
-        setUser(null); // Clear the user state
-        navigate('/'); // Redirect to the login page
-    };
-
-    const fetchUserData = async () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                if (response.ok) {
-                    const userData = await response.json();
-                    setUser(userData); // Set the user state with the fetched data
-                    navigate('/'); // Redirect to the homepage upon successful fetch
-                } else {
-                    console.error("Failed to fetch user data");
-                    logout(); // Logout the user if fetch is unsuccessful
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-                logout(); // Logout the user on error
-            }
+    const login = (userData, token, remember_me) => {
+        if (remember_me) {
+          localStorage.setItem('token', token);
+        } else {
+          sessionStorage.setItem('token', token);
         }
-    };
+        setUser(userData);
+        navigate('/');
+      };
+      
+      const logout = () => {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        setUser(null);
+        navigate('/login');
+      };
 
-    useEffect(() => {
+      const fetchUserData = async () => {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (token) {
+          try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/user/profile`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            });
+            if (response.ok) {
+              const userData = await response.json();
+              setUser(userData);
+            } else {
+              logout();
+            }
+          } catch (error) {
+            console.error("Error fetching user data:", error);
+            logout();
+          }
+        }
+      };
+
+      useEffect(() => {
         fetchUserData();
-    }, []);
+      }, []);
+      
 
     const value = { user, setUser, login, logout };
 

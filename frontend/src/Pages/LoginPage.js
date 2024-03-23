@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../Components/AuthContext'; // Adjust the path as necessary
+import { useAuth } from '../Components/AuthContext'; 
 import {
   Box, Text, Button, VStack, Input, FormControl, FormLabel,
   useColorModeValue, Switch, Divider, HStack, Link
 } from '@chakra-ui/react';
+import { useToast } from '@chakra-ui/react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +14,8 @@ const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
   const { setUser } = useAuth();
+  const [remember_me, setRememberMe] = useState(false);
+  const toast = useToast();
 
   const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
   const GITHUB_CLIENT_ID = process.env.REACT_APP_GITHUB_CLIENT_ID;
@@ -39,29 +42,61 @@ const LoginPage = () => {
       email,
       password,
       ...(isLogin ? {} : { name }),
+      remember_me, 
     };
-
+  
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
+  
+      const data = await response.json();
+  
       if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
+        if (remember_me) {
+          localStorage.setItem('token', data.token);
+        } else {
+          sessionStorage.setItem('token', data.token);
+        }
         setUser(data.user);
+        toast({
+          title: "Login successful.",
+          description: "You have successfully logged in.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
         navigate('/');
+      } else if (response.status === 409) {
+        toast({
+          title: "Account exists.",
+          description: "An account with this email already exists. Please login.",
+          status: "warning",
+          duration: 9000,
+          isClosable: true,
+        });
       } else {
-        const errorData = await response.json();
-        alert(`Authentication failed: ${errorData.message}`);
+        toast({
+          title: "Authentication failed.",
+          description: data.message || "Please check your credentials.",
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+        });
       }
     } catch (error) {
-      alert('An error occurred. Please try again later.');
+      toast({
+        title: "An error occurred.",
+        description: "Unable to login, please try again later.",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
     }
   };
-
+  
   return (
     <Box display="flex" flexDirection="column" alignItems="center" w="full" p={{ base: "6", md: "8", lg: "28" }} gap={{ base: "6", md: "8", lg: "20" }} bg={useColorModeValue('#fbf2e3', 'white')}>
       <VStack spacing={4} w="full" maxW="md" p={8} boxShadow="lg" as="form" onSubmit={handleSubmit}>
@@ -80,6 +115,13 @@ const LoginPage = () => {
           <FormLabel>Password</FormLabel>
           <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </FormControl>
+        <FormControl display="flex" alignItems="center">
+          <FormLabel htmlFor="remember-me" mb="0">
+            Remember Me
+          </FormLabel>
+          <Switch id="remember-me" isChecked={remember_me} onChange={(e) => setRememberMe(e.target.checked)} />
+        </FormControl>
+
         <Button type="submit" colorScheme="teal" w="full">{isLogin ? 'Login' : 'Register'}</Button>
         <Switch isChecked={!isLogin} onChange={() => setIsLogin(!isLogin)} mt="4">Switch to {isLogin ? 'Register' : 'Login'}</Switch>
       </VStack>
