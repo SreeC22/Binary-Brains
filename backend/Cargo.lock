@@ -313,6 +313,7 @@ dependencies = [
  "actix-cors",
  "actix-web",
  "actix-web-httpauth",
+ "async-trait",
  "bcrypt",
  "dotenv",
  "env_logger",
