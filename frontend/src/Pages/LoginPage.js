@@ -121,17 +121,32 @@ const LoginPage = () => {
           {!isEmailValid(email) && email.length > 0 && <FormErrorMessage>Email is invalid.</FormErrorMessage>}
         </FormControl>
         <FormControl id="password" isRequired isInvalid={!isPasswordValid(password) && password.length > 0}>
-          <FormLabel>Password</FormLabel>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          {!isPasswordValid(password) && password.length > 0 && <FormErrorMessage>Password must be at least 8 characters.</FormErrorMessage>}
-        </FormControl>
-        {!isLogin && (
-          <FormControl isRequired isInvalid={!doesPasswordMatch() && confirmPassword}>
-            <FormLabel>Confirm Password</FormLabel>
-            <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-            {!doesPasswordMatch() && confirmPassword && <FormErrorMessage>Passwords must match.</FormErrorMessage>}
-          </FormControl>
-        )}
+        <FormLabel>Password</FormLabel>
+<Input
+  data-testid="passwordInput" // Add this line for test ID
+  type="password"
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+  placeholder="Your password"
+/>
+{!isPasswordValid(password) && password.length > 0 && <FormErrorMessage>Password must be at least 8 characters.</FormErrorMessage>}
+</FormControl>
+
+{!isLogin && (
+  <FormControl isRequired isInvalid={!doesPasswordMatch() && confirmPassword.length > 0}> {/* Make sure to check confirmPassword.length to avoid invalid error before user types */}
+    <FormLabel>Confirm Password</FormLabel>
+    <Input
+      data-testid="confirmPasswordInput" // Add this line for test ID
+      type="password"
+      value={confirmPassword}
+      onChange={(e) => setConfirmPassword(e.target.value)}
+      placeholder="Confirm your password"
+    />
+    {!doesPasswordMatch() && confirmPassword.length > 0 && <FormErrorMessage>Passwords must match.</FormErrorMessage>} {/* Updated condition */}
+  </FormControl>
+)}
+
+
         <FormControl display="flex" alignItems="center">
           <FormLabel htmlFor="remember-me" mb="0">
             Remember Me
