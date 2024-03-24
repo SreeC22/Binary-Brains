@@ -4,11 +4,9 @@ import { AuthProvider } from './Components/AuthContext'; // Ensure this path is 
 import './App.css';
 import NavBar from './Components/NavBar';
 import HomePage from './Pages/HomePage';
-import CodeConvertPage from './Pages/CodeConvertPage';
 import FeedbackPage from './Pages/FeedbackPage/FeedbackPage';
 import LoginPage from './Pages/LoginPage';
-import DocumentationPage from './Pages/DocumentationPage';
-import TutorialPage from './Pages/TutorialPage';
+import DocumentationPage from './Pages/DocumentationPage'
 import FAQsPage from './Pages/FAQsPage';
 import AboutUS from './Pages/AboutUsPage';
 import Contactus from './Pages/ContactUs';

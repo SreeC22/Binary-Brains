@@ -51,8 +51,7 @@ const NavBar = () => {
         </RouterLink>
       </Box>
       <Box display="flex" alignItems="center">
-        <RouterLink to="/translate" style={{ marginRight: '20px', color: 'inherit' }}>Translate Code</RouterLink>
-        <RouterLink to="/code-conversion" style={{ marginRight: '20px', color: 'inherit' }}>Code Conversion</RouterLink>
+        <RouterLink to="/translate" style={{ marginRight: '20px', color: 'inherit' }}>Translate Code</RouterLink>        
         <RouterLink to="/feedback" style={{ marginRight: '20px', color: 'inherit' }}>Feedback</RouterLink>
 
         <Menu>
@@ -61,7 +60,6 @@ const NavBar = () => {
           </MenuButton>
           <MenuList>
             <MenuItem as={RouterLink} to="/documentation">Documentation</MenuItem>
-            <MenuItem as={RouterLink} to="/tutorial">Tutorial</MenuItem>
             <MenuItem as={RouterLink} to="/faqs">FAQ's</MenuItem>
             <MenuItem as={RouterLink} to="/contactus">Contact Us</MenuItem>
           </MenuList>
