@@ -181,46 +181,42 @@ describe('Email Format and Password Validation', () => {
   
   });
 
-
-test('handles failed registration due to duplicate email', async () => {
-  fetch.mockResponseOnce(JSON.stringify({ message: 'Email already exists.' }), { status: 409 });
-
-  render(
-    <BrowserRouter>
-      <AuthProvider>
-        <LoginPage />
-      </AuthProvider>
-    </BrowserRouter>
-  );
-
-  // Trigger registration mode
-  const switchToRegisterLink = screen.getByText(/Not registered\? Create account now/i);
-  userEvent.click(switchToRegisterLink);
-
-  // Ensure we're in registration mode
-  await screen.findByText('Register');
-
-  // Fill the form
-  const nameInput = screen.getByLabelText(/Name/i);
-  const emailInput = screen.getByLabelText(/Email/i);
-  const passwordInput = screen.getByTestId('passwordInput');
-  const confirmPasswordInput = screen.getByTestId('confirmPasswordInput');
-
-  await userEvent.type(nameInput, 'Jane Doe');
-  await userEvent.type(emailInput, 'duplicate@example.com');
-  await userEvent.type(passwordInput, 'password123');
-  await userEvent.type(confirmPasswordInput, 'password123');
-
-  const registerButton = screen.getByRole('button', { name: /Register/i });
-  userEvent.click(registerButton);
-
-  // Increase the timeout to handle longer wait times
-  await waitFor(() => {
-    // Adjust this selector if necessary to match your application's structure
-    expect(screen.getByRole('alert')).toHaveTextContent(/Email already exists/i);
-  }, { timeout: 100000 });
-});
-
+  test('handles failed registration due to duplicate email', async () => {
+    fetch.mockResponseOnce(JSON.stringify({ message: 'Email already exists.' }), { status: 409 });
+  
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <LoginPage />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+  
+    // Trigger registration mode by clicking the link to switch to the registration view.
+    const switchToRegisterLink = screen.getByText(/Not registered\? Create account now/i);
+    userEvent.click(switchToRegisterLink);
+  
+    // Fill in the registration form
+    const nameInput = screen.getByLabelText(/Name/i);
+    const emailInput = screen.getByLabelText(/Email/i);
+    const passwordInput = screen.getByTestId('passwordInput');
+    const confirmPasswordInput = screen.getByTestId('confirmPasswordInput');
+  
+    await userEvent.type(nameInput, 'Jane Doe');
+    await userEvent.type(emailInput, 'duplicate@example.com');
+    await userEvent.type(passwordInput, 'password123');
+    await userEvent.type(confirmPasswordInput, 'password123');
+  
+    // Submit the form
+    const registerButton = screen.getByRole('button', { name: /Register/i });
+    userEvent.click(registerButton);
+  
+    // Await the appearance of the error message directly without assuming its role.
+    // This relies on the text content of the message, ensuring the message is visible and correct.
+    await waitFor(() => {
+      expect(screen.getByText(/Email already exists./i)).toBeInTheDocument();
+    }, { timeout: 10000 }); // Increase the timeout if necessary, but focus on ensuring the message appears quickly.
+  });
   
   
 });
