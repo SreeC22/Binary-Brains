@@ -6,8 +6,13 @@ import NavBar from './Components/NavBar';
 import HomePage from './Pages/HomePage';
 import FeedbackPage from './Pages/FeedbackPage/FeedbackPage';
 import LoginPage from './Pages/LoginPage';
+<<<<<<< HEAD
 import DocumentationPage from './Pages/DocumentationPage'
 import FAQsPage from './Pages/FAQsPage';
+=======
+import DocumentationPage from './Pages/DocumentationPage';
+import FAQsPage from './Pages/FaqsPage/FAQsPage';
+>>>>>>> 3c80c3f9b28485f404b1d0774f904192e4935848
 import AboutUS from './Pages/AboutUsPage';
 import Contactus from './Pages/ContactUs';
 import TranslateCode from './Pages/TranslateCode';
@@ -23,10 +28,8 @@ function App() {
           <NavBar /> {/* This will be displayed on every page */}
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/code-conversion" element={<CodeConvertPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
             <Route path="/documentation" element={<DocumentationPage />} />
-            <Route path="/tutorial" element={<TutorialPage />} />
             <Route path="/faqs" element={<FAQsPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/AboutUs" element={<AboutUS />} />
