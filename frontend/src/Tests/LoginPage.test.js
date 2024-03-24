@@ -184,9 +184,6 @@ describe('Email Format and Password Validation', () => {
   beforeEach(() => {
     fetch.resetMocks();
   });
-  
 
-  
-  
 
 });
