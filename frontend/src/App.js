@@ -4,7 +4,7 @@ import { AuthProvider } from './Components/AuthContext'; // Ensure this path is 
 import './App.css';
 import NavBar from './Components/NavBar';
 import HomePage from './Pages/HomePage';
-import CodeConvertPage from './Pages/CodeConvertPage';
+// import CodeConvertPage from './Pages/CodeConvertPage';
 import FeedbackPage from './Pages/FeedbackPage/FeedbackPage';
 import LoginPage from './Pages/LoginPage';
 import DocumentationPage from './Pages/DocumentationPage';
@@ -25,7 +25,7 @@ function App() {
           <NavBar /> {/* This will be displayed on every page */}
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/code-conversion" element={<CodeConvertPage />} />
+            {/* <Route path="/code-conversion" element={<CodeConvertPage />} /> */}
             <Route path="/feedback" element={<FeedbackPage />} />
             <Route path="/documentation" element={<DocumentationPage />} />
             <Route path="/tutorial" element={<TutorialPage />} />
