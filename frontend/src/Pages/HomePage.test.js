@@ -28,15 +28,15 @@ describe('HomePage Component', () => {
     //expect(screen.getByText(/FAQs/i)).toBeInTheDocument();
   });
 
-//   test('navigation buttons trigger navigation', () => {
-//     setup();
+  //   test('navigation buttons trigger navigation', () => {
+  //     setup();
 
-//     // Example test for navigation button
-//     const getStartedButton = screen.getByText(/Get Started/i);
-//     expect(getStartedButton).toBeInTheDocument();
-//     // Note: Actual navigation testing might require more setup or a different approach,
-//     // as this test just ensures the button is present.
-//   });
+  //     // Example test for navigation button
+  //     const getStartedButton = screen.getByText(/Get Started/i);
+  //     expect(getStartedButton).toBeInTheDocument();
+  //     // Note: Actual navigation testing might require more setup or a different approach,
+  //     // as this test just ensures the button is present.
+  //   });
 
   test('renders responsive elements for different screen sizes', () => {
     // Example of responsiveness test, focusing on conditional rendering or layout changes
