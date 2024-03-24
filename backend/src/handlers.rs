@@ -11,7 +11,7 @@ use serde_json::json;
 use std::collections::HashMap;
 use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery};
 
-
+use serde::Deserialize;
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
@@ -288,3 +288,80 @@ pub async fn submit_feedback(
         },
     }
 }
+
+//gpt3 connection
+use reqwest::header::{HeaderMap, AUTHORIZATION};
+use std::env;
+pub async fn test_gpt3_endpoint() -> impl Responder {
+    let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
+    let client = reqwest::Client::new();
+    let mut headers = HeaderMap::new();
+    headers.insert(AUTHORIZATION, format!("Bearer {}", api_key).parse().unwrap());
+
+    // Structuring payload for chat-based interaction
+    let payload = json!({
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {"role": "user", "content": "Write a factorial function in Rust language."},
+            {"role": "system", "content": ""}
+        ]
+    }
+    );
+
+    // Using the chat completion endpoint
+    let response = client
+        .post("https://api.openai.com/v1/chat/completions")
+        .headers(headers)
+        .json(&payload)
+        .send()
+        .await;
+
+    match response {
+        Ok(resp) => {
+            let status = resp.status();
+            match resp.text().await {
+                Ok(body) => {
+                    if status.is_success() {
+                        HttpResponse::Ok().content_type("application/json").body(body)
+                    } else {
+                        eprintln!("GPT-3 API Error: {}", &body);
+                        HttpResponse::BadRequest().json("Failed to call GPT-3 API")
+                    }
+                },
+                Err(_) => HttpResponse::InternalServerError().json("Failed to read response body"),
+            }
+        },
+        Err(e) => {
+        eprintln!("HTTP Client Error: {}", e);
+        HttpResponse::InternalServerError().json("Internal server error")
+        }
+    }      
+}
+//use crate::gpt3;
+// use serde::Deserialize;
+use crate::models::CodeTranslationRequest;
+
+pub async fn translate_code_endpoint(
+    translation_request: web::Json<CodeTranslationRequest>,
+) -> impl Responder {
+    let api_key = match env::var("GPT3_API_KEY") {
+        Ok(key) => key,
+        Err(_) => return HttpResponse::InternalServerError().json("GPT3_API_KEY not set in environment"),
+    };
+
+    let translation_prompt = format!(
+        "Translate the following code to {}:\n{}",
+        translation_request.target_language, translation_request.source_code
+    );
+
+    // Assuming you have a function similar to test_gpt3_api that accepts a prompt
+    // and returns the completion result. You might need to adjust this part.
+    match crate::gpt3::translate_code(&translation_prompt, &api_key).await {
+        Ok(translated_code) => HttpResponse::Ok().json(translated_code),
+        Err(e) => {
+            eprintln!("Failed to translate code: {}", e);
+            HttpResponse::InternalServerError().json("Failed to translate code")
+        },
+    }
+}
+
