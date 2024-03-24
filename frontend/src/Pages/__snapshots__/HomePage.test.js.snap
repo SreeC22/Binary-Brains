@@ -1,0 +1,966 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HomePage matches snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="HOMEPAGE css-1e7zb3"
+  >
+    <div
+      class="Transform Your Code with Ease css-1vcb9wj"
+    >
+      <div
+        class="chakra-stack css-1qdjfg3"
+      >
+        <p
+          class="chakra-text css-19j6h1j"
+        >
+          Transform Your Code with Ease and Efficiency
+        </p>
+        <p
+          class="chakra-text css-18vffro"
+        >
+          Welcome to our Code Translation and Conversion Tool. Simplify the process of converting code between different languages and improve your development workflow.
+        </p>
+        <div
+          class="css-rorvu2"
+        >
+          <button
+            class="chakra-button css-1hx9h80"
+            type="button"
+          >
+            Get Started
+          </button>
+          <button
+            class="chakra-button css-jl080u"
+            type="button"
+          >
+            Learn More
+          </button>
+        </div>
+      </div>
+    </div>
+    <hr
+      aria-orientation="horizontal"
+      class="chakra-divider css-v2hj1"
+    />
+    <div
+      class="page 2 css-k5u39z"
+    >
+      <div
+        class="css-f8gwcu"
+      >
+        <div
+          class="chakra-stack css-1dxmxy7"
+        >
+          <h2
+            class="chakra-heading css-x80imt"
+          >
+            Experience seamless code translation with our user-friendly interface.
+          </h2>
+          <p
+            class="chakra-text css-19kvcnr"
+          >
+            Our tool provides a simple and intuitive interface for easy code submission and translation output.
+          </p>
+        </div>
+        <div
+          class="css-1p3ha7u"
+        >
+          <img
+            class="chakra-image css-15fxz3h"
+            src="Code Translation.png"
+          />
+        </div>
+      </div>
+    </div>
+    <hr
+      aria-orientation="horizontal"
+      class="chakra-divider css-v2hj1"
+    />
+    <div
+      class="Get Started with Our Code Translation  css-2ifxoi"
+    >
+      <div
+        class="css-1bwvadd"
+      >
+        <img
+          class="chakra-image css-1bsc7s5"
+          src="layout4plcholder.webp"
+        />
+        <div
+          class="chakra-stack css-wvo0ag"
+        >
+          <div
+            class="chakra-stack css-1jjc9ms"
+          >
+            <p
+              class="chakra-text css-cfcngp"
+            >
+              Simplified
+            </p>
+            <div
+              class="chakra-stack css-1rfq7px"
+            >
+              <h2
+                class="chakra-heading css-1rjvl2f"
+              >
+                Get Started with Our Code Translation Tool
+              </h2>
+              <p
+                class="chakra-text css-468tiq"
+              >
+                Our quick start guide will help you efficiently use our code translation tool. Simply follow these steps:
+              </p>
+            </div>
+          </div>
+          <div
+            class="chakra-stack css-1gi5cyu"
+          >
+            <div
+              class="chakra-stack css-1jjc9ms"
+            >
+              <p
+                class="chakra-text css-canuzn"
+              >
+                Step 1
+              </p>
+              <p
+                class="chakra-text css-468tiq"
+              >
+                Submit your code in the desired programming language.
+              </p>
+            </div>
+            <div
+              class="chakra-stack css-1jjc9ms"
+            >
+              <p
+                class="chakra-text css-canuzn"
+              >
+                Step 2
+              </p>
+              <p
+                class="chakra-text css-468tiq"
+              >
+                Receive the translated code with enhanced readability features.
+              </p>
+            </div>
+          </div>
+          <div
+            class="chakra-stack css-16juyj2"
+          >
+            <button
+              class="chakra-button css-jl080u"
+              type="button"
+            >
+              Learn More About our Team
+              <span
+                class="chakra-button__icon css-1hzyiq5"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="chakra-icon css-onkibi"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+            </button>
+            <button
+              class="chakra-button css-ydp89"
+              type="button"
+            >
+              Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr
+      aria-orientation="horizontal"
+      class="chakra-divider css-v2hj1"
+    />
+    <div
+      class="Save time and improve accuracy css-qp49tx"
+    >
+      <div
+        class="css-15dlq2v"
+      >
+        <img
+          class="chakra-image css-fhb3ir"
+          src="image 6.png"
+        />
+        <div
+          class="css-4g9au"
+        >
+          <h2
+            class="chakra-heading css-1ej1mkj"
+          >
+            Save time and improve accuracy with our powerful code translation and conversion tool
+          </h2>
+          <p
+            class="chakra-text css-k604j3"
+          >
+            Our tool simplifies the process of translating and converting code, making it faster and more precise. Say goodbye to manual conversions and hello to efficiency.
+          </p>
+          <ul
+            class="css-ry6bnp"
+            role="list"
+          >
+            <li
+              class="css-171onha"
+            >
+              <svg
+                class="chakra-icon chakra-icon css-16alosh"
+                focusable="false"
+                role="presentation"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <p
+                class="chakra-text css-b9m939"
+              >
+                Streamline your coding workflow with automated translations
+              </p>
+            </li>
+            <li
+              class="css-171onha"
+            >
+              <svg
+                class="chakra-icon chakra-icon css-16alosh"
+                focusable="false"
+                role="presentation"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <p
+                class="chakra-text css-b9m939"
+              >
+                Ensure code accuracy with our reliable conversion tool
+              </p>
+            </li>
+            <li
+              class="css-171onha"
+            >
+              <svg
+                class="chakra-icon chakra-icon css-16alosh"
+                focusable="false"
+                role="presentation"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <p
+                class="chakra-text css-b9m939"
+              >
+                Effortlessly convert code between different programming languages
+              </p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <hr
+      aria-orientation="horizontal"
+      class="chakra-divider css-v2hj1"
+    />
+    <div
+      class="Support for multiple programming css-1gg1bsj"
+    >
+      <h2
+        class="chakra-heading css-e6qhkq"
+      >
+        Support for multiple programming languages and frameworks
+      </h2>
+      <div
+        class="css-igs0tx"
+      >
+        <div
+          class="css-1gvp5h0"
+        >
+          <div
+            class="chakra-stack css-1gmzflo"
+          >
+            <div
+              class="css-1cumjw"
+            >
+              <img
+                class="chakra-image css-1cylqiy"
+                src="logos1.png"
+              />
+            </div>
+            <div
+              class="css-4oqe9z"
+            >
+              <h2
+                class="chakra-heading css-13wn225"
+              >
+                Efficient code conversion and translation capabilities
+              </h2>
+              <p
+                class="chakra-text css-oypibn"
+              >
+                Check out our Translate Code Page to check the differnt languages available to translate
+              </p>
+            </div>
+            <div
+              class="css-1b3s0fz"
+            >
+              <a
+                href="/translate"
+                style="text-decoration: none;"
+              >
+                <button
+                  class="chakra-button css-4xx2wk"
+                  type="button"
+                >
+                  Code Translate Page
+                  <span
+                    class="chakra-button__icon css-1hzyiq5"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="chakra-icon css-onkibi"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </span>
+                </button>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div
+          class="css-1gvp5h0"
+        >
+          <div
+            class="chakra-stack css-1gmzflo"
+          >
+            <div
+              class="css-1cumjw"
+            >
+              <img
+                class="chakra-image css-1cylqiy"
+                src="layou240.png"
+              />
+            </div>
+            <div
+              class="css-4oqe9z"
+            >
+              <h2
+                class="chakra-heading css-13wn225"
+              >
+                Seamless integration with popular development tools and platforms
+              </h2>
+              <p
+                class="chakra-text css-oypibn"
+              >
+                Integrate our tool into your existing workflow effortlessly
+              </p>
+            </div>
+            <div
+              class="css-1b3s0fz"
+            >
+              <a
+                href="/login"
+                style="text-decoration: none;"
+              >
+                <button
+                  class="chakra-button css-4xx2wk"
+                  type="button"
+                >
+                  Sign Up
+                  <span
+                    class="chakra-button__icon css-1hzyiq5"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="chakra-icon css-onkibi"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </span>
+                </button>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div
+          class="css-1gvp5h0"
+        >
+          <div
+            class="chakra-stack css-1gmzflo"
+          >
+            <div
+              class="css-1cumjw"
+            >
+              <img
+                class="chakra-image css-1cylqiy"
+                src="logos2.png"
+              />
+            </div>
+            <div
+              class="css-4oqe9z"
+            >
+              <h2
+                class="chakra-heading css-13wn225"
+              >
+                Advanced readability features for translated code
+              </h2>
+              <p
+                class="chakra-text css-oypibn"
+              >
+                Ensure your translated code is easy to understand and maintain
+              </p>
+            </div>
+            <div
+              class="css-1b3s0fz"
+            >
+              <a
+                href="/documentation"
+                style="text-decoration: none;"
+              >
+                <button
+                  class="chakra-button css-4xx2wk"
+                  type="button"
+                >
+                  Get Started
+                  <span
+                    class="chakra-button__icon css-1hzyiq5"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="chakra-icon css-onkibi"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </span>
+                </button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr
+      aria-orientation="horizontal"
+      class="chakra-divider css-v2hj1"
+    />
+    <div
+      class="FeedBack css-1jeha5j"
+    >
+      <div
+        class="css-1li109l"
+      >
+        <h2
+          class="chakra-heading css-qghjt6"
+          textstroke="1px"
+          textstrokecolor="black"
+        >
+          We are a FeedBack friendly Company
+        </h2>
+        <p
+          class="chakra-text css-1kie4qp"
+        >
+          Your feedback is the compass that guides our journey towards excellence. Share your thoughts with us and help shape a better experience for everyone.                   
+        </p>
+        <div
+          class="css-1i27l4i"
+        >
+          <button
+            class="chakra-button css-5e5g5b"
+            type="button"
+          >
+            FeedBack Page
+          </button>
+        </div>
+      </div>
+      <img
+        class="chakra-image css-31hply"
+        src="image 10.png"
+      />
+    </div>
+    <hr
+      aria-orientation="horizontal"
+      class="chakra-divider css-v2hj1"
+    />
+    <div
+      class="FAQs css-1ynj9r8"
+    >
+      <div
+        class="css-1pnxwj5"
+      >
+        <p
+          class="chakra-text css-1jiffje"
+        >
+          FAQs
+        </p>
+        <p
+          class="chakra-text css-mn3vqq"
+        >
+          Find answers to common questions about our Code Translation and Conversion Tool.
+        </p>
+      </div>
+      <div
+        class="chakra-accordion css-13rbvqk"
+      >
+        <div
+          class="chakra-accordion__item css-1fsnuue"
+        >
+          <h2>
+            <button
+              aria-controls="accordion-panel-:ru:"
+              aria-expanded="false"
+              class="chakra-accordion__button css-15upldw"
+              data-index="0"
+              id="accordion-button-:ru:"
+              type="button"
+            >
+              <div
+                class="css-1eziwv"
+              >
+                How does it work?
+              </div>
+              <svg
+                aria-hidden="true"
+                class="chakra-icon chakra-icon chakra-accordion__icon css-a7bsu4"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </h2>
+          <div
+            class="chakra-collapse"
+            style="overflow: hidden; display: none; opacity: 0; height: 0px;"
+          >
+            <div
+              aria-labelledby="accordion-button-:ru:"
+              class="chakra-accordion__panel css-1npv5b5"
+              id="accordion-panel-:ru:"
+              role="region"
+            >
+              Here is how it works. Write your code in one the languages that are available to translate. Simply copy paste that code into our interactive and user friendly Code Translation Page and watch it do the Magic!
+            </div>
+          </div>
+          <hr
+            aria-orientation="horizontal"
+            class="chakra-divider css-1upb9tn"
+          />
+        </div>
+        <div
+          class="chakra-accordion__item css-1fsnuue"
+        >
+          <h2>
+            <button
+              aria-controls="accordion-panel-:r10:"
+              aria-expanded="false"
+              class="chakra-accordion__button css-15upldw"
+              data-index="1"
+              id="accordion-button-:r10:"
+              type="button"
+            >
+              <div
+                class="css-1eziwv"
+              >
+                Is it free?
+              </div>
+              <svg
+                aria-hidden="true"
+                class="chakra-icon chakra-icon chakra-accordion__icon css-a7bsu4"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </h2>
+          <div
+            class="chakra-collapse"
+            style="overflow: hidden; display: none; opacity: 0; height: 0px;"
+          >
+            <div
+              aria-labelledby="accordion-button-:r10:"
+              class="chakra-accordion__panel css-1npv5b5"
+              id="accordion-panel-:r10:"
+              role="region"
+            >
+              Yes, Our service is completely free and available to use for all. I know!! We are just simply that amazing :) 
+            </div>
+          </div>
+          <hr
+            aria-orientation="horizontal"
+            class="chakra-divider css-1upb9tn"
+          />
+        </div>
+        <div
+          class="chakra-accordion__item css-1fsnuue"
+        >
+          <h2>
+            <button
+              aria-controls="accordion-panel-:r12:"
+              aria-expanded="false"
+              class="chakra-accordion__button css-15upldw"
+              data-index="2"
+              id="accordion-button-:r12:"
+              type="button"
+            >
+              <div
+                class="css-1eziwv"
+              >
+                Is it secure?
+              </div>
+              <svg
+                aria-hidden="true"
+                class="chakra-icon chakra-icon chakra-accordion__icon css-a7bsu4"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </h2>
+          <div
+            class="chakra-collapse"
+            style="overflow: hidden; display: none; opacity: 0; height: 0px;"
+          >
+            <div
+              aria-labelledby="accordion-button-:r12:"
+              class="chakra-accordion__panel css-1npv5b5"
+              id="accordion-panel-:r12:"
+              role="region"
+            >
+              Security is our top priority. Our Backend is made by our Tech supergurus. They got it all under control
+            </div>
+          </div>
+          <hr
+            aria-orientation="horizontal"
+            class="chakra-divider css-1upb9tn"
+          />
+        </div>
+        <div
+          class="chakra-accordion__item css-1fsnuue"
+        >
+          <h2>
+            <button
+              aria-controls="accordion-panel-:r14:"
+              aria-expanded="false"
+              class="chakra-accordion__button css-15upldw"
+              data-index="3"
+              id="accordion-button-:r14:"
+              type="button"
+            >
+              <div
+                class="css-1eziwv"
+              >
+                Can I trust the translations?
+              </div>
+              <svg
+                aria-hidden="true"
+                class="chakra-icon chakra-icon chakra-accordion__icon css-a7bsu4"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </h2>
+          <div
+            class="chakra-collapse"
+            style="overflow: hidden; display: none; opacity: 0; height: 0px;"
+          >
+            <div
+              aria-labelledby="accordion-button-:r14:"
+              class="chakra-accordion__panel css-1npv5b5"
+              id="accordion-panel-:r14:"
+              role="region"
+            >
+              Our translations are highly accurate. 
+            </div>
+          </div>
+          <hr
+            aria-orientation="horizontal"
+            class="chakra-divider css-1upb9tn"
+          />
+        </div>
+        <div
+          class="chakra-accordion__item css-1fsnuue"
+        >
+          <h2>
+            <button
+              aria-controls="accordion-panel-:r16:"
+              aria-expanded="false"
+              class="chakra-accordion__button css-15upldw"
+              data-index="4"
+              id="accordion-button-:r16:"
+              type="button"
+            >
+              <div
+                class="css-1eziwv"
+              >
+                How can I provide feedback?
+              </div>
+              <svg
+                aria-hidden="true"
+                class="chakra-icon chakra-icon chakra-accordion__icon css-a7bsu4"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </h2>
+          <div
+            class="chakra-collapse"
+            style="overflow: hidden; display: none; opacity: 0; height: 0px;"
+          >
+            <div
+              aria-labelledby="accordion-button-:r16:"
+              class="chakra-accordion__panel css-1npv5b5"
+              id="accordion-panel-:r16:"
+              role="region"
+            >
+              Good or Bad, Customer Feedback is extremely important to us as a team. Here is the link to our feedback page.  
+            </div>
+          </div>
+          <hr
+            aria-orientation="horizontal"
+            class="chakra-divider css-1upb9tn"
+          />
+        </div>
+      </div>
+      <div
+        class="css-pzxu6u"
+      >
+        <p
+          class="chakra-text css-15bw84h"
+        >
+          Still have questions?
+        </p>
+        <p
+          class="chakra-text css-mn3vqq"
+        >
+                              Feel free to reach out to us.
+        </p>
+        <button
+          class="chakra-button css-slw2rz"
+          type="button"
+        >
+          Contact
+        </button>
+      </div>
+    </div>
+    <hr
+      aria-orientation="horizontal"
+      class="chakra-divider css-v2hj1"
+    />
+    <div
+      class="Footer css-1108khb"
+    >
+      <div
+        class="css-1jb5xqm"
+      >
+        <div
+          class="css-x2ur0e"
+        >
+          <div
+            class="css-15dz1zl"
+          >
+            <img
+              alt="Logo"
+              class="chakra-image css-1616k9k"
+              src="logo.jpg"
+            />
+          </div>
+          <div
+            class="css-108dahy"
+          >
+            <div
+              class="css-9l40hx"
+            >
+              <p
+                class="chakra-text css-vq87pm"
+              >
+                Address:
+              </p>
+              <p
+                class="chakra-text css-d38zja"
+              >
+                University Heights Newark, NJ
+              </p>
+            </div>
+            <div
+              class="css-f0lqyc"
+            >
+              <p
+                class="chakra-text css-vq87pm"
+              >
+                Contact:
+              </p>
+              <div
+                class="css-19mplnt"
+              >
+                <a
+                  font-size="14px"
+                  font-weight="400"
+                  href="/"
+                  lineheight="21px"
+                  text-decoration="underline"
+                >
+                  1800 123 4567
+                </a>
+                <a
+                  font-size="14px"
+                  font-weight="400"
+                  href="/"
+                  lineheight="21px"
+                  text-decoration="underline"
+                >
+                  info@binarybrains.io
+                </a>
+              </div>
+            </div>
+            <div
+              class="css-1rtyrwr"
+            >
+              <div
+                class="css-9uy14h"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          class="css-ad87kd"
+        >
+          <div
+            class="css-vqkb2a"
+          >
+            <a
+              href="/AboutUs"
+              style="text-decoration: none;"
+            >
+              <p
+                class="chakra-text css-1r7lvp9"
+              >
+                About Us
+              </p>
+            </a>
+            <a
+              href="/ContactUs"
+              style="text-decoration: none;"
+            >
+              <p
+                class="chakra-text css-1r7lvp9"
+              >
+                Contact Us
+              </p>
+            </a>
+            <a
+              href="/faqs"
+              style="text-decoration: none;"
+            >
+              <p
+                class="chakra-text css-1r7lvp9"
+              >
+                FAQs
+              </p>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div
+        class="css-1so5uog"
+      >
+        <div
+          class="css-1mdm48p"
+        />
+        <div
+          class="css-zhxr0w"
+        >
+          <p
+            class="chakra-text css-d38zja"
+          >
+            © 2024 Binary Brains. All rights reserved.
+          </p>
+          <div
+            class="css-1sqg69v"
+          >
+            <a
+              font-size="14px"
+              font-weight="400"
+              href="/"
+              lineheight="21px"
+              text-decoration="underline"
+            >
+              Privacy Policy
+            </a>
+            <a
+              font-size="14px"
+              font-weight="400"
+              href="/"
+              lineheight="21px"
+              text-decoration="underline"
+            >
+              Terms of Service
+            </a>
+            <a
+              font-size="14px"
+              font-weight="400"
+              href="/"
+              lineheight="21px"
+              text-decoration="underline"
+            >
+              Cookies Settings
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
