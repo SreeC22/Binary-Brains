@@ -8,7 +8,7 @@ mod handlers;
 mod db;
 mod auth;
 
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler};
 use crate::db::init_mongo;
 use crate::models::{Feedback}; 
 
@@ -52,8 +52,8 @@ async fn main() -> std::io::Result<()> {
             .route("/submit_feedback", web::post().to(handlers::submit_feedback))
             // Added routes for account management
             .route("/api/user/change_password", web::post().to(change_password))
-            .route("/api/user/update_profile", web::put().to(update_user_profile))
-            .route("/api/user/delete", web::delete().to(delete_account))
+            .route("/api/user/update_profile", web::put().to(update_user_profile_handler))
+            .route("/api/user/delete", web::delete().to(delete_account_handler))
 
 
     })

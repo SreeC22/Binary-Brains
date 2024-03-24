@@ -1,5 +1,4 @@
 use crate::db::{find_or_create_user_by_google_id, find_or_create_user_by_github_id};
-use crate::db::get_user_by_email;
 use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
 use crate::auth::{hash_password, verify_password};
