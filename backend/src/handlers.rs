@@ -2,16 +2,19 @@ use crate::db::{find_or_create_user_by_google_id, find_or_create_user_by_github_
 use crate::db::get_user_by_email;
 use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
-use crate::models::Feedback;
-use actix_web::get;
-use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError};
+
+use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode};
+use actix_web_httpauth::headers::authorization::Authorization;
+use actix_web::error::{ErrorUnauthorized};
+
 use bcrypt::{hash, DEFAULT_COST, verify};
 use mongodb::{Collection, bson::doc};
-use serde_json::json;
 use std::collections::HashMap;
-use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery};
+use mongodb::bson;
+use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery, LoginRequest};
+use serde_json::json;
 
-use serde::Deserialize;
+
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
@@ -57,10 +60,8 @@ pub async fn github_oauth_callback(
 ) -> impl Responder {
     match exchange_code_for_github_token(&query.code, &oauth_config).await {
         Ok(token_response) => {
-            // Correctly fetch GitHubUserInfo from the token response
             match fetch_github_user_info(&token_response.access_token).await {
                 Ok(github_user_info) => {
-                    // Now github_user_info is correctly defined and available
                     match find_or_create_user_by_github_id(&db, &github_user_info).await {
                         Ok(user) => HttpResponse::Ok().json(user),
                         Err(_) => HttpResponse::InternalServerError().finish(),
@@ -76,47 +77,65 @@ pub async fn github_oauth_callback(
 
 // login user
 pub async fn login(
-    credentials: web::Json<User>,
+    credentials: web::Json<LoginRequest>,
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
-    let user_info = credentials.into_inner();
+    let login_request = credentials.into_inner();
 
-    if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &user_info.email}, None).await {
+    if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
         if let Some(db_password) = &existing_user.password {
-            if let Some(login_password) = &user_info.password {
-                if verify(login_password, db_password).is_ok() {
-                    // Generate a token for the user
-                    let token = generate_jwt(&existing_user.email).unwrap(); // Handle error appropriately
-
-                    // Return both the token and user data (simplified version for demonstration)
-                    return HttpResponse::Ok().json(json!({
-                        "message": "Login successful",
-                        "token": token,
-                        "user": {
-                            "email": existing_user.email,
-                            // Include other user fields as necessary
-                        }
-                    }));
-                }
+            if verify(&login_request.password, db_password).is_ok() {
+                // Here, ensure login_request.remember_me is correctly used
+                let token = generate_jwt(&existing_user.email, login_request.remember_me).unwrap();
+                return HttpResponse::Ok().json(json!({
+                    "message": "Login successful",
+                    "token": token,
+                    "user": {
+                        "email": existing_user.email,
+                    }
+                }));
             }
         }
+        
     }
 
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
 }
 
-
+use chrono::{Duration, Utc};
+use crate::models::BlacklistedToken;
+use mongodb::Database;
+use mongodb::bson::Document;
 pub async fn logout(
-    // Removed the unused `req: web::HttpRequest` parameter for simplicity
-) -> impl Responder {
-    // Since there's no session or token invalidation logic implemented yet,
-    // this endpoint simply returns a success message.
-    // In a real-world scenario, you would invalidate the user's session or token here.
-    HttpResponse::Ok().json(json!({"message": "Logged out successfully"}))
+    db: web::Data<Collection<Document>>, // This is already a collection
+    auth: BearerAuth,
+) -> Result<HttpResponse, actix_web::Error> {
+    let token = auth.token();
+    let claims = match decode_jwt(token) {
+        Ok(claims) => claims,
+        Err(_) => return Err(actix_web::error::ErrorUnauthorized("Invalid token")),
+    };
+
+    let blacklisted_token_doc = doc! {
+        "token": token.to_string(),
+        "expiry": (Utc::now() + Duration::weeks(2)).timestamp(),
+    };
+
+    // Directly use `db` to insert the document
+    match db.insert_one(blacklisted_token_doc, None).await {
+        Ok(_) => Ok(HttpResponse::Ok().json("Logged out successfully")),
+        Err(e) => {
+            eprintln!("Could not insert token into blacklist: {}", e);
+            Err(actix_web::error::ErrorInternalServerError("Could not insert token into blacklist"))
+        },
+    }
 }
+
+
+
 // register user
 pub async fn register(
-    credentials: web::Json<User>,
+    credentials: web::Json<User>, 
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
     let user_info = credentials.into_inner();
@@ -125,37 +144,36 @@ pub async fn register(
         return HttpResponse::Conflict().json(json!({"message": "User already exists"}));
     }
 
-    if let Some(password) = user_info.password {
-        let hashed_password = match hash(&password, DEFAULT_COST) {
-            Ok(hashed) => Some(hashed),
+    if let Some(password) = &user_info.password {
+        let hashed_password = match hash(password, DEFAULT_COST) {
+            Ok(h) => h,
             Err(e) => {
                 eprintln!("Error hashing password: {}", e);
                 return HttpResponse::InternalServerError().finish();
-            }
+            },
         };
 
         let new_user = User {
             id: None,
             username: user_info.username,
             email: user_info.email.clone(),
-            password: hashed_password,
+            password: Some(hashed_password),
             google_id: None,
             github_id: None,
         };
 
         match db.insert_one(new_user.clone(), None).await {
-            Ok(_) => {
-                HttpResponse::Ok().json(json!({"message": "User registered successfully", "user": new_user}))
-            }
+            Ok(_) => HttpResponse::Ok().json(json!({"message": "User registered successfully", "user": new_user})),
             Err(e) => {
                 eprintln!("Failed to register user: {}", e);
-                HttpResponse::InternalServerError().finish()
+                return HttpResponse::InternalServerError().finish();
             }
         }
     } else {
-        HttpResponse::BadRequest().json(json!({"message": "Password is required"}))
+        return HttpResponse::BadRequest().json(json!({"message": "Password is required"}));
     }
 }
+
 
 // exchange google code for token
 async fn exchange_code_for_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::error::Error> {
@@ -236,46 +254,9 @@ async fn fetch_github_user_info(access_token: &str) -> Result<GitHubUserInfo, ac
 }
 
 
+use crate::models::Feedback;
 use crate::db::insert_feedback;
 
-pub mod feedback {
-    use super::*;
-    use futures_util::stream::TryStreamExt;
-    use actix_web::{web, HttpResponse, Responder};
-    use mongodb::{Collection};
-
-    #[get("/feedback")]
-    pub async fn get_feedback(db: web::Data<Collection<Feedback>>) -> impl Responder {
-        // Query feedback data from MongoDB collection
-        let mut cursor = db.find(None, None)
-            .await
-            .expect("Failed to execute find operation");
-
-        // Initialize a vector to hold feedback data
-        let mut feedback_data = vec![];
-
-        // Iterate over the cursor to fetch feedback data
-        while let Some(result) = TryStreamExt::try_next(&mut cursor).await.expect("Failed to iterate cursor") {
-            // Access fields directly from Feedback struct
-            let phoneNumber = result.phoneNumber;
-            let rating = result.rating;
-            let email = result.email;
-            let firstName = result.firstName;
-            let lastName = result.lastName;
-            let message = result.message;
-
-            // Format feedback data as desired (example: concatenating fields)
-            let formatted_feedback = format!("Name: {} {}, Email: {}, Phone Number: {}, Rating: {},  Message: {}", firstName, lastName, email, phoneNumber, rating, message);
-            feedback_data.push(formatted_feedback);
-        }
-
-        // Format feedback data as a string
-        let feedback_list = feedback_data.join("\n");
-
-        // Return the response with formatted feedback data
-        HttpResponse::Ok().body(feedback_list)
-    }
-}
 pub async fn submit_feedback(
     feedback_data: web::Json<Feedback>,
     db: web::Data<Collection<Feedback>>,
@@ -328,40 +309,13 @@ pub async fn test_gpt3_endpoint() -> impl Responder {
                         HttpResponse::BadRequest().json("Failed to call GPT-3 API")
                     }
                 },
-                Err(_) => HttpResponse::InternalServerError().json("Failed to read response body"),
-            }
-        },
-        Err(e) => {
-        eprintln!("HTTP Client Error: {}", e);
-        HttpResponse::InternalServerError().json("Internal server error")
-        }
-    }      
+                Err(_) => HttpResponse::InternalServerError().json("Failed
+to read response body"),
 }
-//use crate::gpt3;
-// use serde::Deserialize;
-use crate::models::CodeTranslationRequest;
-
-pub async fn translate_code_endpoint(
-    translation_request: web::Json<CodeTranslationRequest>,
-) -> impl Responder {
-    let api_key = match env::var("GPT3_API_KEY") {
-        Ok(key) => key,
-        Err(_) => return HttpResponse::InternalServerError().json("GPT3_API_KEY not set in environment"),
-    };
-
-    let translation_prompt = format!(
-        "Translate the following code to {}:\n{}",
-        translation_request.target_language, translation_request.source_code
-    );
-
-    // Assuming you have a function similar to test_gpt3_api that accepts a prompt
-    // and returns the completion result. You might need to adjust this part.
-    match crate::gpt3::translate_code(&translation_prompt, &api_key).await {
-        Ok(translated_code) => HttpResponse::Ok().json(translated_code),
-        Err(e) => {
-            eprintln!("Failed to translate code: {}", e);
-            HttpResponse::InternalServerError().json("Failed to translate code")
-        },
-    }
+},
+Err(e) => {
+eprintln!("HTTP Client Error: {}", e);
+HttpResponse::InternalServerError().json("Internal server error")
 }
-
+}
+}
