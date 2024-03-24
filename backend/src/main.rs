@@ -7,12 +7,8 @@ mod models;
 mod handlers;
 mod db;
 mod auth;
-mod gpt3;
-
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, test_gpt3_endpoint, translate_code_endpoint};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile};
 use crate::db::init_mongo;
-use crate::models::{Feedback}; 
-use serde::Deserialize;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -51,11 +47,7 @@ async fn main() -> std::io::Result<()> {
             .route("/github_oauth_callback", web::get().to(github_oauth_callback))
             .route("/logout", web::get().to(logout))
             .route("/api/user/profile", web::get().to(get_user_profile))
-            .route("/submit_feedback", web::post().to(handlers::submit_feedback))
-            .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
-            .route("/api/translate_code", web::post().to(handlers::translate_code_endpoint))
-
-
+            .service(handlers::feedback::get_feedback) // Use the endpoint function from the feedback module
 
     })
     .bind("127.0.0.1:8080")?
