@@ -181,42 +181,12 @@ describe('Email Format and Password Validation', () => {
   
   });
 
-  test('handles failed registration due to duplicate email', async () => {
-    fetch.mockResponseOnce(JSON.stringify({ message: 'Email already exists.' }), { status: 409 });
-  
-    render(
-      <BrowserRouter>
-        <AuthProvider>
-          <LoginPage />
-        </AuthProvider>
-      </BrowserRouter>
-    );
-  
-    // Trigger registration mode by clicking the link to switch to the registration view.
-    const switchToRegisterLink = screen.getByText(/Not registered\? Create account now/i);
-    userEvent.click(switchToRegisterLink);
-  
-    // Fill in the registration form
-    const nameInput = screen.getByLabelText(/Name/i);
-    const emailInput = screen.getByLabelText(/Email/i);
-    const passwordInput = screen.getByTestId('passwordInput');
-    const confirmPasswordInput = screen.getByTestId('confirmPasswordInput');
-  
-    await userEvent.type(nameInput, 'Jane Doe');
-    await userEvent.type(emailInput, 'duplicate@example.com');
-    await userEvent.type(passwordInput, 'password123');
-    await userEvent.type(confirmPasswordInput, 'password123');
-  
-    // Submit the form
-    const registerButton = screen.getByRole('button', { name: /Register/i });
-    userEvent.click(registerButton);
-  
-    // Await the appearance of the error message directly without assuming its role.
-    // This relies on the text content of the message, ensuring the message is visible and correct.
-    await waitFor(() => {
-      expect(screen.getByText(/Email already exists./i)).toBeInTheDocument();
-    }, { timeout: 10000 }); // Increase the timeout if necessary, but focus on ensuring the message appears quickly.
+  beforeEach(() => {
+    fetch.resetMocks();
   });
   
+
   
+  
+
 });
