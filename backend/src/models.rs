@@ -57,3 +57,24 @@ pub struct Feedback {
     pub message: String,
     pub rating: i32,
 }
+
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BlacklistedToken {
+    pub token: String,
+    pub expiry: i64, // Unix timestamp
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Claims {
+    pub email: String,
+    pub exp: i64, // Ensure this matches the type expected by the JWT library, which is typically i64 for Unix timestamps
+}
+
+#[derive(Deserialize)]
+pub struct LoginRequest {
+    pub email: String,
+    pub password: String,
+    pub remember_me: bool,
+}

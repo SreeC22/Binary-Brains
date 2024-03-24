@@ -15,25 +15,24 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { FaMoon, FaSun } from 'react-icons/fa';
 import { ChevronDownIcon } from '@chakra-ui/icons';
-import { useAuth } from './AuthContext'; // Adjust this path as necessary
-import './navbar.css'; // Ensure this path is correct
+import { useAuth } from './AuthContext'; 
+import './navbar.css'; 
 
 const NavBar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
-  const { user, logout } = useAuth(); // Destructure logout function from useAuth
+  const { user, logout } = useAuth(); 
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout(); // Invoke the logout function
-    navigate('/login'); // Optionally redirect to login page after logout
+    logout(); 
+    navigate('/login');
   };
 
   const toggleIcon = colorMode === 'light' ? <FaMoon /> : <FaSun />;
 
-  // Using Chakra UI's useColorModeValue to set colors based on the theme
-  const bg = useColorModeValue('#fbf2e3', 'gray.700'); // Navbar background color
-  const darkerShade = useColorModeValue('#e0ccb0', 'gray.600'); // A darker shade for buttons
-  const buttonTextColor = useColorModeValue('black', 'white'); // Button text color
+  const bg = useColorModeValue('#fbf2e3', 'gray.700'); 
+  const darkerShade = useColorModeValue('#e0ccb0', 'gray.600'); 
+  const buttonTextColor = useColorModeValue('black', 'white');
 
   return (
     <Flex

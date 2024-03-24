@@ -1,0 +1,1 @@
+(actix_web::web::Json<User>, actix_web::web::Data<mongodb::Collection<User>>, bool)

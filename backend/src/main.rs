@@ -11,12 +11,26 @@ mod gpt3preprocessing;
 
 use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback,preprocess_code_route};
 use crate::db::init_mongo;
-use crate::models::{Feedback}; 
 
+
+use mongodb::bson::document::Document;
+
+use crate::handlers::{test_gpt3_endpoint};
+use crate::db::{init_feedback_collection};
+use crate::models::{Feedback, User};
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
+
+    let mongo_uri = env::var("MONGO_URI").expect("MONGO_URI is not set in .env file");
+
+    let mongo_client = mongodb::Client::with_uri_str(&mongo_uri).await.expect("Failed to connect to MongoDB");
+    let mongo_database = mongo_client.database("my_database");
+
+    let mongo_collection = mongo_database.collection::<Document>("some_collection"); // Adjust accordingly
+    let feedback_collection = mongo_database.collection::<Feedback>("feedback");
+    let user_collection = mongo_database.collection::<User>("users");
 
     let oauth_config = models::OAuthConfig {
         google_client_id: env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID"),
@@ -27,8 +41,6 @@ async fn main() -> std::io::Result<()> {
         github_redirect_uri: env::var("GITHUB_REDIRECT_URI").expect("Missing GITHUB_REDIRECT_URI"),
     };
 
-    let mongo_collection = init_mongo().await.expect("Failed to initialize MongoDB");
-    let feedback_collection = db::init_feedback_collection().await.expect("Failed to initialize feedback collection");
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -43,6 +55,9 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(mongo_collection.clone()))
             .app_data(web::Data::new(oauth_config.clone()))
             .app_data(web::Data::new(feedback_collection.clone()))
+            .app_data(web::Data::new(user_collection.clone()))
+            // Routes configuration...
+
 
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
@@ -55,6 +70,8 @@ async fn main() -> std::io::Result<()> {
                 web::resource("/preprocess_code")
                     .route(web::post().to(preprocess_code_route))
             )
+            .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
+
 
     })
     .bind("127.0.0.1:8080")?
