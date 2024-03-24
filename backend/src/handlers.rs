@@ -10,9 +10,56 @@ use serde_json::json;
 use std::collections::HashMap;
 use mongodb::bson;
 use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery};
-
-
 use actix_web_httpauth::extractors::bearer::BearerAuth;
+use crate::gpt3preprocessing::preprocess_code;
+
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+pub struct CodeInput {
+    code: String,
+}
+
+// Assuming you have a preprocess_code function in the gpt3preprocessor module
+pub async fn preprocess_code_route(
+    code_data: web::Json<CodeInput> // Use web::Json to extract JSON from the request body
+) -> impl Responder {
+    // Preprocess the code
+    match preprocess_code(&code_data.code) {
+        Ok(processed_code) => {
+            // If you need to send the processed_code to GPT-3 API, you'd do that here
+            // For now, let's just return the processed_code as a JSON response
+            HttpResponse::Ok().json(processed_code) // Return an HTTP response with the processed code
+        }
+        Err(e) => {
+            // Handle the error, perhaps return a 400 Bad Request with the error message
+            HttpResponse::BadRequest().body(e) // Return an HTTP response with the error message
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
     match decode_jwt(auth.token()) {

@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+whatlang = "0.14.0"
+regex = "1"
 actix-web = "4.5.1"
 actix-cors = "0.6.0"
 mongodb = "2.0.0"

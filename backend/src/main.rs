@@ -7,8 +7,9 @@ mod models;
 mod handlers;
 mod db;
 mod auth;
+mod gpt3preprocessing;
 
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback,preprocess_code_route};
 use crate::db::init_mongo;
 use crate::models::{Feedback}; 
 
@@ -50,7 +51,10 @@ async fn main() -> std::io::Result<()> {
             .route("/logout", web::get().to(logout))
             .route("/api/user/profile", web::get().to(get_user_profile))
             .route("/submit_feedback", web::post().to(handlers::submit_feedback))
-
+            .service(
+                web::resource("/preprocess_code")
+                    .route(web::post().to(preprocess_code_route))
+            )
 
     })
     .bind("127.0.0.1:8080")?
