@@ -92,14 +92,14 @@ running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC
 fse_decompress.c
 cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
 running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "zstd/lib/" "-I" "zstd/lib/common" "-I" "zstd/lib/legacy" "-fvisibility=hidden" "-DZSTD_DISABLE_ASM=" "-DZSTD_LIB_DEPRECATED=0" "-DXXH_PRIVATE_API=" "-DZSTDLIB_VISIBILITY=" "-DZDICTLIB_VISIBILITY=" "-DZSTDERRORLIB_VISIBILITY=" "-DZSTD_LEGACY_SUPPORT=1" "-FoC:\\Users\\vansh\\OneDrive\\college\\NJIT\\yr_3\\6th sem\\CS490\\Binary-Brains\\backend\\target\\debug\\build\\zstd-sys-876bb1e87f871ca3\\out\\8957a4c8b028b07b-pool.o" "-c" "zstd/lib/common\\pool.c"
-pool.c
 cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
+pool.c
 running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "zstd/lib/" "-I" "zstd/lib/common" "-I" "zstd/lib/legacy" "-fvisibility=hidden" "-DZSTD_DISABLE_ASM=" "-DZSTD_LIB_DEPRECATED=0" "-DXXH_PRIVATE_API=" "-DZSTDLIB_VISIBILITY=" "-DZDICTLIB_VISIBILITY=" "-DZSTDERRORLIB_VISIBILITY=" "-DZSTD_LEGACY_SUPPORT=1" "-FoC:\\Users\\vansh\\OneDrive\\college\\NJIT\\yr_3\\6th sem\\CS490\\Binary-Brains\\backend\\target\\debug\\build\\zstd-sys-876bb1e87f871ca3\\out\\8957a4c8b028b07b-threading.o" "-c" "zstd/lib/common\\threading.c"
 threading.c
 cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
 running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "zstd/lib/" "-I" "zstd/lib/common" "-I" "zstd/lib/legacy" "-fvisibility=hidden" "-DZSTD_DISABLE_ASM=" "-DZSTD_LIB_DEPRECATED=0" "-DXXH_PRIVATE_API=" "-DZSTDLIB_VISIBILITY=" "-DZDICTLIB_VISIBILITY=" "-DZSTDERRORLIB_VISIBILITY=" "-DZSTD_LEGACY_SUPPORT=1" "-FoC:\\Users\\vansh\\OneDrive\\college\\NJIT\\yr_3\\6th sem\\CS490\\Binary-Brains\\backend\\target\\debug\\build\\zstd-sys-876bb1e87f871ca3\\out\\8957a4c8b028b07b-zstd_common.o" "-c" "zstd/lib/common\\zstd_common.c"
-cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
 zstd_common.c
+cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
 running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "zstd/lib/" "-I" "zstd/lib/common" "-I" "zstd/lib/legacy" "-fvisibility=hidden" "-DZSTD_DISABLE_ASM=" "-DZSTD_LIB_DEPRECATED=0" "-DXXH_PRIVATE_API=" "-DZSTDLIB_VISIBILITY=" "-DZDICTLIB_VISIBILITY=" "-DZSTDERRORLIB_VISIBILITY=" "-DZSTD_LEGACY_SUPPORT=1" "-FoC:\\Users\\vansh\\OneDrive\\college\\NJIT\\yr_3\\6th sem\\CS490\\Binary-Brains\\backend\\target\\debug\\build\\zstd-sys-876bb1e87f871ca3\\out\\1ddd1489cc625d97-fse_compress.o" "-c" "zstd/lib/compress\\fse_compress.c"
 fse_compress.c
 cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
@@ -131,8 +131,8 @@ running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC
 zstd_compress_superblock.c
 cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
 running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "zstd/lib/" "-I" "zstd/lib/common" "-I" "zstd/lib/legacy" "-fvisibility=hidden" "-DZSTD_DISABLE_ASM=" "-DZSTD_LIB_DEPRECATED=0" "-DXXH_PRIVATE_API=" "-DZSTDLIB_VISIBILITY=" "-DZDICTLIB_VISIBILITY=" "-DZSTDERRORLIB_VISIBILITY=" "-DZSTD_LEGACY_SUPPORT=1" "-FoC:\\Users\\vansh\\OneDrive\\college\\NJIT\\yr_3\\6th sem\\CS490\\Binary-Brains\\backend\\target\\debug\\build\\zstd-sys-876bb1e87f871ca3\\out\\1ddd1489cc625d97-zstd_double_fast.o" "-c" "zstd/lib/compress\\zstd_double_fast.c"
-zstd_double_fast.c
 cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
+zstd_double_fast.c
 running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "zstd/lib/" "-I" "zstd/lib/common" "-I" "zstd/lib/legacy" "-fvisibility=hidden" "-DZSTD_DISABLE_ASM=" "-DZSTD_LIB_DEPRECATED=0" "-DXXH_PRIVATE_API=" "-DZSTDLIB_VISIBILITY=" "-DZDICTLIB_VISIBILITY=" "-DZSTDERRORLIB_VISIBILITY=" "-DZSTD_LEGACY_SUPPORT=1" "-FoC:\\Users\\vansh\\OneDrive\\college\\NJIT\\yr_3\\6th sem\\CS490\\Binary-Brains\\backend\\target\\debug\\build\\zstd-sys-876bb1e87f871ca3\\out\\1ddd1489cc625d97-zstd_fast.o" "-c" "zstd/lib/compress\\zstd_fast.c"
 zstd_fast.c
 cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
@@ -168,8 +168,8 @@ running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC
 zstd_decompress.c
 cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
 running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "zstd/lib/" "-I" "zstd/lib/common" "-I" "zstd/lib/legacy" "-fvisibility=hidden" "-DZSTD_DISABLE_ASM=" "-DZSTD_LIB_DEPRECATED=0" "-DXXH_PRIVATE_API=" "-DZSTDLIB_VISIBILITY=" "-DZDICTLIB_VISIBILITY=" "-DZSTDERRORLIB_VISIBILITY=" "-DZSTD_LEGACY_SUPPORT=1" "-FoC:\\Users\\vansh\\OneDrive\\college\\NJIT\\yr_3\\6th sem\\CS490\\Binary-Brains\\backend\\target\\debug\\build\\zstd-sys-876bb1e87f871ca3\\out\\690f776bf7b37aeb-zstd_decompress_block.o" "-c" "zstd/lib/decompress\\zstd_decompress_block.c"
-zstd_decompress_block.c
 cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
+zstd_decompress_block.c
 running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "zstd/lib/" "-I" "zstd/lib/common" "-I" "zstd/lib/legacy" "-fvisibility=hidden" "-DZSTD_DISABLE_ASM=" "-DZSTD_LIB_DEPRECATED=0" "-DXXH_PRIVATE_API=" "-DZSTDLIB_VISIBILITY=" "-DZDICTLIB_VISIBILITY=" "-DZSTDERRORLIB_VISIBILITY=" "-DZSTD_LEGACY_SUPPORT=1" "-FoC:\\Users\\vansh\\OneDrive\\college\\NJIT\\yr_3\\6th sem\\CS490\\Binary-Brains\\backend\\target\\debug\\build\\zstd-sys-876bb1e87f871ca3\\out\\b0401a448be314bb-cover.o" "-c" "zstd/lib/dictBuilder\\cover.c"
 cover.c
 cargo:warning=cl : Command line warning D9002 : ignoring unknown option '-fvisibility=hidden'
