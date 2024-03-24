@@ -5,14 +5,12 @@ use std::env;
 use std::error::Error;
 use tokio::sync::mpsc::{channel, Sender};
 
-// Define a struct to represent translation request
 #[derive(Debug)]
 pub struct TranslationRequest {
     code: String,
     target_language: String,
 }
 
-// Function to initiate translation request asynchronously
 pub async fn initiate_translation(
     request: TranslationRequest,
     sender: Sender<Result<String, String>>,
@@ -20,11 +18,10 @@ pub async fn initiate_translation(
     let code = request.code;
     let target_language = request.target_language;
 
-    // Process translation asynchronously
     tokio::spawn(async move {
         match translate_code(&code, &target_language).await {
             Ok(translated_code) => {
-                // Send translated code to sender
+
                 if sender.send(Ok(translated_code)).await.is_err() {
                     eprintln!("Failed to send translated code to sender");
                 }
@@ -41,16 +38,13 @@ pub async fn initiate_translation(
     Ok(())
 }
 
-// Function to handle translation request
 pub async fn handle_translation_request(
     request: TranslationRequest,
 ) -> Result<String, String> {
-    let (sender, mut receiver) = channel::<Result<String, String>>(1); // Channel with capacity 1
+    let (sender, mut receiver) = channel::<Result<String, String>>(1); 
 
-    // Initiate translation asynchronously
     initiate_translation(request, sender.clone()).await?;
 
-    // Wait for translated code from sender
     match receiver.recv().await {
         Some(Ok(translated_code)) => Ok(translated_code),
         Some(Err(err)) => Err(err),
@@ -58,7 +52,6 @@ pub async fn handle_translation_request(
     }
 }
 
-// Your existing translate_code function
 pub async fn translate_code(code: &str, target_language: &str) -> Result<String, String> {
     let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
     let client = Client::new();
@@ -68,10 +61,10 @@ pub async fn translate_code(code: &str, target_language: &str) -> Result<String,
     let prompt = format!("Translate the following code to {}:\n{}", target_language, code);
 
     let payload = json!({
-        "model": "code-davinci-002", // Use the latest model optimized for code
+        "model": "code-davinci-002", 
         "prompt": prompt,
         "temperature": 0.5,
-        "max_tokens": 1024 // Adjust based on expected length of translated code
+        "max_tokens": 1024 
     });
 
     let response = client
@@ -100,22 +93,19 @@ pub async fn translate_code(code: &str, target_language: &str) -> Result<String,
     }
 }
 
-    // mock dependencies
-    #[cfg_attr(test, mockall::automock)] // Only compile the mock in test configuration
+    #[cfg_attr(test, mockall::automock)] 
     pub trait Gpt3Client {
         async fn call_gpt3_api(&self, prompt: &str) -> Result<String, Box<dyn std::error::Error>>;
     }
 
-    // Implement the trait for your actual client that makes the API call
     impl Gpt3Client for reqwest::Client {
         async fn call_gpt3_api(&self, prompt: &str) -> Result<String, Box<dyn std::error::Error>> {
             let api_key = std::env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");         
             let mut headers = HeaderMap::new();
             headers.insert(AUTHORIZATION, format!("Bearer {}", api_key).parse()?);
-            //headers.insert(CONTENT_TYPE, "application/json".parse()?);
 
             let payload = json!({
-                "model": "text-davinci-003", // Adjust based on your GPT-3 model
+                "model": "text-davinci-003", 
                 "prompt": prompt,
                 "temperature": 0.5,
                 "max_tokens": 1024

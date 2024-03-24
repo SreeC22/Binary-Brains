@@ -1,14 +1,12 @@
 use tokio::sync::mpsc::{channel, Sender};
 use std::error::Error;
 
-// Define a struct to represent translation request
 #[derive(Debug)]
 pub struct TranslationRequest {
     code: String,
     target_language: String,
 }
 
-// Function to initiate translation request asynchronously
 pub async fn initiate_translation(
     request: TranslationRequest,
     sender: Sender<Result<String, String>>,
@@ -16,15 +14,12 @@ pub async fn initiate_translation(
     let code = request.code;
     let target_language = request.target_language;
 
-    // Simulate translation asynchronously
     tokio::spawn(async move {
-        // Simulate translation delay
+
         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
 
-        // Simulate translation result
         let translated_code = format!("Translated code in {} from: {}", target_language, code);
 
-        // Send translated code to sender
         if sender.send(Ok(translated_code)).await.is_err() {
             eprintln!("Failed to send translated code to sender");
         }
@@ -33,16 +28,13 @@ pub async fn initiate_translation(
     Ok(())
 }
 
-// Function to handle translation request
 pub async fn handle_translation_request(
     request: TranslationRequest,
 ) -> Result<String, String> {
-    let (sender, mut receiver) = channel::<Result<String, String>>(1); // Channel with capacity 1
+    let (sender, mut receiver) = channel::<Result<String, String>>(1); 
 
-    // Initiate translation asynchronously
     initiate_translation(request, sender.clone()).await?;
 
-    // Wait for translated code from sender
     match receiver.recv().await {
         Some(Ok(translated_code)) => Ok(translated_code),
         Some(Err(err)) => Err(err),
@@ -50,9 +42,8 @@ pub async fn handle_translation_request(
     }
 }
 
-// Your existing translate_code function
 pub async fn translate_code(code: &str, target_language: &str) -> Result<String, String> {
-    // Simulate translation
+
     Ok(format!("Translated code in {} from: {}", target_language, code))
 }
 
@@ -78,16 +69,15 @@ mod tests {
             code: "function test() {}".to_string(),
             target_language: "Python".to_string(),
         };
-    
+
         let (sender, mut receiver) = channel::<Result<String, String>>(1);
-    
+
         initiate_translation(request, sender).await.unwrap();
-    
+
         let translated_code = receiver.recv().await.unwrap().unwrap();
-    
+
         assert_eq!(translated_code, "Translated code in Python from: function test() {}");
     }
-    
 
     #[tokio::test]
     async fn test_translate_code() {
