@@ -4,15 +4,19 @@ use crate::auth::generate_jwt;
 use crate::auth::{hash_password, verify_password};
 use crate::db::{update_user_password, update_user_profile, delete_user, get_user_by_email};
 
-use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError};
+use actix_web::{web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode};
+use actix_web_httpauth::headers::authorization::Authorization;
+use actix_web::error::{ErrorUnauthorized};
+
 use bcrypt::{hash, DEFAULT_COST, verify};
 use mongodb::{Collection, bson::doc};
-use serde_json::json;
 use std::collections::HashMap;
 use mongodb::bson;
+use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery, LoginRequest,CodeTranslationRequest};
+use serde_json::json;
 use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery,PasswordChangeForm, UserProfileUpdateForm};
 
-
+use serde::Deserialize;
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
@@ -58,10 +62,8 @@ pub async fn github_oauth_callback(
 ) -> impl Responder {
     match exchange_code_for_github_token(&query.code, &oauth_config).await {
         Ok(token_response) => {
-            // Correctly fetch GitHubUserInfo from the token response
             match fetch_github_user_info(&token_response.access_token).await {
                 Ok(github_user_info) => {
-                    // Now github_user_info is correctly defined and available
                     match find_or_create_user_by_github_id(&db, &github_user_info).await {
                         Ok(user) => HttpResponse::Ok().json(user),
                         Err(_) => HttpResponse::InternalServerError().finish(),
@@ -77,47 +79,65 @@ pub async fn github_oauth_callback(
 
 // login user
 pub async fn login(
-    credentials: web::Json<User>,
+    credentials: web::Json<LoginRequest>,
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
-    let user_info = credentials.into_inner();
+    let login_request = credentials.into_inner();
 
-    if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &user_info.email}, None).await {
+    if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
         if let Some(db_password) = &existing_user.password {
-            if let Some(login_password) = &user_info.password {
-                if verify(login_password, db_password).is_ok() {
-                    // Generate a token for the user
-                    let token = generate_jwt(&existing_user.email).unwrap(); // Handle error appropriately
-
-                    // Return both the token and user data (simplified version for demonstration)
-                    return HttpResponse::Ok().json(json!({
-                        "message": "Login successful",
-                        "token": token,
-                        "user": {
-                            "email": existing_user.email,
-                            // Include other user fields as necessary
-                        }
-                    }));
-                }
+            if verify(&login_request.password, db_password).is_ok() {
+                // Here, ensure login_request.remember_me is correctly used
+                let token = generate_jwt(&existing_user.email, login_request.remember_me).unwrap();
+                return HttpResponse::Ok().json(json!({
+                    "message": "Login successful",
+                    "token": token,
+                    "user": {
+                        "email": existing_user.email,
+                    }
+                }));
             }
         }
+        
     }
 
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
 }
 
-
+use chrono::{Duration, Utc};
+use crate::models::BlacklistedToken;
+use mongodb::Database;
+use mongodb::bson::Document;
 pub async fn logout(
-    // Removed the unused `req: web::HttpRequest` parameter for simplicity
-) -> impl Responder {
-    // Since there's no session or token invalidation logic implemented yet,
-    // this endpoint simply returns a success message.
-    // In a real-world scenario, you would invalidate the user's session or token here.
-    HttpResponse::Ok().json(json!({"message": "Logged out successfully"}))
+    db: web::Data<Collection<Document>>, // This is already a collection
+    auth: BearerAuth,
+) -> Result<HttpResponse, actix_web::Error> {
+    let token = auth.token();
+    let claims = match decode_jwt(token) {
+        Ok(claims) => claims,
+        Err(_) => return Err(actix_web::error::ErrorUnauthorized("Invalid token")),
+    };
+
+    let blacklisted_token_doc = doc! {
+        "token": token.to_string(),
+        "expiry": (Utc::now() + Duration::weeks(2)).timestamp(),
+    };
+
+    // Directly use `db` to insert the document
+    match db.insert_one(blacklisted_token_doc, None).await {
+        Ok(_) => Ok(HttpResponse::Ok().json("Logged out successfully")),
+        Err(e) => {
+            eprintln!("Could not insert token into blacklist: {}", e);
+            Err(actix_web::error::ErrorInternalServerError("Could not insert token into blacklist"))
+        },
+    }
 }
+
+
+
 // register user
 pub async fn register(
-    credentials: web::Json<User>,
+    credentials: web::Json<User>, 
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
     let user_info = credentials.into_inner();
@@ -126,37 +146,36 @@ pub async fn register(
         return HttpResponse::Conflict().json(json!({"message": "User already exists"}));
     }
 
-    if let Some(password) = user_info.password {
-        let hashed_password = match hash(&password, DEFAULT_COST) {
-            Ok(hashed) => Some(hashed),
+    if let Some(password) = &user_info.password {
+        let hashed_password = match hash(password, DEFAULT_COST) {
+            Ok(h) => h,
             Err(e) => {
                 eprintln!("Error hashing password: {}", e);
                 return HttpResponse::InternalServerError().finish();
-            }
+            },
         };
 
         let new_user = User {
             id: None,
             username: user_info.username,
             email: user_info.email.clone(),
-            password: hashed_password,
+            password: Some(hashed_password),
             google_id: None,
             github_id: None,
         };
 
         match db.insert_one(new_user.clone(), None).await {
-            Ok(_) => {
-                HttpResponse::Ok().json(json!({"message": "User registered successfully", "user": new_user}))
-            }
+            Ok(_) => HttpResponse::Ok().json(json!({"message": "User registered successfully", "user": new_user})),
             Err(e) => {
                 eprintln!("Failed to register user: {}", e);
-                HttpResponse::InternalServerError().finish()
+                return HttpResponse::InternalServerError().finish();
             }
         }
     } else {
-        HttpResponse::BadRequest().json(json!({"message": "Password is required"}))
+        return HttpResponse::BadRequest().json(json!({"message": "Password is required"}));
     }
 }
+
 
 // exchange google code for token
 async fn exchange_code_for_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::error::Error> {
@@ -252,6 +271,79 @@ pub async fn submit_feedback(
         },
     }
 }
+
+//gpt3 connection
+use reqwest::header::{HeaderMap, AUTHORIZATION};
+use std::env;
+pub async fn test_gpt3_endpoint() -> impl Responder {
+    let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
+    let client = reqwest::Client::new();
+    let mut headers = HeaderMap::new();
+    headers.insert(AUTHORIZATION, format!("Bearer {}", api_key).parse().unwrap());
+
+    // Structuring payload for chat-based interaction
+    let payload = json!({
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {"role": "user", "content": "Write a factorial function in Rust language."},
+            {"role": "system", "content": ""}
+        ]
+    }
+    );
+
+    // Using the chat completion endpoint
+    let response = client
+        .post("https://api.openai.com/v1/chat/completions")
+        .headers(headers)
+        .json(&payload)
+        .send()
+        .await;
+
+    match response {
+        Ok(resp) => {
+            let status = resp.status();
+            match resp.text().await {
+                Ok(body) => {
+                    if status.is_success() {
+                        HttpResponse::Ok().content_type("application/json").body(body)
+                    } else {
+                        eprintln!("GPT-3 API Error: {}", &body);
+                        HttpResponse::BadRequest().json("Failed to call GPT-3 API")
+                    }
+                },
+                Err(_) => HttpResponse::InternalServerError().json("Failed to read response body"),
+            }
+        }, 
+        Err(e) => { eprintln!("HTTP Client Error: {}", e); 
+        HttpResponse::InternalServerError().json("Internal server error")
+    }}
+}
+
+//Code Translation GPT3
+pub async fn translate_code_endpoint(
+    translation_request: web::Json<CodeTranslationRequest>,
+) -> impl Responder {
+    let api_key = match env::var("GPT3_API_KEY") {
+        Ok(key) => key,
+        Err(_) => return HttpResponse::InternalServerError().json("GPT3_API_KEY not set in environment"),
+    };
+
+    let translation_prompt = format!(
+        "Translate the following code to {}:\n{}",
+        translation_request.target_language, translation_request.source_code
+    );
+
+    // Assuming you have a function similar to test_gpt3_api that accepts a prompt
+    // and returns the completion result. You might need to adjust this part.
+    match crate::gpt3::translate_code(&translation_prompt, &api_key).await {
+        Ok(translated_code) => HttpResponse::Ok().json(translated_code),
+        Err(e) => {
+            eprintln!("Failed to translate code: {}", e);
+            HttpResponse::InternalServerError().json("Failed to translate code")
+        },
+    }
+}
+
 
 pub async fn change_password_handler(
     email: web::Path<String>,

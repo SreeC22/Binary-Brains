@@ -1,2 +1,0 @@
-*.psd filter=lfs diff=lfs merge=lfs -text
-backend/target/debug/deps/backend-309e71ef00ebb560 filter=lfs diff=lfs merge=lfs -text

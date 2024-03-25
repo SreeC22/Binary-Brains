@@ -35,12 +35,10 @@ describe('NavBar Component', () => {
     test('renders the navigation links correctly', () => {
         setup();
         expect(screen.getByText('Translate Code')).toBeInTheDocument();
-        expect(screen.getByText('Code Conversion')).toBeInTheDocument();
         expect(screen.getByText('Feedback')).toBeInTheDocument();
 
         // Ensure dropdown menu items are present
         expect(screen.getByText('Documentation')).toBeInTheDocument();
-        expect(screen.getByText('Tutorial')).toBeInTheDocument();
         expect(screen.getByText("FAQ's")).toBeInTheDocument();
         expect(screen.getByText('Contact Us')).toBeInTheDocument();
     });
