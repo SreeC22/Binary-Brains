@@ -7,9 +7,10 @@ mod models;
 mod handlers;
 mod db;
 mod auth;
+mod gpt3;
 use mongodb::bson::document::Document;
 
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, test_gpt3_endpoint};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, test_gpt3_endpoint,translate_code_endpoint};
 use crate::db::{init_mongo, init_feedback_collection};
 use crate::models::{Feedback, User};
 #[actix_web::main]
@@ -52,7 +53,6 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(user_collection.clone()))
             // Routes configuration...
 
-
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
             .route("/oauth_callback", web::get().to(oauth_callback))
@@ -61,8 +61,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/user/profile", web::get().to(get_user_profile))
             .route("/submit_feedback", web::post().to(handlers::submit_feedback))
             .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
-
-
+            .route("/api/translate_code", web::post().to(handlers::translate_code_endpoint))
     })
     .bind("127.0.0.1:8080")?
     .run()

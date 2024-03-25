@@ -104,39 +104,7 @@ const NavBar = () => {
           ml="4"
         />
 
-        {/* Search Button */}
-        <IconButton
-          onClick={onOpen}
-          icon={<FaSearch />}
-          aria-label="Search"
-          variant="ghost"
-          ml="4"
-        />
       </Box>
-
-      {/* Search Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Search for anything</ModalHeader>
-          <ModalCloseButton />
-          <Input
-            placeholder="Type here..."
-            my={4}
-            mx={3}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyPress={event => {
-              if (event.key === 'Enter') {
-                handleSearch();
-              }
-            }}
-          />
-          <Button onClick={handleSearch} colorScheme="blue" my={4} mx={4}>
-            Search
-          </Button>
-        </ModalContent>
-      </Modal>
     </Flex>
   );
 };
