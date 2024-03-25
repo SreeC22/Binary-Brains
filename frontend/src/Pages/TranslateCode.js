@@ -49,13 +49,11 @@ const TranslateCode = () => {
   const handleClose = () => {
     setError(""); // Clear the error message
   };
-
-  const handleConvert = async() => {
+  const handleConvert = () => {
     if (!sourceLanguage || !targetLanguage) {
       setError("Both source and target languages are required");
       return;
     }
-
 
     if (sourceLanguage === targetLanguage) {
       setError("Source and target languages cannot be the same");
@@ -72,34 +70,7 @@ const TranslateCode = () => {
     console.log("Source language:", sourceLanguage);
     console.log("Target language:", targetLanguage);
     setOutputCode(`Generated code in the target language will go here`);
-    setError("");
-    setOutputCode("// Translating code...");
-
-    try {
-      const response = await fetch('http://127.0.0.1:8080/api/translate_code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Include other headers as necessary, e.g., authorization
-        },
-        body: JSON.stringify({
-          source_code: inputCode,
-          source_language: sourceLanguage, // Ensure these field names match your backend expectation
-          target_language: targetLanguage,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setOutputCode(data.translated_code); // Update according to your backend response structure
-    } catch (error) {
-      console.error("Failed to translate code:", error);
-      setError("Failed to translate code. Please try again.");
-      setOutputCode("// Failed to translate code");
-    }
+    setError("EROROROROROORROROR");
   };
 
   const handlePaste = () => {
@@ -130,8 +101,6 @@ const TranslateCode = () => {
       </HStack>
     </Box>
   );
-
-
 
   return (
     <>
@@ -201,7 +170,6 @@ const TranslateCode = () => {
                       <span>{lang.label}</span>
                     </MenuItem>
                   ))}
-
 
                 </MenuList>
               </Menu>
@@ -350,9 +318,7 @@ const TranslateCode = () => {
         </VStack>
       </ChakraProvider>,
     </>
-
   );
-
 };
 
 export default TranslateCode;
