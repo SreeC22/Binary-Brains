@@ -18,13 +18,15 @@ import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
 
 import { useToast } from "@chakra-ui/react";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AceEditor from 'react-ace';
+// import React, { useEffect } from 'react';
+
 import { motion } from "framer-motion"; // Import motion from Framer Motion
 import { BiSolidDownArrowAlt } from "react-icons/bi";
 import { FaCode, FaCog, FaCube, FaPaste} from 'react-icons/fa';
 import {  FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
-
+import axios from 'axios';
 import { SiConvertio } from "react-icons/si";
 import { set } from "ace-builds/src-noconflict/ace";
 const languages = [
@@ -58,7 +60,23 @@ const getEditorMode = (language) => {
 };
 
 const TranslateCode = () => {
-  const isGPTActive = true;
+  const [apiResponse, setApiResponse] = useState({ status_code: null, message: '' });
+
+  useEffect(() => {
+    // Adjust the URL to match your endpoint
+    const url = 'http://127.0.0.1:8080/api/test_gpt3';
+
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        setApiResponse({ status_code: data.status_code, message: data.message });
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+        setApiResponse({ status_code: 'Error', message: 'Failed to fetch data' });
+      });
+  }, []);
+
   const toast = useToast();
   const { colorMode } = useColorMode();
   const backgroundColor = colorMode === "light" ? "#fbf2e3" : "#2D3748";
@@ -70,7 +88,6 @@ const TranslateCode = () => {
   const [targetLanguage, setTargetLanguage] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState("");
   const [outputCode, setOutputCode] = useState("// The generated code will be displayed here ->");
-
   const [error, setError] = useState("");
   const [editorMode, setEditorMode] = useState("text");
   const [fontSize, setFontSize] = useState(14);
@@ -85,6 +102,7 @@ const TranslateCode = () => {
   const handleClose = () => {
     setError(""); // Clear the error message
   };
+
   const handleConvert = async() => {
     if (!sourceLanguage || !targetLanguage) {
       setError("Both source and target languages are required");
@@ -101,27 +119,51 @@ const TranslateCode = () => {
       setError("Input code is required");
       return;
     }
-    try {
-      const response = await fetch('http://127.0.0.1:8080/preprocess_code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code: inputCode }),
-      });
+    const url = 'http://127.0.0.1:8080/preprocess_code';
+const data = { /* your data here */ };
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+fetch(url, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(data),
+})
+.then(response => {
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return response.json();
+})
+.then(data => {
+  console.log(data);
+})
+.catch(error => {
+  console.error('Error during code preprocessing:', error);
+});
 
-      const result = await response.json();
-      console.log(result); // Do something with the processed code
+    // try {
+    //   const response = await fetch('http://127.0.0.1:8080/preprocess_code', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ code: inputCode }),
+    //   });
 
-    } catch (error) {
-      console.error("Error during code preprocessing:", error);
-      setError("was an error in preprocessing")
-      // Handle errors here
-    }
+    //   if (!response.ok) {
+    //     throw new Error(`HTTP error! status: ${response.status}`);
+    //   }
+
+    //   const result = await response.json();
+    //   console.log(result); // Do something with the processed code
+
+    // } catch (error) {
+    //   console.error("Error during code preprocessing:", error);
+    //   setError("was an error in preprocessing")
+    //   // Handle errors here
+    // }
+    
     // // Call the translation API here
     // console.log("Input code:", inputCode);
     // console.log("Source language:", sourceLanguage);
@@ -145,6 +187,7 @@ const TranslateCode = () => {
   };
 
   const HeadingSteps = () => (
+    
     <Box paddingY={4} ml="auto" style={{ backgroundColor }}>
       <HStack spacing={16} justify="center" marginTop={16} marginBottom={16} style={{ backgroundColor }}> {/* Increased spacing */}
         <VStack align="left" spacing={2} >
@@ -170,6 +213,10 @@ const TranslateCode = () => {
 
   return (
      <>
+       <div>
+        <p>GPT-3 API Status Code: {apiResponse.status_code}</p>
+        <p>Message: {apiResponse.message}</p>
+    </div>
     <ChakraProvider>
     <HeadingSteps />
     <VStack spacing={4} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}>
@@ -182,7 +229,7 @@ const TranslateCode = () => {
           <Flex
                 justifyContent="center" // Center Horizontally             
                  >
-          <Box
+          {/* <Box
             width="47.75%"
             display="flex"
             alignItems="center"
@@ -203,7 +250,7 @@ const TranslateCode = () => {
             <Text color={useColorModeValue('gray.800', 'whiteAlpha.900')} fontWeight="medium">
               GPT Status: {isGPTActive ? 'Active' : 'Inactive'}
             </Text>
-          </Box>
+          </Box> */}
         </Flex>
 
       <Flex justifyContent="space-between">

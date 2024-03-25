@@ -57,7 +57,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(feedback_collection.clone()))
             .app_data(web::Data::new(user_collection.clone()))
             // Routes configuration...
-
+            
 
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
