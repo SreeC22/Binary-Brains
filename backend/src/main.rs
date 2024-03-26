@@ -9,14 +9,6 @@ mod db;
 mod auth;
 mod gpt3preprocessing;
 mod gpt3;
-
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback,preprocess_code_route,translate_code_handler};
-use crate::db::init_mongo;
-use crate::models::{Feedback}; 
-
-
-
-
 // async fn perform_initializations() {
 //     let source_code = r#"print("SRE VANSHIKA JESICA ZINDABAD")"#;
 //     let target_language = "cpp";
@@ -28,6 +20,12 @@ use crate::models::{Feedback};
 // }
 
 
+mod gpt3;
+use mongodb::bson::document::Document;
+
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, test_gpt3_endpoint,translate_code_endpoint,preprocess_code_route};
+use crate::db::{init_mongo, init_feedback_collection};
+use crate::models::{Feedback, User};
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
@@ -62,8 +60,6 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/translate").route(web::post().to(translate_code_handler)),
             )
-
-            .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
             // .route("/api/translate_code", web::post().to(handlers::translate_code_endpoint))
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
@@ -77,6 +73,7 @@ async fn main() -> std::io::Result<()> {
                     .route(web::post().to(preprocess_code_route))
             )
 
+            .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
     })
     .bind("127.0.0.1:8080")?
     .run()

@@ -4,7 +4,6 @@ use serde_json::json;
 use std::env;
 use std::error::Error;
 
-
 pub async fn test_gpt3_api() -> Result<(), Box<dyn std::error::Error>> {
     let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
     let client = Client::new();
@@ -69,10 +68,8 @@ pub async fn test_gpt3_api() -> Result<(), Box<dyn std::error::Error>> {
 
 
 
-pub async fn translate_code(
-    source_code: &str, 
-    target_language: &str
-) -> Result<String, Box<dyn std::error::Error>> { // Return type changed to Result<String, ...> to return the translation
+pub async fn translate_code( source_code: &str,target_language: &str) -> Result<String, Box<dyn std::error::Error>> { // Return type changed to Result<String, ...> to return the translation
+//Translate Code
     let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
     let client = Client::new();
     let mut headers = HeaderMap::new();
