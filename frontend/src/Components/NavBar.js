@@ -1,5 +1,5 @@
 // NavBar.js
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Flex,
   Box,
@@ -11,17 +11,26 @@ import {
   Button,
   useColorMode,
   useColorModeValue,
+  Input,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { FaMoon, FaSun } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSearch } from 'react-icons/fa';
 import { ChevronDownIcon } from '@chakra-ui/icons';
-import { useAuth } from './AuthContext'; // Adjust this path as necessary
-import './navbar.css'; // Ensure this path is correct
+import { useAuth } from './AuthContext';
+import './navbar.css';
 
 const NavBar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const { user, logout } = useAuth(); // Destructure logout function from useAuth
   const navigate = useNavigate();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleLogout = () => {
     logout(); // Invoke the logout function
@@ -45,29 +54,35 @@ const NavBar = () => {
       bg={bg}
       color={buttonTextColor}
     >
+      {/* Left side - Branding */}
       <Box>
         <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
           Binary Brains
         </RouterLink>
       </Box>
+
+      {/* Center - Navigation Links */}
       <Box display="flex" alignItems="center">
         <RouterLink to="/translate" style={{ marginRight: '20px', color: 'inherit' }}>Translate Code</RouterLink>
-        <RouterLink to="/code-conversion" style={{ marginRight: '20px', color: 'inherit' }}>Code Conversion</RouterLink>
+        {/* <RouterLink to="/code-conversion" style={{ marginRight: '20px', color: 'inherit' }}>Code Conversion</RouterLink> */}
         <RouterLink to="/feedback" style={{ marginRight: '20px', color: 'inherit' }}>Feedback</RouterLink>
 
+        {/* More Dropdown */}
         <Menu>
           <MenuButton as={Button} rightIcon={<ChevronDownIcon />} bg={darkerShade}>
             More
           </MenuButton>
           <MenuList>
             <MenuItem as={RouterLink} to="/documentation">Documentation</MenuItem>
-            <MenuItem as={RouterLink} to="/tutorial">Tutorial</MenuItem>
             <MenuItem as={RouterLink} to="/faqs">FAQ's</MenuItem>
             <MenuItem as={RouterLink} to="/contactus">Contact Us</MenuItem>
           </MenuList>
         </Menu>
       </Box>
+
+      {/* Right side - Authentication & Theme Toggle */}
       <Box display="flex" alignItems="center">
+        {/* Authentication */}
         {user ? (
           <>
             <Button onClick={handleLogout} size="sm" mr="4" bg={darkerShade} color={buttonTextColor}>
@@ -80,6 +95,8 @@ const NavBar = () => {
             <Button size="sm" bg={darkerShade} color={buttonTextColor}>Login/Register</Button>
           </RouterLink>
         )}
+
+        {/* Theme Toggle */}
         <IconButton
           onClick={toggleColorMode}
           icon={toggleIcon}
@@ -87,9 +104,12 @@ const NavBar = () => {
           variant="ghost"
           ml="4"
         />
+
       </Box>
     </Flex>
   );
 };
 
 export default NavBar;
+
+

@@ -9,10 +9,76 @@ use mongodb::{Collection, bson::doc};
 use serde_json::json;
 use std::collections::HashMap;
 use mongodb::bson;
-use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery};
-
-
+use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery, LoginRequest,CodeTranslationRequest};
+use serde::Deserialize;
 use actix_web_httpauth::extractors::bearer::BearerAuth;
+use crate::gpt3preprocessing::preprocess_code;
+use crate::gpt3;
+
+
+
+
+
+
+
+#[derive(Deserialize)]
+pub struct TranslationRequest {
+    source_code: String,
+    target_language: String,
+}
+
+pub async fn translate_code_handler(
+    item: web::Json<TranslationRequest>,
+) -> impl Responder {
+    match gpt3::translate_code(&item.source_code, &item.target_language).await {
+        Ok(translated_code) => {
+            HttpResponse::Ok().json(json!({ "translated_code": translated_code }))
+        },
+        Err(e) => {
+            eprintln!("Translation failed: {}", e);
+            HttpResponse::InternalServerError().json(json!({"error": "Translation failed"}))
+        },
+    }
+}
+// pub async fn translate_code_handler(
+//     item: web::Json<TranslationRequest>,
+// ) -> impl Responder {
+//     match gpt3::translate_code(&item.source_code, &item.target_language).await {
+//         Ok(translated_code) => HttpResponse::Ok().json({ "translated_code": translated_code }),
+//         Err(e) => {
+//             eprintln!("Translation failed: {}", e);
+//             HttpResponse::InternalServerError().json({"error": "Translation failed"})
+//         },
+//     }
+// }
+
+
+
+
+#[derive(Deserialize)]
+pub struct CodeInput {
+    code: String,
+    source_lang: String,
+}
+
+// Assuming you have a preprocess_code function in the gpt3preprocessor module
+pub async fn preprocess_code_route(
+    code_data: web::Json<CodeInput> // Use web::Json to extract JSON from the request body
+) -> impl Responder {
+    // Preprocess the code
+    match preprocess_code(&code_data.code, &code_data.source_lang) {
+        Ok(processed_code) => {
+            // If you need to send the processed_code to GPT-3 API, you'd do that here
+            // For now, let's just return the processed_code as a JSON response
+            HttpResponse::Ok().json(processed_code) // Return an HTTP response with the processed code
+        }
+        Err(e) => {
+            // Handle the error, perhaps return a 400 Bad Request with the error message
+            HttpResponse::BadRequest().body(e) // Return an HTTP response with the error message
+        }
+    }
+}
+
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
     match decode_jwt(auth.token()) {
@@ -73,33 +139,27 @@ pub async fn github_oauth_callback(
     }
 }
 
-
-// login user
 pub async fn login(
-    credentials: web::Json<User>,
+    credentials: web::Json<LoginRequest>,
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
-    let user_info = credentials.into_inner();
+    let login_request = credentials.into_inner();
 
-    if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &user_info.email}, None).await {
+    if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
         if let Some(db_password) = &existing_user.password {
-            if let Some(login_password) = &user_info.password {
-                if verify(login_password, db_password).is_ok() {
-                    // Generate a token for the user
-                    let token = generate_jwt(&existing_user.email).unwrap(); // Handle error appropriately
-
-                    // Return both the token and user data (simplified version for demonstration)
-                    return HttpResponse::Ok().json(json!({
-                        "message": "Login successful",
-                        "token": token,
-                        "user": {
-                            "email": existing_user.email,
-                            // Include other user fields as necessary
-                        }
-                    }));
-                }
+            if verify(&login_request.password, db_password).is_ok() {
+                // Here, ensure login_request.remember_me is correctly used
+                let token = generate_jwt(&existing_user.email, login_request.remember_me).unwrap();
+                return HttpResponse::Ok().json(json!({
+                    "message": "Login successful",
+                    "token": token,
+                    "user": {
+                        "email": existing_user.email,
+                    }
+                }));
             }
         }
+        
     }
 
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
@@ -248,6 +308,77 @@ pub async fn submit_feedback(
         Err(e) => {
             eprintln!("Failed to insert feedback: {}", e);
             HttpResponse::InternalServerError().finish()
+        },
+    }
+}
+//gpt3 connection
+use reqwest::header::{HeaderMap, AUTHORIZATION};
+use std::env;
+pub async fn test_gpt3_endpoint() -> impl Responder {
+    let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
+    let client = reqwest::Client::new();
+    let mut headers = HeaderMap::new();
+    headers.insert(AUTHORIZATION, format!("Bearer {}", api_key).parse().unwrap());
+
+    // Structuring payload for chat-based interaction
+    let payload = json!({
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {"role": "user", "content": "Write a factorial function in Rust language."},
+            {"role": "system", "content": ""}
+        ]
+    }
+    );
+
+    // Using the chat completion endpoint
+    let response = client
+        .post("https://api.openai.com/v1/chat/completions")
+        .headers(headers)
+        .json(&payload)
+        .send()
+        .await;
+
+    match response {
+        Ok(resp) => {
+            let status = resp.status();
+            match resp.text().await {
+                Ok(body) => {
+                    if status.is_success() {
+                        HttpResponse::Ok().content_type("application/json").body(body)
+                    } else {
+                        eprintln!("GPT-3 API Error: {}", &body);
+                        HttpResponse::BadRequest().json("Failed to call GPT-3 API")
+                    }
+                },
+                Err(_) => HttpResponse::InternalServerError().json("Failed to read response body"),
+            }
+        }, 
+        Err(e) => { eprintln!("HTTP Client Error: {}", e); 
+        HttpResponse::InternalServerError().json("Internal server error")
+    }}
+}
+
+//Code Translation GPT3
+pub async fn translate_code_endpoint(
+    translation_request: web::Json<CodeTranslationRequest>,
+) -> impl Responder {
+    let api_key = match env::var("GPT3_API_KEY") {
+        Ok(key) => key,
+        Err(_) => return HttpResponse::InternalServerError().json("GPT3_API_KEY not set in environment"),
+    };
+
+    let translation_prompt = format!(
+        "Translate the following code to {}:\n{}",
+        translation_request.target_language, translation_request.source_code
+    );
+
+    // Assuming you have a function similar to test_gpt3_api that accepts a prompt
+    // and returns the completion result. You might need to adjust this part.
+    match crate::gpt3::translate_code(&translation_prompt, &api_key).await {
+        Ok(translated_code) => HttpResponse::Ok().json(translated_code),
+        Err(e) => {
+            eprintln!("Failed to translate code: {}", e);
+            HttpResponse::InternalServerError().json("Failed to translate code")
         },
     }
 }

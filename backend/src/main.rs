@@ -7,16 +7,27 @@ mod models;
 mod handlers;
 mod db;
 mod auth;
+mod gpt3preprocessing;
+mod gpt3;
+// async fn perform_initializations() {
+//     let source_code = r#"print("SRE VANSHIKA JESICA ZINDABAD")"#;
+//     let target_language = "cpp";
 
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback};
-use crate::db::init_mongo;
-use crate::models::{Feedback}; 
+//     match gpt3::translate_code(source_code, target_language).await {
+//         Ok(_) => println!("Initial translation completed successfully."),
+//         Err(e) => eprintln!("Initial translation failed: {}", e),
+//     }
+// }
+use mongodb::bson::document::Document;
 
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, test_gpt3_endpoint,translate_code_endpoint,preprocess_code_route,translate_code_handler};
+use crate::db::{init_mongo, init_feedback_collection};
+use crate::models::{Feedback, User};
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
-
+    // perform_initializations().await; 
     let oauth_config = models::OAuthConfig {
         google_client_id: env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID"),
         google_client_secret: env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET"),
@@ -43,6 +54,10 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(oauth_config.clone()))
             .app_data(web::Data::new(feedback_collection.clone()))
 
+            .service(
+                web::resource("/translate").route(web::post().to(translate_code_handler)),
+            )
+            // .route("/api/translate_code", web::post().to(handlers::translate_code_endpoint))
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
             .route("/oauth_callback", web::get().to(oauth_callback))
@@ -50,8 +65,12 @@ async fn main() -> std::io::Result<()> {
             .route("/logout", web::get().to(logout))
             .route("/api/user/profile", web::get().to(get_user_profile))
             .route("/submit_feedback", web::post().to(handlers::submit_feedback))
+            .service(
+                web::resource("/preprocess_code")
+                    .route(web::post().to(preprocess_code_route))
+            )
 
-
+            .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
     })
     .bind("127.0.0.1:8080")?
     .run()
