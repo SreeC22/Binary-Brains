@@ -57,3 +57,10 @@ pub struct Feedback {
     pub message: String,
     pub rating: i32,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Translation {
+    source_code: String,
+    target_lang: String,
+    translated_code: String,
+}
