@@ -64,6 +64,7 @@ const NavBar = () => {
       {/* Center - Navigation Links */}
       <Box display="flex" alignItems="center">
         <RouterLink to="/translate" style={{ marginRight: '20px', color: 'inherit' }}>Translate Code</RouterLink>
+        {/* <RouterLink to="/code-conversion" style={{ marginRight: '20px', color: 'inherit' }}>Code Conversion</RouterLink> */}
         <RouterLink to="/feedback" style={{ marginRight: '20px', color: 'inherit' }}>Feedback</RouterLink>
 
         {/* More Dropdown */}
