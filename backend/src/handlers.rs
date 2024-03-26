@@ -14,6 +14,47 @@ use actix_web_httpauth::extractors::bearer::BearerAuth;
 use crate::gpt3preprocessing::preprocess_code;
 
 use serde::Deserialize;
+use crate::gpt3;
+
+
+
+
+
+
+
+#[derive(Deserialize)]
+pub struct TranslationRequest {
+    source_code: String,
+    target_language: String,
+}
+
+pub async fn translate_code_handler(
+    item: web::Json<TranslationRequest>,
+) -> impl Responder {
+    match gpt3::translate_code(&item.source_code, &item.target_language).await {
+        Ok(translated_code) => {
+            HttpResponse::Ok().json(json!({ "translated_code": translated_code }))
+        },
+        Err(e) => {
+            eprintln!("Translation failed: {}", e);
+            HttpResponse::InternalServerError().json(json!({"error": "Translation failed"}))
+        },
+    }
+}
+// pub async fn translate_code_handler(
+//     item: web::Json<TranslationRequest>,
+// ) -> impl Responder {
+//     match gpt3::translate_code(&item.source_code, &item.target_language).await {
+//         Ok(translated_code) => HttpResponse::Ok().json({ "translated_code": translated_code }),
+//         Err(e) => {
+//             eprintln!("Translation failed: {}", e);
+//             HttpResponse::InternalServerError().json({"error": "Translation failed"})
+//         },
+//     }
+// }
+
+
+
 
 #[derive(Deserialize)]
 pub struct CodeInput {

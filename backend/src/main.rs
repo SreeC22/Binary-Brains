@@ -10,29 +10,29 @@ mod auth;
 mod gpt3preprocessing;
 mod gpt3;
 
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback,preprocess_code_route};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback,preprocess_code_route,translate_code_handler};
 use crate::db::init_mongo;
 use crate::models::{Feedback}; 
 
 
 
 
-async fn perform_initializations() {
-    let source_code = r#"print("Hello, World!")"#;
-    let target_language = "java";
+// async fn perform_initializations() {
+//     let source_code = r#"print("SRE VANSHIKA JESICA ZINDABAD")"#;
+//     let target_language = "cpp";
 
-    match gpt3::translate_code(source_code, target_language).await {
-        Ok(_) => println!("Initial translation completed successfully."),
-        Err(e) => eprintln!("Initial translation failed: {}", e),
-    }
-}
+//     match gpt3::translate_code(source_code, target_language).await {
+//         Ok(_) => println!("Initial translation completed successfully."),
+//         Err(e) => eprintln!("Initial translation failed: {}", e),
+//     }
+// }
 
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
-    perform_initializations().await; 
+    // perform_initializations().await; 
     let oauth_config = models::OAuthConfig {
         google_client_id: env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID"),
         google_client_secret: env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET"),
@@ -59,7 +59,9 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(oauth_config.clone()))
             .app_data(web::Data::new(feedback_collection.clone()))
 
-
+            .service(
+                web::resource("/translate").route(web::post().to(translate_code_handler)),
+            )
 
             .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
             // .route("/api/translate_code", web::post().to(handlers::translate_code_endpoint))
