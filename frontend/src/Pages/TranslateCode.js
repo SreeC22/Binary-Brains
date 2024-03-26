@@ -15,6 +15,7 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools'; 
 import 'ace-builds/src-noconflict/ext-beautify';
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
+import hljs from 'highlight.js';
 
 import { useToast } from "@chakra-ui/react";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
@@ -42,22 +43,6 @@ const languages = [
   { label: "MatLab", value: "matlab", icon: <MatlabOriginal /> },
 
 ];
-const getEditorMode = (language) => {
-  const modeMap = {
-    cpp: "c_cpp",
-    java: "java",
-    csharp :"csharp",
-    matlab :"matlab",
-    perl :"perl",
-    python :"python",
-    ruby :"ruby",
-    rust :"rust",
-    swift :"swift",
-    typescript :"typescript",
-  };
-
-  return modeMap[language] || "text"; 
-};
 
 const TranslateCode = () => {
   const [apiResponse, setApiResponse] = useState({ status_code: null, message: '' });
@@ -76,7 +61,7 @@ const TranslateCode = () => {
         setApiResponse({ status_code: 'Error', message: 'Failed to fetch data' });
       });
   }, []);
-
+  const sourcelangchosen = ("");
   const toast = useToast();
   const { colorMode } = useColorMode();
   const backgroundColor = colorMode === "light" ? "#fbf2e3" : "#2D3748";
@@ -92,6 +77,12 @@ const TranslateCode = () => {
   const [editorMode, setEditorMode] = useState("text");
   const [fontSize, setFontSize] = useState(14);
 
+  useEffect(() => {
+    console.log("Selected source language:", sourceLanguage);
+}, [sourceLanguage]);
+
+
+ 
   const handleZoomIn = () => {
     setFontSize((prevFontSize) => prevFontSize + 2);
   };
@@ -119,50 +110,30 @@ const TranslateCode = () => {
       setError("Input code is required");
       return;
     }
-    const url = 'http://127.0.0.1:8080/preprocess_code';
-const data = { /* your data here */ };
+    try {
+      console.log(sourceLanguage)
+      const response = await fetch('http://127.0.0.1:8080/preprocess_code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
 
-fetch(url, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify(data),
-})
-.then(response => {
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  return response.json();
-})
-.then(data => {
-  console.log(data);
-})
-.catch(error => {
-  console.error('Error during code preprocessing:', error);
-});
+        
+            });
 
-    // try {
-    //   const response = await fetch('http://127.0.0.1:8080/preprocess_code', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ code: inputCode }),
-    //   });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    //   if (!response.ok) {
-    //     throw new Error(`HTTP error! status: ${response.status}`);
-    //   }
+      const result = await response.json();
+      console.log(result); // Do something with the processed code
 
-    //   const result = await response.json();
-    //   console.log(result); // Do something with the processed code
-
-    // } catch (error) {
-    //   console.error("Error during code preprocessing:", error);
-    //   setError("was an error in preprocessing")
-    //   // Handle errors here
-    // }
+    } catch (error) {
+      console.error("Error during code preprocessing:", error);
+      setError("was an error in preprocessing")
+      // Handle errors here
+    }
     
     // // Call the translation API here
     // console.log("Input code:", inputCode);
@@ -272,15 +243,28 @@ fetch(url, {
               {sourceLanguage ? languages.find(lang => lang.value === sourceLanguage)?.label || 'Source Language' : 'Source Language'}
             </MenuButton>
             <MenuList zIndex={999}>
-              {languages.map(lang => (
+            {languages.map(lang => (
+                    <MenuItem 
+                        key={lang.value} 
+                        data-testid={`language-option-${lang.value}`} 
+                        onClick={() => {
+                            setSourceLanguage(lang.value); // Set the source language state
+
+                        }}>
+                        <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 36 })}</span>
+                        <span>{lang.label}</span>
+                    </MenuItem>
+                ))}
+              {/* {languages.map(lang => (
                 <MenuItem key={lang.value} data-testid={`language-option-${lang.value}`} onClick={() => {
                   setSourceLanguage(lang.value);
+                  
                   setEditorMode(getEditorMode(lang.value)); // Update editor mode based on the selected source language
                 }}>
                   <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 36 })}</span>
                   <span>{lang.label}</span>
                 </MenuItem>
-              ))}
+              ))} */}
             </MenuList>
           </Menu>
         </Box>

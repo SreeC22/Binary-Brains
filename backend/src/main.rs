@@ -8,30 +8,31 @@ mod handlers;
 mod db;
 mod auth;
 mod gpt3preprocessing;
+mod gpt3;
 
 use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback,preprocess_code_route};
 use crate::db::init_mongo;
+use crate::models::{Feedback}; 
 
 
-use mongodb::bson::document::Document;
 
-use crate::handlers::{test_gpt3_endpoint};
-use crate::db::{init_feedback_collection};
-use crate::models::{Feedback, User};
+
+async fn perform_initializations() {
+    let source_code = r#"print("Hello, World!")"#;
+    let target_language = "java";
+
+    match gpt3::translate_code(source_code, target_language).await {
+        Ok(_) => println!("Initial translation completed successfully."),
+        Err(e) => eprintln!("Initial translation failed: {}", e),
+    }
+}
+
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
-
-    let mongo_uri = env::var("MONGO_URI").expect("MONGO_URI is not set in .env file");
-
-    let mongo_client = mongodb::Client::with_uri_str(&mongo_uri).await.expect("Failed to connect to MongoDB");
-    let mongo_database = mongo_client.database("my_database");
-
-    let mongo_collection = mongo_database.collection::<Document>("some_collection"); // Adjust accordingly
-    let feedback_collection = mongo_database.collection::<Feedback>("feedback");
-    let user_collection = mongo_database.collection::<User>("users");
-
+    perform_initializations().await; 
     let oauth_config = models::OAuthConfig {
         google_client_id: env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID"),
         google_client_secret: env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET"),
@@ -41,6 +42,8 @@ async fn main() -> std::io::Result<()> {
         github_redirect_uri: env::var("GITHUB_REDIRECT_URI").expect("Missing GITHUB_REDIRECT_URI"),
     };
 
+    let mongo_collection = init_mongo().await.expect("Failed to initialize MongoDB");
+    let feedback_collection = db::init_feedback_collection().await.expect("Failed to initialize feedback collection");
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -55,10 +58,11 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(mongo_collection.clone()))
             .app_data(web::Data::new(oauth_config.clone()))
             .app_data(web::Data::new(feedback_collection.clone()))
-            .app_data(web::Data::new(user_collection.clone()))
-            // Routes configuration...
-            
 
+
+
+            .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
+            // .route("/api/translate_code", web::post().to(handlers::translate_code_endpoint))
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
             .route("/oauth_callback", web::get().to(oauth_callback))
@@ -70,8 +74,6 @@ async fn main() -> std::io::Result<()> {
                 web::resource("/preprocess_code")
                     .route(web::post().to(preprocess_code_route))
             )
-            .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
-
 
     })
     .bind("127.0.0.1:8080")?
