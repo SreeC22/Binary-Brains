@@ -12,9 +12,8 @@ use bcrypt::{hash, DEFAULT_COST, verify};
 use mongodb::{Collection, bson::doc};
 use std::collections::HashMap;
 use mongodb::bson;
-use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery, LoginRequest,CodeTranslationRequest};
 use serde_json::json;
-use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery,PasswordChangeForm, UserProfileUpdateForm};
+use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery,PasswordChangeForm, UserProfileUpdateForm, LoginRequest,CodeTranslationRequest};
 
 use serde::Deserialize;
 use actix_web_httpauth::extractors::bearer::BearerAuth;
@@ -344,53 +343,58 @@ pub async fn translate_code_endpoint(
     }
 }
 
-
 pub async fn change_password_handler(
     email: web::Path<String>,
     form: web::Json<PasswordChangeForm>,
     db: web::Data<Database>,
 ) -> HttpResponse {
-    let user = if let Ok(user) = get_user_by_email(&email.into_inner(), &db).await {
-        user
-    } else {
-        return HttpResponse::NotFound().json("User not found");
+    let users_collection = db.collection::<User>("users");
+
+    let user_email = email.into_inner();
+    let user = match get_user_by_email(&users_collection, &user_email).await {
+        Ok(Some(user)) => user,
+        _ => return HttpResponse::NotFound().json(json!({"error": "User not found"})),
     };
 
-    if !verify_password(&form.current_password, user.password.as_ref().unwrap()).await {
-        return HttpResponse::Unauthorized().json("Invalid current password");
-    }
-
-    let new_hashed = hash_password(&form.new_password).await.expect("Failed to hash password");
-    match update_user_password(&email.into_inner(), &new_hashed, &db).await {
-        Ok(_) => HttpResponse::Ok().json("Password updated successfully"),
-        Err(_) => HttpResponse::InternalServerError().json("Failed to update password"),
+    match user.password {
+        Some(password) => {
+            if verify_password(&form.current_password, &password).unwrap_or(false) {
+                let new_hashed = hash_password(&form.new_password).expect("Failed to hash password");
+                match update_user_password(&user_email, &new_hashed).await {
+                    Ok(_) => HttpResponse::Ok().json(json!({"message": "Password updated successfully"})),
+                    Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Failed to update password"})),
+                }
+            } else {
+                return HttpResponse::Unauthorized().json(json!({"error": "Invalid current password"}));
+            }
+        },
+        None => HttpResponse::InternalServerError().json(json!({"error": "User password not found"})),
     }
 }
 
+
 pub async fn update_user_profile_handler(
+    user_id: web::Path<String>,
     form: web::Json<UserProfileUpdateForm>,
-    db: web::Data<mongodb::Database>,
-    // Extract the user's current identification (e.g., email or ID) from the session or JWT
-    user_id: web::Path<String>, // Example placeholder
-) -> impl Responder {
-    // Optionally, verify that the new email is not already in use
-    if let Some(ref new_email) = form.email {
-        if let Ok(Some(_)) = get_user_by_email(new_email, &db).await {
-            return HttpResponse::BadRequest().json(json!({"error": "Email is already in use"}));
-        }
-    }
+    db: web::Data<Database>,
+) -> HttpResponse {
+    let users_collection = db.collection::<User>("users");
 
     match update_user_profile(&user_id, &form.into_inner(), &db).await {
         Ok(_) => HttpResponse::Ok().json(json!({"message": "Profile updated successfully"})),
-        Err(e) => HttpResponse::InternalServerError().json(json!({"error": e.to_string()})),
+        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Failed to update profile"})),
     }
 }
+
+
 pub async fn delete_account_handler(
     email: web::Path<String>,
     db: web::Data<Database>,
 ) -> HttpResponse {
+    let users_collection = db.collection::<User>("users");
+
     match delete_user(&email.into_inner(), &db).await {
-        Ok(_) => HttpResponse::Ok().json("Account deleted successfully"),
-        Err(_) => HttpResponse::InternalServerError().json("Failed to delete account"),
+        Ok(_) => HttpResponse::Ok().json(json!({"message": "Account deleted successfully"})),
+        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Failed to delete account"})),
     }
 }

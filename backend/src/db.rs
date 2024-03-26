@@ -1,5 +1,3 @@
-use mongodb::{bson::{doc}, Client, Collection, options::ClientOptions, error::Result as MongoResult};
-use crate::models::{User, UserInfo, GitHubUserInfo, Feedback};
 use mongodb::{bson::{doc, Document}, Client, Database, Collection, options::ClientOptions, error::Result as MongoResult};
 use crate::models::{User, UserInfo, GitHubUserInfo, Feedback, UserProfileUpdateForm,  PasswordChangeForm};
 use std::env;
