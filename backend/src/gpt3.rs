@@ -68,14 +68,23 @@ pub async fn test_gpt3_api() -> Result<(), Box<dyn std::error::Error>> {
 
 
 
+<<<<<<< HEAD
+pub async fn translate_code(
+    source_code: &str, 
+    source_language: &str,
+    target_language: &str
+) -> Result<String, Box<dyn std::error::Error>> { // Return type changed to Result<String, ...> to return the translation
+=======
 pub async fn translate_code( source_code: &str,target_language: &str) -> Result<String, Box<dyn std::error::Error>> { // Return type changed to Result<String, ...> to return the translation
 //Translate Code
+>>>>>>> 1a3bb503ce449dcb4c8ec3d94f5b87524c5dcba4
     let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
     let client = Client::new();
     let mut headers = HeaderMap::new();
     headers.insert(AUTHORIZATION, format!("Bearer {}", api_key).parse().unwrap());
 
-    let prompt = format!("Translate the following code into {}: \n\n{}", target_language, source_code);
+    let prompt = format!("Translate the following code from {} to {}: \n\n{}", source_language, target_language, source_code);
+
 
     let payload = json!({
         "model": "gpt-3.5-turbo-instruct",

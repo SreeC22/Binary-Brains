@@ -1,3 +1,4 @@
+import { Alert, Icon, useColorModeValue,  AlertDescription, AlertIcon, AlertTitle,IconButton, Box, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Menu, MenuButton, MenuItem, Slide, MenuList, Text, VStack, useColorMode, ChakraProvider, Center } from "@chakra-ui/react";
 import { Alert, Icon, useColorModeValue, AlertDescription, AlertIcon, AlertTitle, Box, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Menu, MenuButton, MenuItem, Slide, MenuList, Text, VStack, useColorMode, ChakraProvider, Center } from "@chakra-ui/react";
 import { Button, IconButton } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons'; // For the dropdown icon, you can choose any
@@ -17,7 +18,7 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/ext-beautify';
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
-import hljs from 'highlight.js';
+
 
 import { useToast } from "@chakra-ui/react";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
@@ -27,8 +28,8 @@ import AceEditor from 'react-ace';
 
 import { motion } from "framer-motion"; // Import motion from Framer Motion
 import { BiSolidDownArrowAlt } from "react-icons/bi";
-import { FaCode, FaCog, FaCube, FaPaste } from 'react-icons/fa';
-import { FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
+import { FaCode, FaCog, FaCube, FaPaste,FaTimes } from 'react-icons/fa';
+import {  FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
 import axios from 'axios';
 import { SiConvertio } from "react-icons/si";
 import { set } from "ace-builds/src-noconflict/ace";
@@ -48,22 +49,26 @@ const languages = [
 ];
 
 const TranslateCode = () => {
-  const [apiResponse, setApiResponse] = useState({ status_code: null, message: '' });
-
+  const [gptStatus, setGptStatus] = useState(false);
   useEffect(() => {
-    // Adjust the URL to match your endpoint
-    const url = 'http://127.0.0.1:8080/api/test_gpt3';
+    const callAPI = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8080/api/test_gpt3');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("API response:", data);
+        setGptStatus(true); // Update the state instead of directly modifying the variable
+      } catch (error) {
+        console.error("Error calling API:", error);
+      }
+    };
 
-    fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        setApiResponse({ status_code: data.status_code, message: data.message });
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-        setApiResponse({ status_code: 'Error', message: 'Failed to fetch data' });
-      });
+    callAPI(); // Call the API when the component mounts
   }, []);
+
+
   const sourcelangchosen = ("");
   const toast = useToast();
   const { colorMode } = useColorMode();
@@ -88,6 +93,40 @@ const TranslateCode = () => {
 
 
 
+const handleZoomIn = () => {
+  setFontSize(prevFontSize => prevFontSize + 2);
+};
+
+const handleZoomOut = () => {
+  setFontSize(prevFontSize => Math.max(prevFontSize - 2, 8));
+};
+
+const handleZoomInOC = () => {
+  setFontSize(prevFontSize => prevFontSize + 2);
+};
+
+const handleZoomOutOC = () => {
+  setFontSize(prevFontSize => Math.max(prevFontSize - 2, 8));
+};
+
+const handleCopyOutputCode = () => {
+  navigator.clipboard.writeText(outputCode).then(() => {
+    toast({
+      title: "Copied.",
+      description: "Code copied to clipboard successfully.",
+      status: "success",
+      duration: 5000,
+      isClosable: true,
+    });
+  }).catch((err) => {
+    setError('Error in copying text: ', err);
+  });
+};
+
+  const handleClose = () => {
+    setError(""); // Clear the error message
+  };
+  const fetchTranslatedCode = async () => {
   const handleZoomIn = () => {
     setFontSize((prevFontSize) => prevFontSize + 2);
   };
@@ -116,7 +155,6 @@ const TranslateCode = () => {
       setError("Input code is required");
       return;
     }
-
     try {
       const response = await fetch('http://127.0.0.1:8080/translate', {
         method: 'POST',
@@ -125,6 +163,7 @@ const TranslateCode = () => {
         },
         body: JSON.stringify({
           source_code: inputCode,
+          source_language: sourceLanguage,
           target_language: targetLanguage,
         }),
       });
@@ -135,6 +174,110 @@ const TranslateCode = () => {
 
       const result = await response.json();
       console.log("API response:", result);
+
+      setOutputCode(result.translated_code); // Set the translated code received from the API
+     
+    } catch (error) {
+      console.error("Error during translation:", error);
+    }
+  };
+  const handleConvert = async () => {
+
+    try {
+      const preprocessedCodeResponse = await fetch('http://127.0.0.1:8080/preprocess_code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
+      });
+
+      if (!preprocessedCodeResponse.ok) {
+        throw new Error(`HTTP error! status: ${preprocessedCodeResponse.status}`);
+      }
+
+      const preprocessedCodeResult = await preprocessedCodeResponse.json();
+      setInputCode(preprocessedCodeResult);
+      console.log(preprocessedCodeResult);
+
+      await fetchTranslatedCode(); // Fetch translated code
+    } catch (error) {
+      console.error("Error during preprocessing:", error);
+      setError("There was an error in preprocessing");
+    }
+  };
+  // const handleConvert = async() => {
+  //   if (!sourceLanguage || !targetLanguage) {
+  //     setError("Both source and target languages are required");
+  //     return;
+  //   }
+
+
+  //   if (sourceLanguage === targetLanguage) {
+  //     setError("Source and target languages cannot be the same");
+  //     return;
+  //   }
+
+  //   if (!inputCode.trim()) {
+  //     setError("Input code is required");
+  //     return;
+  //   }
+  
+
+
+  //   try {
+  //     console.log(sourceLanguage)
+  //     const response = await fetch('http://127.0.0.1:8080/preprocess_code', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
+
+        
+  //           });
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+
+  //     const result = await response.json();
+  //     setInputCode(result)
+  //     console.log(result); // Do something with the processed code
+      
+  //   } catch (error) {
+  //     console.error("Error during code preprocessing:", error);
+  //     setError("was an error in preprocessing")
+  //     // Handle errors here
+  //   }
+  //   try {
+  //     const response = await fetch('http://127.0.0.1:8080/translate', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         source_code: inputCode,
+  //         source_language: sourceLanguage,
+  //         target_language: targetLanguage,
+  //       }),
+  //     });
+  
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+  
+  //     const result = await response.json();
+  //     console.log("API response:", result);
+  //     setOutputCode(result.translated_code);
+  //     setOutputCodeReceived(true);
+  //     // setOutputCode(result);
+  //   } catch (error) {
+  //     console.error("Error during translation:", error);
+      
+  //   }
+  // };
+ 
       setOutputCode(result.translated_code);
 
       // Update history
@@ -149,7 +292,6 @@ const TranslateCode = () => {
       setError("Failed to translate code. Please try again.");
     }
   };
-
   const handleCopy = () => {
     navigator.clipboard.writeText(inputCode).then(() => {
       toast({
@@ -199,6 +341,67 @@ const TranslateCode = () => {
   );
 
   return (
+     <>
+
+    <ChakraProvider>
+    <HeadingSteps />
+    <VStack spacing={4} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}>
+          <Flex
+                justifyContent="center" // Center Horizontally             
+                 >
+          <Box
+              width="47.75%"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              p={4}
+              bg={useColorModeValue('gray.100', 'gray.700')}
+              borderRadius="lg"
+              borderWidth="1px"
+              borderColor={gptStatus ? 'green.500' : 'red.500'}
+            >
+              <Icon
+                as={gptStatus ? AiOutlineCheckCircle : AiOutlineCloseCircle}
+                color={gptStatus ? 'green.500' : 'red.500'}
+                w={6}
+                h={6}
+                mr={2}
+              />
+              <Text color={useColorModeValue('gray.800', 'whiteAlpha.900')} fontWeight="medium">
+                GPT Status: {gptStatus ? 'Active' : 'Inactive'}
+              </Text>
+            </Box>
+        </Flex>
+
+      <Flex justifyContent="space-between">
+        <Box position="relative">
+        <Menu>
+            <MenuButton
+              as={CustomButton}
+              aria-label="Source Language"
+              leftIcon={<FaCog />}
+              colorScheme="blue"
+              zIndex={1}
+              borderRadius='6'
+              transition='all 0.3s'
+              padding="12px 16px"
+              ml="5"
+              marginTop={5}
+              marginRight={25}
+            >
+              {sourceLanguage ? languages.find(lang => lang.value === sourceLanguage)?.label || 'Source Language' : 'Source Language'}
+            </MenuButton>
+            <MenuList zIndex={999}>
+            {languages.map(lang => (
+                    <MenuItem 
+                        key={lang.value} 
+                        data-testid={`language-option-${lang.value}`} 
+                        onClick={() => {
+                            setSourceLanguage(lang.value); // Set the source language state
+
+                        }}>
+                        <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 36 })}</span>
+                        <span>{lang.label}</span>
     <>
       <div>
         <p>GPT-3 API Status Code: {apiResponse.status_code}</p>
@@ -269,6 +472,7 @@ const TranslateCode = () => {
                       }}>
                       <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 36 })}</span>
                       <span>{lang.label}</span>
+
                     </MenuItem>
                   ))}
                   {/* {languages.map(lang => (
@@ -315,6 +519,82 @@ const TranslateCode = () => {
                 </MenuList>
               </Menu>
 
+        </Box>
+      </Flex>
+      <Box display="flex" justifyContent="space-between">
+             <Box width="48%" p="30px">
+               <FormLabel htmlFor="inputCode" display="flex" alignItems="center">
+                 Input Code
+                 <Box ml={2}>
+                   <FaCode />
+                 </Box>
+               </FormLabel>
+             
+              <div style={{ position: 'relative' ,  border: '10px solid black' }}>
+              
+                  <IconButton
+                  title="Copy"
+                  icon={<FaPaste />}
+                  onClick={() => handleCopy()}
+                  position="absolute"
+                  top="8px"
+                  right="8px"
+                  zIndex="999"
+                  backgroundColor="transparent"
+                  border="none"
+                  cursor="pointer"
+                  color="white"
+                  />
+                    <IconButton
+                      title="Clear"
+                      icon={<FaTimes />}
+                      onClick={() => setInputCode('')}
+                      position="absolute"
+                      top="45px"
+                      right="8px"
+                      zIndex="999"
+                      backgroundColor="transparent"
+                      border="none"
+                      cursor="pointer"
+                      color="white"
+                    />
+                    <IconButton
+                      title="Zoom in"
+                      icon={<FaSearchPlus />}
+                      onClick={handleZoomIn}
+                      position="absolute"
+                      bottom="10px"
+                      right="8px"
+                      zIndex="999"
+                      color="white"
+                    />
+                    <IconButton
+                      title="Zoom out"
+                      icon={<FaSearchMinus />}
+                      onClick={handleZoomOut}
+                      position="absolute"
+                      bottom="10px"
+                      right="40px"
+                      zIndex="999"
+                      color="white"
+                    />
+                  <AceEditor
+                      id="inputCode"
+                      name="input"
+                      fontSize={`${fontSize}px`}
+                      mode={
+                        sourceLanguage ? 
+                        (sourceLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === sourceLanguage)?.value || "text") 
+                        : "text"
+                      }
+                      theme="monokai"
+                      width="100%"
+                      height="500px"
+                      value={inputCode}
+                      onChange={setInputCode}
+                      // editorProps={{ $blockScrolling: true }}
+                     
+                    />
             </Box>
           </Flex>
           <Box display="flex" justifyContent="space-between">
@@ -383,6 +663,46 @@ const TranslateCode = () => {
                   <FaCode />
                 </Box>
               </FormLabel>
+              <div style={{ position: 'relative',  border: '10px solid black' }}>
+                    <IconButton
+                    title="Copy"
+                    icon={<FaPaste />}
+                    onClick={() => handleCopyOutputCode()}
+                    position="absolute"
+                    top="8px"
+                    right="8px"
+                    zIndex="999"
+                    backgroundColor="transparent"
+                    border="none"
+                    cursor="pointer"
+                    color="white"
+                  />
+                  <IconButton
+                    title="Clear"
+                    icon={<FaTimes />}
+                    onClick={() => setOutputCode('')}
+                    position="absolute"
+                    top="45px"
+                    right="8px"
+                    zIndex="999"
+                    backgroundColor="transparent"
+                    border="none"
+                    cursor="pointer"
+                    color="white"
+                  />
+                 
+                
+
+                  <AceEditor
+                    id="outputCode"
+                    mode={targetLanguage ? (targetLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === targetLanguage)?.value || "text") : "text"}
+                    theme="monokai"
+                    width="100%"
+                    height="500px"
+                    value= {outputCode}
+                    readOnly={true}
+                    useWorker={false}
+                  />
               <div style={{ position: 'relative', border: '10px solid black' }}>
                 <button
                   title='Copy'
