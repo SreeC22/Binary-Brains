@@ -1,5 +1,5 @@
-use mongodb::{bson::{doc}, Client, Collection, options::ClientOptions, error::Result as MongoResult};
-use crate::models::{User, UserInfo, GitHubUserInfo, Feedback};
+use mongodb::{bson::{doc, Document}, Client, Collection, options::ClientOptions, error::Result as MongoResult};
+use crate::models::{User, UserInfo, GitHubUserInfo, Feedback, Translation};
 use std::env;
 
 // initializes the mongo client and user collection
@@ -70,5 +70,17 @@ pub async fn init_feedback_collection() -> mongodb::error::Result<Collection<Fee
 // inserts feedback into the database
 pub async fn insert_feedback(db: &Collection<Feedback>, feedback: Feedback) -> mongodb::error::Result<()> {
     db.insert_one(feedback, None).await?;
+    Ok(())
+}
+
+//inserts translation history
+async fn insert_translation(history: Translation) -> mongodb::error::Result<()> {
+    let client_options = ClientOptions::parse("your_mongodb_connection_string").await?;
+    let client = Client::with_options(client_options)?;
+    let db = client.database("your_database_name");
+    let collection: Collection<Translation> = db.collection("translation_history");
+
+    collection.insert_one(history, None).await?;
+
     Ok(())
 }

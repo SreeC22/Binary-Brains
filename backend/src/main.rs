@@ -18,12 +18,9 @@ mod gpt3;
 //         Err(e) => eprintln!("Initial translation failed: {}", e),
 //     }
 // }
-
-
-mod gpt3;
 use mongodb::bson::document::Document;
 
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, test_gpt3_endpoint,translate_code_endpoint,preprocess_code_route};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, test_gpt3_endpoint,translate_code_endpoint,preprocess_code_route,translate_code_handler};
 use crate::db::{init_mongo, init_feedback_collection};
 use crate::models::{Feedback, User};
 #[actix_web::main]
