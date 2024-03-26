@@ -25,13 +25,14 @@ use crate::gpt3;
 #[derive(Deserialize)]
 pub struct TranslationRequest {
     source_code: String,
+    source_language: String,
     target_language: String,
 }
 
 pub async fn translate_code_handler(
     item: web::Json<TranslationRequest>,
 ) -> impl Responder {
-    match gpt3::translate_code(&item.source_code, &item.target_language).await {
+    match gpt3::translate_code(&item.source_code, &item.source_language, &item.target_language).await {
         Ok(translated_code) => {
             HttpResponse::Ok().json(json!({ "translated_code": translated_code }))
         },
