@@ -17,3 +17,5 @@ backend/target/debug/backend.pdb filter=lfs diff=lfs merge=lfs -text
 backend/target/debug/deps/backend.pdb filter=lfs diff=lfs merge=lfs -text
 backend/target/debug/deps/libmongodb-0ef585d18dae075d.rlib filter=lfs diff=lfs merge=lfs -text
 backend/target/debug/deps/libmongodb-4c4d02b7b448e0ed.rlib filter=lfs diff=lfs merge=lfs -text
+backend/target/debug/deps/db_schema-44f071c08a269860.pdb filter=lfs diff=lfs merge=lfs -text
+backend/target/debug/deps/libreqwest-c9b335e2ed0775f8.rlib filter=lfs diff=lfs merge=lfs -text
