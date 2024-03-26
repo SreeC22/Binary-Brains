@@ -128,7 +128,8 @@ const TranslateCode = () => {
   
       const result = await response.json();
       console.log("API response:", result);
-  
+      setOutputCode(result.translated_code);
+      // setOutputCode(result);
     } catch (error) {
       console.error("Error during translation:", error);
       
@@ -170,6 +171,17 @@ const TranslateCode = () => {
  
   const handleCopy = () => {
     navigator.clipboard.writeText(inputCode).then(() => {
+      toast({
+        title: "Copied.",
+        description: "Code copied to clipboard successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    }).catch((err) => {
+      setError('Error in copying text: ', err);
+    });
+    navigator.clipboard.writeText(outputCode).then(() => {
       toast({
         title: "Copied.",
         description: "Code copied to clipboard successfully.",
