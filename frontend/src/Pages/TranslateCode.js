@@ -111,35 +111,60 @@ const TranslateCode = () => {
       return;
     }
     try {
-      console.log(sourceLanguage)
-      const response = await fetch('http://127.0.0.1:8080/preprocess_code', {
+      const response = await fetch('http://127.0.0.1:8080/translate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
-
-        
-            });
-
+        body: JSON.stringify({
+          source_code: inputCode,
+          target_language: targetLanguage,
+        }),
+      });
+  
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+  
       const result = await response.json();
-      console.log(result); // Do something with the processed code
-
+      console.log("API response:", result);
+  
     } catch (error) {
-      console.error("Error during code preprocessing:", error);
-      setError("was an error in preprocessing")
-      // Handle errors here
+      console.error("Error during translation:", error);
+      
     }
+
+
+    // try {
+    //   console.log(sourceLanguage)
+    //   const response = await fetch('http://127.0.0.1:8080/preprocess_code', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
+
+        
+    //         });
+
+    //   if (!response.ok) {
+    //     throw new Error(`HTTP error! status: ${response.status}`);
+    //   }
+
+    //   const result = await response.json();
+    //   console.log(result); // Do something with the processed code
+
+    // } catch (error) {
+    //   console.error("Error during code preprocessing:", error);
+    //   setError("was an error in preprocessing")
+    //   // Handle errors here
+    // }
     
     // // Call the translation API here
     // console.log("Input code:", inputCode);
     // console.log("Source language:", sourceLanguage);
     // console.log("Target language:", targetLanguage);
-    setOutputCode(`Generated code in the target language will go here`);
+    // setOutputCode(`Generated code in the target language will go here`);
     // setError("");
   };
  
