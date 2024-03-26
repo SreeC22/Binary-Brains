@@ -64,6 +64,7 @@ const NavBar = () => {
       {/* Center - Navigation Links */}
       <Box display="flex" alignItems="center">
         <RouterLink to="/translate" style={{ marginRight: '20px', color: 'inherit' }}>Translate Code</RouterLink>
+        {/* <RouterLink to="/code-conversion" style={{ marginRight: '20px', color: 'inherit' }}>Code Conversion</RouterLink> */}
         <RouterLink to="/feedback" style={{ marginRight: '20px', color: 'inherit' }}>Feedback</RouterLink>
 
         {/* More Dropdown */}
@@ -104,39 +105,7 @@ const NavBar = () => {
           ml="4"
         />
 
-        {/* Search Button */}
-        <IconButton
-          onClick={onOpen}
-          icon={<FaSearch />}
-          aria-label="Search"
-          variant="ghost"
-          ml="4"
-        />
       </Box>
-
-      {/* Search Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Search for anything</ModalHeader>
-          <ModalCloseButton />
-          <Input
-            placeholder="Type here..."
-            my={4}
-            mx={3}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyPress={event => {
-              if (event.key === 'Enter') {
-                handleSearch();
-              }
-            }}
-          />
-          <Button onClick={handleSearch} colorScheme="blue" my={4} mx={4}>
-            Search
-          </Button>
-        </ModalContent>
-      </Modal>
     </Flex>
   );
 };
