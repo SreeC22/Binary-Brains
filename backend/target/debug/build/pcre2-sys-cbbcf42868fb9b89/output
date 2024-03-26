@@ -1,0 +1,296 @@
+cargo:rerun-if-env-changed=PCRE2_SYS_STATIC
+cargo:rerun-if-env-changed=LIBPCRE2_8_NO_PKG_CONFIG
+cargo:rerun-if-env-changed=PKG_CONFIG_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG
+cargo:rerun-if-env-changed=PKG_CONFIG
+cargo:rerun-if-env-changed=LIBPCRE2_8_STATIC
+cargo:rerun-if-env-changed=LIBPCRE2_8_DYNAMIC
+cargo:rerun-if-env-changed=PKG_CONFIG_ALL_STATIC
+cargo:rerun-if-env-changed=PKG_CONFIG_ALL_DYNAMIC
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_PATH
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_LIBDIR
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_SYSROOT_DIR
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR
+cargo:rerun-if-env-changed=LIBPCRE2_8_STATIC
+cargo:rerun-if-env-changed=LIBPCRE2_8_DYNAMIC
+cargo:rerun-if-env-changed=PKG_CONFIG_ALL_STATIC
+cargo:rerun-if-env-changed=PKG_CONFIG_ALL_DYNAMIC
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_PATH
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_LIBDIR
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_SYSROOT_DIR
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR
+TARGET = Some("x86_64-pc-windows-msvc")
+OPT_LEVEL = Some("0")
+HOST = Some("x86_64-pc-windows-msvc")
+cargo:rerun-if-env-changed=CC_x86_64-pc-windows-msvc
+CC_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=CC_x86_64_pc_windows_msvc
+CC_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_CC
+HOST_CC = None
+cargo:rerun-if-env-changed=CC
+CC = None
+cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+CRATE_CC_NO_DEFAULTS = None
+CARGO_CFG_TARGET_FEATURE = Some("fxsr,sse,sse2")
+DEBUG = Some("true")
+cargo:rerun-if-env-changed=CFLAGS_x86_64-pc-windows-msvc
+CFLAGS_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=CFLAGS_x86_64_pc_windows_msvc
+CFLAGS_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_CFLAGS
+HOST_CFLAGS = None
+cargo:rerun-if-env-changed=CFLAGS
+CFLAGS = None
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_auto_possess.o" "-c" "upstream\\src\\pcre2_auto_possess.c"
+pcre2_auto_possess.c
+upstream\src\pcre2_auto_possess.c(379): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_chartables.o" "-c" "upstream\\src\\pcre2_chartables.c"
+pcre2_chartables.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_chkdint.o" "-c" "upstream\\src\\pcre2_chkdint.c"
+pcre2_chkdint.c
+upstream\src\pcre2_chkdint.c(84): warning C4127: conditional expression is constant
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_compile.o" "-c" "upstream\\src\\pcre2_compile.c"
+pcre2_compile.c
+upstream\src\pcre2_compile.c(2208): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(2221): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(5937): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(5944): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6249): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6250): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6521): warning C4244: '=': conversion from 'const uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6547): warning C4244: '=': conversion from 'const uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6560): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6570): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6624): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6667): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6690): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6691): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6722): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(6820): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7094): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7095): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7107): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7161): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7331): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7333): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7335): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7338): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7339): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7341): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7508): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7523): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7552): warning C4267: 'function': conversion from 'size_t' to 'int', possible loss of data
+upstream\src\pcre2_compile.c(7602): warning C4267: 'function': conversion from 'size_t' to 'int', possible loss of data
+upstream\src\pcre2_compile.c(7616): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7689): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7745): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7809): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7810): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7813): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7814): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7826): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7831): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7832): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7841): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7842): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7861): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7862): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7869): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7875): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7879): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7880): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7898): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(7899): warning C4244: '=': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(8047): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(8094): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(8150): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(8151): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(8203): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(8244): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(8267): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(8448): warning C4244: '=': conversion from 'int' to 'uint16_t', possible loss of data
+upstream\src\pcre2_compile.c(8479): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(8485): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(8486): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(9208): warning C4244: '=': conversion from 'unsigned int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_compile.c(10642): warning C4244: '=': conversion from 'int' to 'uint16_t', possible loss of data
+upstream\src\pcre2_compile.c(10643): warning C4244: '=': conversion from 'int' to 'uint16_t', possible loss of data
+upstream\src\pcre2_compile.c(10692): warning C4244: '=': conversion from 'uint32_t' to 'uint16_t', possible loss of data
+upstream\src\pcre2_compile.c(10693): warning C4244: '=': conversion from 'uint32_t' to 'uint16_t', possible loss of data
+upstream\src\pcre2_compile.c(10694): warning C4244: '=': conversion from 'int' to 'uint16_t', possible loss of data
+upstream\src\pcre2_compile.c(10946): warning C4244: '=': conversion from 'int' to 'uint16_t', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_compile.c(10223) : warning C4706: assignment within conditional expression
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_compile.c(2274) : warning C4701: potentially uninitialized local variable 'i' used
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_compile.c(9339) : warning C4702: unreachable code
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_compile.c(5188) : warning C4701: potentially uninitialized local variable 'othercase' used
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_config.o" "-c" "upstream\\src\\pcre2_config.c"
+pcre2_config.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_context.o" "-c" "upstream\\src\\pcre2_context.c"
+pcre2_context.c
+upstream\src\pcre2_context.c(340): warning C4244: '=': conversion from 'uint32_t' to 'uint16_t', possible loss of data
+upstream\src\pcre2_context.c(366): warning C4244: '=': conversion from 'uint32_t' to 'uint16_t', possible loss of data
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_convert.o" "-c" "upstream\\src\\pcre2_convert.c"
+pcre2_convert.c
+upstream\src\pcre2_convert.c(315): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_convert.c(656): warning C4244: 'function': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_convert.c(801): warning C4244: 'initializing': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_convert.c(802): warning C4244: 'initializing': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_dfa_match.o" "-c" "upstream\\src\\pcre2_dfa_match.c"
+pcre2_dfa_match.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_error.o" "-c" "upstream\\src\\pcre2_error.c"
+pcre2_error.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_extuni.o" "-c" "upstream\\src\\pcre2_extuni.c"
+pcre2_extuni.c
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_find_bracket.o" "-c" "upstream\\src\\pcre2_find_bracket.c"
+pcre2_find_bracket.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_jit_compile.o" "-c" "upstream\\src\\pcre2_jit_compile.c"
+pcre2_jit_compile.c
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\sljit\sljitNativeX86_common.c(4682): warning C4127: conditional expression is constant
+upstream\src\pcre2_jit_compile.c(1761): warning C4244: '=': conversion from '__int64' to 'sljit_s32', possible loss of data
+upstream\src\pcre2_jit_compile.c(1776): warning C4244: '=': conversion from '__int64' to 'sljit_s32', possible loss of data
+upstream\src\pcre2_jit_compile.c(2393): warning C4244: '=': conversion from 'sljit_sw' to 'int', possible loss of data
+upstream\src\pcre2_jit_compile.c(5586): warning C4244: '=': conversion from 'sljit_u32' to 'sljit_u8', possible loss of data
+upstream\src\pcre2_jit_compile.c(5889): warning C4244: 'function': conversion from 'sljit_u32' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_jit_compile.c(5954): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(155): warning C4244: '=': conversion from 'sljit_s32' to 'sljit_u8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(170): warning C4244: '=': conversion from 'sljit_s32' to 'sljit_u8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(195): warning C4244: '=': conversion from 'sljit_s32' to 'sljit_u8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(206): warning C4244: '=': conversion from 'sljit_s32' to 'sljit_u8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(214): warning C4244: '=': conversion from 'sljit_s32' to 'sljit_u8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(225): warning C4244: '=': conversion from 'sljit_s32' to 'sljit_u8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(276): warning C4244: 'function': conversion from 'sljit_u32' to 'PCRE2_UCHAR8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(279): warning C4244: 'function': conversion from 'sljit_u32' to 'PCRE2_UCHAR8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(334): warning C4244: '=': conversion from 'sljit_s32' to 'sljit_u8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(409): warning C4244: 'function': conversion from 'sljit_u32' to 'PCRE2_UCHAR8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(412): warning C4244: 'function': conversion from 'sljit_u32' to 'PCRE2_UCHAR8', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_simd_inc.h(462): warning C4244: '=': conversion from 'sljit_s32' to 'sljit_u8', possible loss of data
+upstream\src\pcre2_jit_compile.c(6253): warning C4244: '=': conversion from 'int' to 'sljit_u8', possible loss of data
+upstream\src\pcre2_jit_compile.c(6389): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_jit_compile.c(6520): warning C4244: 'function': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_jit_compile.c(6520): warning C4244: 'function': conversion from 'int' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_jit_compile.c(6678): warning C4244: 'function': conversion from 'sljit_u32' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_jit_compile.c(7537): warning C4244: '=': conversion from 'unsigned int' to 'sljit_u8', possible loss of data
+upstream\src\pcre2_jit_compile.c(7538): warning C4244: '=': conversion from 'unsigned int' to 'sljit_u8', possible loss of data
+upstream\src\pcre2_jit_compile.c(7839): warning C4244: 'function': conversion from 'sljit_uw' to 'sljit_u32', possible loss of data
+upstream\src\pcre2_jit_compile.c(7839): warning C4244: 'function': conversion from 'sljit_uw' to 'sljit_u32', possible loss of data
+upstream\src\pcre2_jit_compile.c(7843): warning C4244: 'function': conversion from 'sljit_uw' to 'sljit_u32', possible loss of data
+upstream\src\pcre2_jit_compile.c(7843): warning C4244: 'function': conversion from 'sljit_uw' to 'sljit_u32', possible loss of data
+upstream\src\pcre2_jit_compile.c(9912): warning C4244: 'function': conversion from 'sljit_uw' to 'int', possible loss of data
+upstream\src\pcre2_jit_compile.c(9958): warning C4244: 'function': conversion from 'sljit_uw' to 'int', possible loss of data
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\sljit\sljitNativeX86_common.c(4218) : warning C4701: potentially uninitialized local variable 'byte' used
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_compile.c(8780) : warning C4701: potentially uninitialized local variable 'lgb' used
+C:\Users\12013\.cargo\registry\src\index.crates.io-6f17d22bba15001f\pcre2-sys-0.2.9\upstream\src\pcre2_jit_compile.c(8712) : warning C4701: potentially uninitialized local variable 'lgb' used
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_maketables.o" "-c" "upstream\\src\\pcre2_maketables.c"
+pcre2_maketables.c
+upstream\src\pcre2_maketables.c(95): warning C4244: '=': conversion from 'int' to 'uint8_t', possible loss of data
+upstream\src\pcre2_maketables.c(102): warning C4244: '=': conversion from 'int' to 'uint8_t', possible loss of data
+upstream\src\pcre2_maketables.c(148): warning C4244: '=': conversion from 'int' to 'uint8_t', possible loss of data
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_match.o" "-c" "upstream\\src\\pcre2_match.c"
+pcre2_match.c
+upstream\src\pcre2_match.c(2945): warning C4389: '==': signed/unsigned mismatch
+upstream\src\pcre2_match.c(3771): warning C4389: '==': signed/unsigned mismatch
+upstream\src\pcre2_match.c(4354): warning C4389: '==': signed/unsigned mismatch
+upstream\src\pcre2_match.c(5865): warning C4244: 'initializing': conversion from 'ptrdiff_t' to 'uint32_t', possible loss of data
+upstream\src\pcre2_match.c(7103): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_match.c(7125): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_match_data.o" "-c" "upstream\\src\\pcre2_match_data.c"
+pcre2_match_data.c
+upstream\src\pcre2_match_data.c(67): warning C4244: '=': conversion from 'uint32_t' to 'uint16_t', possible loss of data
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_newline.o" "-c" "upstream\\src\\pcre2_newline.c"
+pcre2_newline.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_ord2utf.o" "-c" "upstream\\src\\pcre2_ord2utf.c"
+pcre2_ord2utf.c
+upstream\src\pcre2_ord2utf.c(95): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_pattern_info.o" "-c" "upstream\\src\\pcre2_pattern_info.c"
+pcre2_pattern_info.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_script_run.o" "-c" "upstream\\src\\pcre2_script_run.c"
+pcre2_script_run.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_serialize.o" "-c" "upstream\\src\\pcre2_serialize.c"
+pcre2_serialize.c
+0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_string_utils.o" "-c" "upstream\\src\\pcre2_string_utils.c"
+pcre2_string_utils.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_study.o" "-c" "upstream\\src\\pcre2_study.c"
+pcre2_study.c
+upstream\src\pcre2_study.c(1907): warning C4244: '=': conversion from 'int' to 'uint16_t', possible loss of data
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_substitute.o" "-c" "upstream\\src\\pcre2_substitute.c"
+pcre2_substitute.c
+upstream\src\pcre2_substitute.c(788): warning C4389: '!=': signed/unsigned mismatch
+upstream\src\pcre2_substitute.c(806): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+upstream\src\pcre2_substitute.c(890): warning C4389: '!=': signed/unsigned mismatch
+upstream\src\pcre2_substitute.c(908): warning C4244: '=': conversion from 'uint32_t' to 'PCRE2_UCHAR8', possible loss of data
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_substring.o" "-c" "upstream\\src\\pcre2_substring.c"
+pcre2_substring.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_tables.o" "-c" "upstream\\src\\pcre2_tables.c"
+pcre2_tables.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_ucd.o" "-c" "upstream\\src\\pcre2_ucd.c"
+pcre2_ucd.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_valid_utf.o" "-c" "upstream\\src\\pcre2_valid_utf.c"
+pcre2_valid_utf.c
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "upstream\\src" "-I" "upstream\\include" "-W4" "-DPCRE2_CODE_UNIT_WIDTH=8" "-DHAVE_STDLIB_H=1" "-DHAVE_MEMMOVE=1" "-DHAVE_CONFIG_H=1" "-DPCRE2_STATIC=1" "-DSTDC_HEADERS=1" "-DSUPPORT_PCRE2_8=1" "-DSUPPORT_UNICODE=1" "-DHAVE_WINDOWS_H=1" "-DSUPPORT_JIT=1" "-FoC:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_xclass.o" "-c" "upstream\\src\\pcre2_xclass.c"
+pcre2_xclass.c
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+cargo:rerun-if-env-changed=AR_x86_64-pc-windows-msvc
+AR_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=AR_x86_64_pc_windows_msvc
+AR_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_AR
+HOST_AR = None
+cargo:rerun-if-env-changed=AR
+AR = None
+cargo:rerun-if-env-changed=ARFLAGS_x86_64-pc-windows-msvc
+ARFLAGS_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=ARFLAGS_x86_64_pc_windows_msvc
+ARFLAGS_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_ARFLAGS
+HOST_ARFLAGS = None
+cargo:rerun-if-env-changed=ARFLAGS
+ARFLAGS = None
+running: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\lib.exe" "-out:C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\libpcre2.a" "-nologo" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_auto_possess.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_chartables.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_chkdint.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_compile.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_config.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_context.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_convert.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_dfa_match.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_error.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_extuni.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_find_bracket.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_jit_compile.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_maketables.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_match.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_match_data.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_newline.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_ord2utf.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_pattern_info.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_script_run.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_serialize.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_string_utils.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_study.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_substitute.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_substring.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_tables.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_ucd.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_valid_utf.o" "C:\\cs490 sree\\Binary-Brains\\backend\\target\\debug\\build\\pcre2-sys-cbbcf42868fb9b89\\out\\240ba73aab56e96f-pcre2_xclass.o"
+exit code: 0
+cargo:rustc-link-lib=static=pcre2
+cargo:rustc-link-search=native=C:\cs490 sree\Binary-Brains\backend\target\debug\build\pcre2-sys-cbbcf42868fb9b89\out
