@@ -43,7 +43,8 @@
       "^.+\\.[t|j]sx?$": "babel-jest"
     },
     "moduleNameMapper": {
-      "\\.(css|less|sass|scss)$": "identity-obj-proxy"
+      "\\.(css|less|sass|scss)$": "identity-obj-proxy",
+      "\\.(jpg|jpeg|png|gif|webp|svg)$": "<rootDir>/__mocks__/fileMock.js"
     },
     "setupFilesAfterEnv": [
       "<rootDir>/src/setupTests.js"
@@ -89,6 +90,7 @@
     "jest-fetch-mock": "^3.0.3",
     "msw": "^2.2.10",
     "node-fetch": "^3.3.2",
+    "react-test-renderer": "^18.2.0",
     "whatwg-fetch": "^3.6.20"
   }
 }

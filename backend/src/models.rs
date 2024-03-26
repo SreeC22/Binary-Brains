@@ -78,3 +78,10 @@ pub struct LoginRequest {
     pub password: String,
     pub remember_me: bool,
 }
+
+//Vanhika's Code
+#[derive(Deserialize)]
+pub struct CodeTranslationRequest {
+    pub source_code: String,
+    pub target_language: String,
+}

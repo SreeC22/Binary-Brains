@@ -1,1 +1,0 @@
-(actix_web::web::Data<Database>, actix_web::web::Header<std::string::String>)

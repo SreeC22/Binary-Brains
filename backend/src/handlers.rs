@@ -9,7 +9,10 @@ use mongodb::{Collection, bson::doc};
 use serde_json::json;
 use std::collections::HashMap;
 use mongodb::bson;
-use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery,LoginRequest};
+use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery, LoginRequest,CodeTranslationRequest};
+use serde_json::json;
+
+use serde::Deserialize;
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use crate::gpt3preprocessing::preprocess_code;
 
@@ -352,13 +355,35 @@ pub async fn test_gpt3_endpoint() -> impl Responder {
                         HttpResponse::BadRequest().json("Failed to call GPT-3 API")
                     }
                 },
-                Err(_) => HttpResponse::InternalServerError().json("Failed
-to read response body"),
+                Err(_) => HttpResponse::InternalServerError().json("Failed to read response body"),
+            }
+        }, 
+        Err(e) => { eprintln!("HTTP Client Error: {}", e); 
+        HttpResponse::InternalServerError().json("Internal server error")
+    }}
 }
-},
-Err(e) => {
-eprintln!("HTTP Client Error: {}", e);
-HttpResponse::InternalServerError().json("Internal server error")
-}
-}
+
+//Code Translation GPT3
+pub async fn translate_code_endpoint(
+    translation_request: web::Json<CodeTranslationRequest>,
+) -> impl Responder {
+    let api_key = match env::var("GPT3_API_KEY") {
+        Ok(key) => key,
+        Err(_) => return HttpResponse::InternalServerError().json("GPT3_API_KEY not set in environment"),
+    };
+
+    let translation_prompt = format!(
+        "Translate the following code to {}:\n{}",
+        translation_request.target_language, translation_request.source_code
+    );
+
+    // Assuming you have a function similar to test_gpt3_api that accepts a prompt
+    // and returns the completion result. You might need to adjust this part.
+    match crate::gpt3::translate_code(&translation_prompt, &api_key).await {
+        Ok(translated_code) => HttpResponse::Ok().json(translated_code),
+        Err(e) => {
+            eprintln!("Failed to translate code: {}", e);
+            HttpResponse::InternalServerError().json("Failed to translate code")
+        },
+    }
 }
