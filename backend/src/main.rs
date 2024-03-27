@@ -68,6 +68,8 @@ async fn main() -> std::io::Result<()> {
             .route("/api/user/change_password", web::post().to(change_password_handler))
             .route("/api/user/update_profile", web::put().to(update_user_profile_handler))
             .route("/api/user/delete", web::delete().to(delete_account_handler))
+            .service(handlers::feedback::get_feedback) // Use the endpoint function from the feedback module
+
 
 
     })
