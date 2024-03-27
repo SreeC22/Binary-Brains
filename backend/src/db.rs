@@ -1,8 +1,6 @@
 use mongodb::{bson::{doc, Document}, Client, Database, Collection, options::ClientOptions, error::Result as MongoResult};
 use crate::models::{User, UserInfo, GitHubUserInfo, Feedback, UserProfileUpdateForm,  PasswordChangeForm};
 use std::env;
-use dotenv::dotenv;
-use mongodb::error::Error;
 
 // initializes the mongo client and user collection
 pub async fn init_mongo() -> mongodb::error::Result<Collection<User>> {
