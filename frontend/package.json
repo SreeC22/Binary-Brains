@@ -53,7 +53,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "REACT_APP_BACKEND_URL=http://localhost:3000 jest",
+    "test": "cross-env REACT_APP_BACKEND_URL=http://localhost:3000 jest",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

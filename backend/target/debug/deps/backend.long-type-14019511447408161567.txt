@@ -1,0 +1,1 @@
+fn(actix_web::web::Data<mongodb::Collection<models::Feedback>>) -> impl futures_util::Future<Output = impl Responder> {get_feedback}

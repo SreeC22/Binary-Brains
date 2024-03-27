@@ -58,6 +58,13 @@ pub struct Feedback {
     pub rating: i32,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Translation {
+    source_code: String,
+    target_lang: String,
+    translated_code: String,
+}
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlacklistedToken {
@@ -79,7 +86,6 @@ pub struct LoginRequest {
     pub remember_me: bool,
 }
 
-//Vanhika's Code
 #[derive(Deserialize)]
 pub struct CodeTranslationRequest {
     pub source_code: String,
