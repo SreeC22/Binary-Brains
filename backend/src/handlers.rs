@@ -7,7 +7,7 @@ use crate::db::{update_user_password, update_user_profile, delete_user, get_user
 use actix_web::{get, web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode};
 use actix_web_httpauth::headers::authorization::Authorization;
 use actix_web::error::{ErrorUnauthorized};
-use actix_web::get;
+
 use bcrypt::{hash, DEFAULT_COST, verify};
 use mongodb::{Collection, bson::doc};
 use std::collections::HashMap;
@@ -296,6 +296,7 @@ pub mod feedback {
         HttpResponse::Ok().body(feedback_list)
     }
 }
+
 pub async fn submit_feedback(
     feedback_data: web::Json<Feedback>,
     db: web::Data<Collection<Feedback>>,

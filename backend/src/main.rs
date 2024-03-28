@@ -64,10 +64,11 @@ async fn main() -> std::io::Result<()> {
             .route("/submit_feedback", web::post().to(handlers::submit_feedback))
             .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
             .route("/api/translate_code", web::post().to(handlers::translate_code_endpoint))
+            // Added routes for account management
             .route("/api/user/change_password", web::post().to(change_password_handler))
             .route("/api/user/update_profile", web::put().to(update_user_profile_handler))
             .route("/api/user/delete", web::delete().to(delete_account_handler))
-            .service(handlers::feedback::get_feedback)
+            .service(handlers::feedback::get_feedback) // Use the endpoint function from the feedback module
 
 
 
