@@ -3,20 +3,24 @@ use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
 use crate::auth::{hash_password, verify_password};
 use crate::db::{update_user_password, update_user_profile, delete_user, get_user_by_email};
-
 use actix_web::{get, web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode};
 use actix_web_httpauth::headers::authorization::Authorization;
 use actix_web::error::{ErrorUnauthorized};
-
 use bcrypt::{hash, DEFAULT_COST, verify};
 use mongodb::{Collection, bson::doc};
 use std::collections::HashMap;
 use mongodb::bson;
 use serde_json::json;
 use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery,PasswordChangeForm, UserProfileUpdateForm, LoginRequest,CodeTranslationRequest};
-
 use serde::Deserialize;
 use actix_web_httpauth::extractors::bearer::BearerAuth;
+use crate::backendtranslationlogic;
+use crate::preprocessing::preprocess_code;
+use crate::preprocessing::detect_language;
+use crate::models::preprocessingCodeInput;
+use crate::models::backendtranslationrequest;
+
+
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
     match decode_jwt(auth.token()) {
@@ -437,3 +441,46 @@ pub async fn delete_account_handler(
         Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Failed to delete account"})),
     }
 }
+
+
+//handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH 
+pub async fn backend_translate_code_handler(
+    item: web::Json<backendtranslationrequest>,
+) -> impl Responder {
+    match backendtranslationlogic::backend_translation_logic(&item.source_code, &item.source_language, &item.target_language).await {
+        Ok(translated_code) => {
+            HttpResponse::Ok().json(json!({ "translated_code": translated_code }))
+        },
+        Err(e) => {
+            eprintln!("Translation failed: {}", e);
+            HttpResponse::InternalServerError().json(json!({"error": "Translation failed"}))
+        },
+    }
+}
+
+//jesica - I AM TESTING THE DETECT LANGUAGE FUNCTION DONT TOUCH PLEASE 
+#[derive(Deserialize)]
+pub struct PreprocessingCodeInput {
+    pub code: String,
+}
+
+pub async fn test_detect_language_route(
+    code_data: web::Json<PreprocessingCodeInput>,
+) -> impl Responder {
+    // Directly calling `detect_language` with the code from the request
+    match detect_language(&code_data.code).await {
+        Some(detected_language) => HttpResponse::Ok().json(json!({ "detected_language": detected_language })),
+        None => HttpResponse::BadRequest().body("Unable to detect language"),
+    }
+}
+pub async fn preprocess_code_route(
+    code_data: web::Json<preprocessingCodeInput>, // assuming PreprocessingCodeInput is correctly defined elsewhere
+) -> impl Responder {
+    match preprocess_code(&code_data.code, &code_data.source_lang).await {
+        Ok(processed_code) => HttpResponse::Ok().json(json!({ "processed_code": processed_code })),
+        Err(e) => HttpResponse::BadRequest().body(format!("Preprocessing error: {}", e)),
+    }
+}
+
+
+//handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH End of warning 

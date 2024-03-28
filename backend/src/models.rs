@@ -102,3 +102,20 @@ pub struct UserProfileUpdateForm {
     pub username: Option<String>,
     pub email: Option<String>,
 }
+
+
+//Struct for backend logic/preprocessing - Jesica PLEASE DO NOT TOUCH 
+#[derive(Deserialize)]
+pub struct backendtranslationrequest {
+    pub source_code: String,
+    pub source_language: String,
+    pub target_language: String,
+}
+
+#[derive(Deserialize)]
+pub struct preprocessingCodeInput {
+    pub code: String,
+    pub source_lang: String,
+}
+
+//end of warning 

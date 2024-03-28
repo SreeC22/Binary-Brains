@@ -1,3 +1,6 @@
+
+//BEFORE CHANGING ANY CODE PLEASE CALL ME - JESICA 
+
 import { Alert, Icon, useColorModeValue,  AlertDescription, AlertIcon, AlertTitle,IconButton, Box, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Menu, MenuButton, MenuItem, Slide, MenuList, Text, VStack, useColorMode, ChakraProvider, Center } from "@chakra-ui/react";
 import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
 import 'ace-builds/src-noconflict/mode-c_cpp';
@@ -40,6 +43,9 @@ const languages = [
   { label: "Swift", value: "swift", icon: <SwiftOriginal /> },
   { label: "MatLab", value: "matlab", icon: <MatlabOriginal /> },
 ];
+
+
+
 const TranslateCode = () => {
   const [gptStatus, setGptStatus] = useState(false);
   useEffect(() => {
@@ -103,7 +109,7 @@ const handleCopyOutputCode = () => {
   };
   const fetchTranslatedCode = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8080/translate', {
+      const response = await fetch('http://127.0.0.1:8080/backendtranslationlogic', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -144,23 +150,27 @@ const handleCopyOutputCode = () => {
       return;
     }
     try {
-      const preprocessedCodeResponse = await fetch('http://127.0.0.1:8080/preprocess_code', {
+      const response = await fetch('http://127.0.0.1:8080/backendtranslationlogic', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
+        body: JSON.stringify({
+          source_code: inputCode,
+          source_language: sourceLanguage,
+          target_language: targetLanguage,
+        }),
       });
-      if (!preprocessedCodeResponse.ok) {
-        throw new Error(`HTTP error! status: ${preprocessedCodeResponse.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const preprocessedCodeResult = await preprocessedCodeResponse.json();
-      setInputCode(preprocessedCodeResult);
-      console.log(preprocessedCodeResult);
-      await fetchTranslatedCode(); 
+
+      const result = await response.json();
+      console.log("API response:", result);
+      setOutputCode(result.translated_code); // Set the translated code received from the API
+
     } catch (error) {
-      console.error("Error during preprocessing:", error);
-      setError("There was an error in preprocessing");
+      console.error("Error during translation:", error);
     }
   };
   

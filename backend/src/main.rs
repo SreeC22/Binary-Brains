@@ -7,12 +7,14 @@ mod models;
 mod handlers;
 mod db;
 mod auth;
-mod gpt3;
+mod gpt3; 
+mod backendtranslationlogic;
+mod preprocessing;
 use mongodb::bson::document::Document;
 
 use crate::db::{init_mongo, init_feedback_collection};
 use crate::models::{Feedback, User};
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,change_password_handler };
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,change_password_handler,backend_translate_code_handler,preprocess_code_route,test_detect_language_route};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -69,8 +71,15 @@ async fn main() -> std::io::Result<()> {
             .route("/api/user/update_profile", web::put().to(update_user_profile_handler))
             .route("/api/user/delete", web::delete().to(delete_account_handler))
             .service(handlers::feedback::get_feedback) // Use the endpoint function from the feedback module
+            .service(web::resource("/preprocess_code").route(web::post().to(preprocess_code_route)))
+            .service(
+                web::resource("/backendtranslationlogic").route(web::post().to(backend_translate_code_handler)),
+            )
+            .service(
 
-
+                web::resource("/test_detect_language")
+                    .route(web::post().to(test_detect_language_route)),
+            )
 
     })
     .bind("127.0.0.1:8080")?
