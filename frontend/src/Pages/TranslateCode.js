@@ -149,28 +149,27 @@ const handleCopyOutputCode = () => {
       setError("Input code is required");
       return;
     }
-    try {
-      const response = await fetch('http://127.0.0.1:8080/backendtranslationlogic', {
+      try {
+      const preprocessedCodeResponse = await fetch('http://127.0.0.1:8080/preprocess_code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          source_code: inputCode,
-          source_language: sourceLanguage,
-          target_language: targetLanguage,
-        }),
+        body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
       });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!preprocessedCodeResponse.ok) {
+        throw new Error(`HTTP error! status: ${preprocessedCodeResponse.status}`);
       }
-
-      const result = await response.json();
-      console.log("API response:", result);
-      setOutputCode(result.translated_code); // Set the translated code received from the API
+      const preprocessedCodeResult = await preprocessedCodeResponse.json();
+      console.log(preprocessedCodeResult);
+      const unescapedCode = JSON.parse(JSON.stringify(preprocessedCodeResult.processed_code));
+      setInputCode(unescapedCode);
+      await fetchTranslatedCode();
+      
 
     } catch (error) {
-      console.error("Error during translation:", error);
+      console.error("Error during preprocessing:", error);
+      setError("There was an error in preprocessing");
     }
   };
   

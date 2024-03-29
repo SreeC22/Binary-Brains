@@ -9,29 +9,26 @@ use std::env;
 use regex::Regex;
 use tempfile::NamedTempFile;
 use std::path::Path;
+use std::error::Error;
+use crate::gpt3::Gpt3Client;
 
 
-//preprocessing code - Jesica PLEASE DO NOT TOUCH 
-pub async fn detect_language(input: &str) -> Option<String> {
+pub async fn detect_language(
+    source_code: &str, 
+) -> Result<String, Box<dyn std::error::Error>> { // Return type changed to Result<String, ...> to return the translation
     let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
-    let client = reqwest::Client::new();
-    let mut headers = reqwest::header::HeaderMap::new();
-    headers.insert(
-        reqwest::header::AUTHORIZATION,
-        format!("Bearer {}", api_key).parse().unwrap(),
-    );
+    let client = Client::new();
+    let mut headers = HeaderMap::new();
+    headers.insert(AUTHORIZATION, format!("Bearer {}", api_key).parse().unwrap());
 
-    // Prompt to ask GPT-3 to detect the programming language in a one-word answer
-    let prompt = format!("What is the programming language of the following code. Give a one-word answer from these choices, Choices are: python, ruby, perl, matlab, swift, rust, cpp, csharp, java, typescript, \"none\"?\n\n{}", input);
+    let prompt = format!("What is the programming language of the following code. Give a one-word answer from these choices: python, ruby, perl, matlab, swift, rust, cpp, csharp, java, typescript, \"none\"?\n\n{}", source_code);
 
-    let payload = serde_json::json!({
-        "model": "gpt-3.5-turbo",
+
+    let payload = json!({
+        "model": "gpt-3.5-turbo-instruct",
         "prompt": prompt,
-        "temperature": 0,
-        "max_tokens": 1,
-        "top_p": 1,
-        "n": 1,
-        "stop": ["\n", " "]
+        "temperature": 0.5,
+        "max_tokens": 1024
     });
 
     let response = client
@@ -39,21 +36,13 @@ pub async fn detect_language(input: &str) -> Option<String> {
         .headers(headers)
         .json(&payload)
         .send()
-        .await;
+        .await?;
 
-    match response {
-        Ok(response) => {
-            let response_body = response.text().await.ok()?;
-            let response_json: serde_json::Value = serde_json::from_str(&response_body).ok()?;
-            let detected_language = response_json["choices"][0]["text"].as_str()?.trim().to_string();
-            if detected_language.is_empty() {
-                None
-            } else {
-                Some(detected_language)
-            }
-        }
-        Err(_) => None,
-    }
+    let response_body = response.text().await?;
+    let response_json: serde_json::Value = serde_json::from_str(&response_body)?;
+    let detected_lang = response_json["choices"][0]["text"].as_str().ok_or("Failed to extract translated text")?;
+
+    Ok(detected_lang.to_string())
 }
 
 
@@ -74,25 +63,21 @@ pub fn remove_comments(code: &str, language: &str) -> String {
         },
         _ => code.to_owned(),
     }
-}
-
-
-pub async fn preprocess_code(input: &str, source_lang: &str) -> Result<String, &'static str> {
+}pub async fn preprocess_code(input: &str, source_lang: &str) -> Result<String, Box<dyn Error>> {
     println!("Source language: {}", source_lang);
 
-    let detected_lang = detect_language(input).await;
-    match detected_lang {
-        Some(lang) => {
-            println!("Detected language: {:?}", lang);
-            if lang.to_lowercase() != source_lang.to_lowercase() {
-                return Err("Detected language doesn't match specified source language");
+    let detected_lang_result = detect_language(input).await;
+    match detected_lang_result {
+        Ok(lang) => {
+            // Remove leading '\n\n' and double quotes from the detected language string
+            let detected_lang = lang.replace("\n\n", "").replace('"', "");
+            println!("Detected language: {:?}", detected_lang);
+            if detected_lang.to_lowercase() != source_lang.to_lowercase() {
+                return Err(Box::new(std::fmt::Error::default())); // Need a real error here
             }
         },
-        None => return Err("Unable to detect language"),
+        Err(_) => return Err(Box::new(std::fmt::Error::default())), // You might want to forward or handle the actual error
     }
-
-    // Since remove_comments directly returns a String, we don't need a match here.
-    // Directly return the sanitized code.
     Ok(remove_comments(input, source_lang))
 }
 

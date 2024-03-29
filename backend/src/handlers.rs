@@ -16,10 +16,8 @@ use serde::Deserialize;
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use crate::backendtranslationlogic;
 use crate::preprocessing::preprocess_code;
-use crate::preprocessing::detect_language;
 use crate::models::preprocessingCodeInput;
 use crate::models::backendtranslationrequest;
-
 
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
@@ -458,29 +456,13 @@ pub async fn backend_translate_code_handler(
     }
 }
 
-//jesica - I AM TESTING THE DETECT LANGUAGE FUNCTION DONT TOUCH PLEASE 
-#[derive(Deserialize)]
-pub struct PreprocessingCodeInput {
-    pub code: String,
-}
-
-pub async fn test_detect_language_route(
-    code_data: web::Json<PreprocessingCodeInput>,
-) -> impl Responder {
-    // Directly calling `detect_language` with the code from the request
-    match detect_language(&code_data.code).await {
-        Some(detected_language) => HttpResponse::Ok().json(json!({ "detected_language": detected_language })),
-        None => HttpResponse::BadRequest().body("Unable to detect language"),
-    }
-}
 pub async fn preprocess_code_route(
-    code_data: web::Json<preprocessingCodeInput>, // assuming PreprocessingCodeInput is correctly defined elsewhere
-) -> impl Responder {
+    code_data: web::Json<preprocessingCodeInput>, // Assuming PreprocessingCodeInput is correctly defined elsewhere
+) -> HttpResponse {
     match preprocess_code(&code_data.code, &code_data.source_lang).await {
         Ok(processed_code) => HttpResponse::Ok().json(json!({ "processed_code": processed_code })),
-        Err(e) => HttpResponse::BadRequest().body(format!("Preprocessing error: {}", e)),
+        Err(e) => HttpResponse::BadRequest().json(json!({ "error": format!("Preprocessing error: {}", e) })),
     }
 }
-
 
 //handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH End of warning 
