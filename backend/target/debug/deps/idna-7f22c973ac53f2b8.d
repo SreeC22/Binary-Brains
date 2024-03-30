@@ -1,0 +1,10 @@
+/Users/sreekareechityala/Desktop/NJIT/2023-2024/Spring 2024/CS490/BB/Binary-Brains/backend/target/debug/deps/libidna-7f22c973ac53f2b8.rmeta: /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/lib.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/punycode.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/uts46.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/uts46_mapping_table.rs
+
+/Users/sreekareechityala/Desktop/NJIT/2023-2024/Spring 2024/CS490/BB/Binary-Brains/backend/target/debug/deps/libidna-7f22c973ac53f2b8.rlib: /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/lib.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/punycode.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/uts46.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/uts46_mapping_table.rs
+
+/Users/sreekareechityala/Desktop/NJIT/2023-2024/Spring 2024/CS490/BB/Binary-Brains/backend/target/debug/deps/idna-7f22c973ac53f2b8.d: /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/lib.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/punycode.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/uts46.rs /Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/uts46_mapping_table.rs
+
+/Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/lib.rs:
+/Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/punycode.rs:
+/Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/uts46.rs:
+/Users/sreekareechityala/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.2.3/src/uts46_mapping_table.rs:

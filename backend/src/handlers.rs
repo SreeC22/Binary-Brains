@@ -387,32 +387,49 @@ pub async fn translate_code_endpoint(
 pub async fn change_password_handler(
     email: web::Path<String>,
     form: web::Json<PasswordChangeForm>,
-    db: web::Data<Database>,
+    db: web::Data<Collection<User>>,
 ) -> HttpResponse {
-    let users_collection = db.collection::<User>("users");
+    let email_str = email.into_inner();
 
-    let user_email = email.into_inner();
-    let user = match get_user_by_email(&users_collection, &user_email).await {
-        Ok(Some(user)) => user,
-        _ => return HttpResponse::NotFound().json(json!({"error": "User not found"})),
-    };
-
-    match user.password {
-        Some(password) => {
-            if verify_password(&form.current_password, &password).unwrap_or(false) {
-                let new_hashed = hash_password(&form.new_password).expect("Failed to hash password");
-                match update_user_password(&user_email, &new_hashed).await {
-                    Ok(_) => HttpResponse::Ok().json(json!({"message": "Password updated successfully"})),
-                    Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Failed to update password"})),
+    // Attempt to find the user by email
+    if let Ok(Some(user)) = db.find_one(doc! { "email": &email_str }, None).await {
+        // Ensure there is an existing password to verify against
+        if let Some(db_password) = &user.password {
+            // Use dereferenced db_password which is a &str
+            if verify_password(&form.current_password, db_password).is_ok() {
+                // Attempt to hash the new password
+                match hash_password(&form.new_password) {
+                    Ok(hashed_new_password) => {
+                        // Ensure new hashed password is not the same as the old hashed password
+                        if hashed_new_password != *db_password { // Correctly dereference db_password for comparison
+                            // Proceed to update the user's password in the database
+                            let update_result = db.update_one(
+                                doc! { "email": &email_str },
+                                doc! { "$set": { "password": hashed_new_password } },
+                                None
+                            ).await;
+                            
+                            if update_result.is_ok() {
+                                return HttpResponse::Ok().json(json!({"message": "Password updated successfully"}));
+                            } else {
+                                return HttpResponse::InternalServerError().json(json!({"error": "Failed to update password"}));
+                            }
+                        } else {
+                            return HttpResponse::BadRequest().json(json!({"error": "New password must be different from the old password"}));
+                        }
+                    },
+                    Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Password hashing failed"})),
                 }
             } else {
                 return HttpResponse::Unauthorized().json(json!({"error": "Invalid current password"}));
             }
-        },
-        None => HttpResponse::InternalServerError().json(json!({"error": "User password not found"})),
+        } else {
+            return HttpResponse::InternalServerError().json(json!({"error": "Current password not found"}));
+        }
+    } else {
+        return HttpResponse::NotFound().json(json!({"error": "User not found"}));
     }
 }
-
 
 pub async fn update_user_profile_handler(
     user_id: web::Path<String>,

@@ -46,7 +46,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin("http://localhost:3000")
-            .allowed_methods(vec!["GET", "POST","PUT", "DELETE"])
+            .allowed_methods(vec!["GET", "POST","PATCH","PUT", "DELETE"])
             .allowed_headers(vec![actix_web::http::header::AUTHORIZATION, actix_web::http::header::ACCEPT, actix_web::http::header::CONTENT_TYPE])
             .max_age(3600);
 
@@ -58,7 +58,6 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(feedback_collection.clone()))
             .app_data(web::Data::new(user_collection.clone()))
             // Routes configuration...
-
             
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
@@ -70,7 +69,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
             .route("/api/translate_code", web::post().to(handlers::translate_code_endpoint))
             // Added routes for account management
-            .route("/api/user/change_password", web::post().to(change_password_handler))
+            .route("/api/user/change_password", web::patch().to(change_password_handler))
             .route("/api/user/update_profile", web::put().to(update_user_profile_handler))
             .route("/api/user/delete", web::delete().to(delete_account_handler))
             .service(handlers::feedback::get_feedback) // Use the endpoint function from the feedback module
@@ -78,7 +77,18 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/backendtranslationlogic").route(web::post().to(backend_translate_code_handler)),
             )
-
+            .service(
+                web::resource("/api/user/change-password/{email}")
+                    .route(web::patch().to(handlers::change_password_handler)),
+            )            
+            .service(
+                web::resource("/api/user/update-profile/{user_id}")
+                    .route(web::put().to(update_user_profile_handler)),
+            )
+            .service(
+                web::resource("/api/user/delete-account/{email}")
+                    .route(web::delete().to(delete_account_handler)),
+            )
     })
     .bind("127.0.0.1:8080")?
     .run()
