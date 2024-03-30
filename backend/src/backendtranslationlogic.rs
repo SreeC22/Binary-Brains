@@ -4,20 +4,21 @@ use serde_json::json;
 use std::env;
 use std::error::Error;
 
-
 // Code for the backend Logic - Jesica PLEASE DO NOT TOUCH
 pub async fn backend_translation_logic(
-    source_code: &str, 
+    source_code: &str,
     source_language: &str,
-    target_language: &str
-) -> Result<String, Box<dyn std::error::Error>> { // Return type changed to Result<String, ...> to return the translation
+    target_language: &str,
+) -> Result<String, Box<dyn std::error::Error>> {
     let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
     let client = Client::new();
     let mut headers = HeaderMap::new();
     headers.insert(AUTHORIZATION, format!("Bearer {}", api_key).parse().unwrap());
 
-    let prompt = format!("Translate the following code from {} to {}: \n\n{}", source_language, target_language, source_code);
-
+    let prompt = format!(
+        "Translate the following code from {} to {}: \n\n{}",
+        source_language, target_language, source_code
+    );
 
     let payload = json!({
         "model": "gpt-3.5-turbo-instruct",
@@ -26,18 +27,32 @@ pub async fn backend_translation_logic(
         "max_tokens": 1024
     });
 
-    let response = client
+    let response_body = client
         .post("https://api.openai.com/v1/completions")
-        .headers(headers)
+        .headers(headers.clone())
         .json(&payload)
         .send()
+        .await?
+        .text()
         .await?;
 
-    let response_body = response.text().await?;
     let response_json: serde_json::Value = serde_json::from_str(&response_body)?;
-    let translated_text = response_json["choices"][0]["text"].as_str().ok_or("Failed to extract translated text")?;
+    let translated_text = response_json["choices"][0]["text"]
+        .as_str()
+        .ok_or("Failed to extract translated text")?
+        .to_string();
 
-    Ok(translated_text.to_string())
+    Ok(translated_text)
 }
 
-// Code for the backend Logic - Jesica PLEASE DO NOT TOUCH End of warning 
+pub async fn translate_and_collect(
+    source_code: &str,
+    source_language: &str,
+    target_language: &str,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut results = Vec::new();
+
+    results.push(backend_translation_logic(source_code, source_language, target_language).await?);
+
+    Ok(results)
+}

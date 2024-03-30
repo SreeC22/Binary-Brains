@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+mockito = "0.32.0"
 regex = "1.5" 
 tempfile = "3.3"
 async-trait = "0.1.51"
