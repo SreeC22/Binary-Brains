@@ -127,16 +127,42 @@ const handleCopyOutputCode = () => {
       const result = await response.json();
       console.log("API response:", result);
       setOutputCode(result.translated_code); // Set the translated code received from the API
+      toast({
+        title: "Translation Successful",
+        description: "Translation completed successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } 
+  catch (error) {
+    console.error("Error during translation:", error);
+    toast({
+      title: "Translation Error",
+      description: error.message,
+      status: "error",
+      duration: 9000, // Display the error message for 5 seconds
+      isClosable: true,
+      position: "top",
+    });
+    setError(error);
 
-    } catch (error) {
-      console.error("Error during translation:", error);
-    }
+  } 
   };
 
 
 //the way handleconvert works : when u press convert button, it calls preprocess api in the handle convert function 
 //and then it calls the translate api which is in the fetchtranslate code function
   const handleConvert = async () => {
+    toast({
+      title: "Translation Queued",
+      description: "Your translation is being processed. Please wait...",
+      status: "info",
+      duration: 5000, // Setting duration to null to make it persist until user interaction
+      isClosable: true,
+      position: "top",
+    });
     if (!sourceLanguage || !targetLanguage) {
       setError("Both source and target languages are required");
       return;
