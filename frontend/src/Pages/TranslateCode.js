@@ -140,12 +140,14 @@ const handleCopyOutputCode = () => {
     console.error("Error during translation:", error);
     toast({
       title: "Translation Error",
-      description: "An error occurred during translation. Please try again later.",
+      description: error.message,
       status: "error",
-      duration: 5000, // Display the error message for 5 seconds
+      duration: 9000, // Display the error message for 5 seconds
       isClosable: true,
       position: "top",
     });
+    setError(error);
+
   } 
   };
 
