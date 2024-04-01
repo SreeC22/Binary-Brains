@@ -1,1 +1,0 @@
-(actix_web::web::Path<std::string::String>, actix_web::web::Json<PasswordChangeForm>, Database)

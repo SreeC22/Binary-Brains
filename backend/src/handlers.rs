@@ -460,6 +460,7 @@ async fn update_user_session_info(email: &str, db: &web::Data<Collection<User>>)
 
 
 
+
 pub async fn update_user_profile_handler(
     user_id: web::Path<String>,
     form: web::Json<UserProfileUpdateForm>,
