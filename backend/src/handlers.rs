@@ -407,8 +407,27 @@ use actix_web::web::Data;
 pub async fn change_password_handler(
     email: web::Path<String>,
     form: web::Json<PasswordChangeForm>,
+    db: web::Data<Database>,
     db: Data<Database>, // Assuming your Data<Database> is passed correctly
 ) -> HttpResponse {
+    let users_collection = db.collection::<User>("users");
+
+    let user_email = email.into_inner();
+    let user = match get_user_by_email(&users_collection, &user_email).await {
+        Ok(Some(user)) => user,
+        _ => return HttpResponse::NotFound().json(json!({"error": "User not found"})),
+    };
+
+    match user.password {
+        Some(password) => {
+            if verify_password(&form.current_password, &password).unwrap_or(false) {
+                let new_hashed = hash_password(&form.new_password).expect("Failed to hash password");
+                match update_user_password(&user_email, &new_hashed).await {
+                    Ok(_) => HttpResponse::Ok().json(json!({"message": "Password updated successfully"})),
+                    Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Failed to update password"})),
+                }
+            } else {
+                return HttpResponse::Unauthorized().json(json!({"error": "Invalid current password"}));
     let email_str = email.into_inner();
     let users_collection = db.collection::<User>("users");
 

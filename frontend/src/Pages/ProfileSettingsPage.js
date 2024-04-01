@@ -1,5 +1,7 @@
 import React from 'react';
 import { useAuth } from '../Components/AuthContext'; // Adjust the path as necessary
+import React from 'react';
+import { useAuth } from '../Components/AuthContext'; // Adjust the path as necessary
 
 const ProfileSettingsPage = () => {
     const { user, updateProfile, changePassword, deleteAccount } = useAuth();
@@ -8,8 +10,10 @@ const ProfileSettingsPage = () => {
         const formData = new FormData(event.target);
         const profileData = {
             email: formData.get('email'), // Assuming you're allowing email updates
+            email: formData.get('email'), // Assuming you're allowing email updates
             username: formData.get('username'),
         };
+        await updateProfile(profileData);
         await updateProfile(profileData);
     };
     const handleSubmitPasswordChange = async (event) => {
@@ -30,6 +34,7 @@ const ProfileSettingsPage = () => {
 
     const handleDeleteAccount = async () => {
         if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            await deleteAccount();
             await deleteAccount();
         }
     };
