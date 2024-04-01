@@ -1,7 +1,6 @@
 import React from 'react';
 import { useAuth } from '../Components/AuthContext'; // Adjust the path as necessary
-import React from 'react';
-import { useAuth } from '../Components/AuthContext'; // Adjust the path as necessary
+
 
 const ProfileSettingsPage = () => {
     const { user, updateProfile, changePassword, deleteAccount } = useAuth();
@@ -21,13 +20,13 @@ const ProfileSettingsPage = () => {
         const formData = new FormData(event.target);
         try {
             await changePassword(formData.get('currentPassword'), formData.get('newPassword'));
-            setMessage('Password changed successfully.');
-            setErrorMessage('');
+            //setMessage('Password changed successfully.');
+           // setErrorMessage('');
         } catch (error) {
             // Adjust this based on the actual structure of the error response
             const errorMessage = error.response?.data?.error || 'Failed to change password.';
-            setErrorMessage(errorMessage);
-            setMessage('');
+          //  setErrorMessage(errorMessage);
+            //setMessage('');
         }
     };
     
