@@ -87,21 +87,35 @@ pub async fn login(
 
     if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
         if let Some(db_password) = &existing_user.password {
-            if verify(&login_request.password, db_password).is_ok() {
-                // Here, ensure login_request.remember_me is correctly used
-                let token = generate_jwt(&existing_user.email, login_request.remember_me).unwrap();
-                return HttpResponse::Ok().json(json!({
-                    "message": "Login successful",
-                    "token": token,
-                    "user": {
-                        "email": existing_user.email,
+            // Correctly handle verification result
+            match verify(&login_request.password, db_password) {
+                Ok(verification_result) => {
+                    if verification_result {
+                        let token = generate_jwt(&existing_user.email, login_request.remember_me).unwrap(); // Handle errors properly
+                        return HttpResponse::Ok().json(json!({
+                            "message": "Login successful",
+                            "token": token,
+                            "user": {
+                                "email": existing_user.email,
+                            }
+                        }));
+                    } else {
+                        // Password does not match
+                        return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
                     }
-                }));
+                },
+                Err(_) => {
+                    // Verification failed due to an error
+                    return HttpResponse::InternalServerError().json(json!({"error": "An error occurred during login"}));
+                }
             }
+        } else {
+            // No password set for user (unusual case)
+            return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
         }
-        
     }
 
+    // User not found
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
 }
 
@@ -188,7 +202,7 @@ async fn exchange_code_for_token(code: &str, oauth_config: &OAuthConfig) -> Resu
     params.insert("grant_type", "authorization_code");
     params.insert("redirect_uri", oauth_config.google_redirect_uri.as_str());
 
-    let res = client.post("https://oauth2.googleapis.com/token")
+    let res = client.post("https://oauth2.googl3eapis.com/token")
         .form(&params)
         .send()
         .await
@@ -384,52 +398,67 @@ pub async fn translate_code_endpoint(
     }
 }
 
+
+use crate::db;
+
+use actix_web::web::Data;
+
+
 pub async fn change_password_handler(
     email: web::Path<String>,
     form: web::Json<PasswordChangeForm>,
-    db: web::Data<Collection<User>>,
+    db: Data<Database>, // Assuming your Data<Database> is passed correctly
 ) -> HttpResponse {
     let email_str = email.into_inner();
+    let users_collection = db.collection::<User>("users");
 
-    // Attempt to find the user by email
-    if let Ok(Some(user)) = db.find_one(doc! { "email": &email_str }, None).await {
-        // Ensure there is an existing password to verify against
+    if let Ok(Some(user)) = users_collection.find_one(doc! {"email": &email_str}, None).await {
         if let Some(db_password) = &user.password {
-            // Use dereferenced db_password which is a &str
-            if verify_password(&form.current_password, db_password).is_ok() {
-                // Attempt to hash the new password
-                match hash_password(&form.new_password) {
-                    Ok(hashed_new_password) => {
-                        // Ensure new hashed password is not the same as the old hashed password
-                        if hashed_new_password != *db_password { // Correctly dereference db_password for comparison
-                            // Proceed to update the user's password in the database
-                            let update_result = db.update_one(
-                                doc! { "email": &email_str },
-                                doc! { "$set": { "password": hashed_new_password } },
-                                None
-                            ).await;
-                            
-                            if update_result.is_ok() {
-                                return HttpResponse::Ok().json(json!({"message": "Password updated successfully"}));
+            match verify_password(&form.current_password, db_password) {
+                Ok(true) => {
+                    match hash_password(&form.new_password) {
+                        Ok(hashed_new_password) => {
+                            // Check if new password is not the same as the old password
+                            if hashed_new_password != *db_password {
+                                let update_result = users_collection.update_one(
+                                    doc! {"email": &email_str},
+                                    doc! {"$set": {"password": hashed_new_password}},
+                                    None
+                                ).await;
+
+                                if update_result.is_ok() {
+                                    HttpResponse::Ok().json(json!({"message": "Password updated successfully"}))
+                                } else {
+                                    HttpResponse::InternalServerError().json(json!({"error": "Failed to update password"}))
+                                }
                             } else {
-                                return HttpResponse::InternalServerError().json(json!({"error": "Failed to update password"}));
+                                HttpResponse::BadRequest().json(json!({"error": "New password must be different from the old password"}))
                             }
-                        } else {
-                            return HttpResponse::BadRequest().json(json!({"error": "New password must be different from the old password"}));
-                        }
-                    },
-                    Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Password hashing failed"})),
-                }
-            } else {
-                return HttpResponse::Unauthorized().json(json!({"error": "Invalid current password"}));
+                        },
+                        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Password hashing failed"})),
+                    }
+                },
+                _ => HttpResponse::Unauthorized().json(json!({"error": "Invalid current password"})),
             }
         } else {
-            return HttpResponse::InternalServerError().json(json!({"error": "Current password not found"}));
+            HttpResponse::InternalServerError().json(json!({"error": "Current password not found"}))
         }
     } else {
-        return HttpResponse::NotFound().json(json!({"error": "User not found"}));
+        HttpResponse::NotFound().json(json!({"error": "User not found"}))
     }
 }
+async fn update_user_session_info(email: &str, db: &web::Data<Collection<User>>) -> mongodb::error::Result<()> {
+    let session_update_result = db.update_one(
+        doc! { "email": email },
+        // Ensure you replace the placeholder with actual logic.
+        doc! { "$set": { "session_version": 1 } },
+        None
+    ).await;
+
+    session_update_result.map(|_| ())
+}
+
+
 
 pub async fn update_user_profile_handler(
     user_id: web::Path<String>,

@@ -84,16 +84,23 @@ async fn insert_translation(history: Translation) -> mongodb::error::Result<()> 
 
     Ok(())
 }
+// At the top of your db.rs file, add:
+use actix_web::web;
 
-pub async fn update_user_password(email: &str, new_hashed_password: &str) -> mongodb::error::Result<()> {
-    let user_collection = init_mongo().await?; // Assuming `init_mongo` returns a Collection<User>
-    user_collection.update_one(
+pub async fn update_user_password(email: &str, new_hashed_password: &str, db: &web::Data<Collection<User>>) -> mongodb::error::Result<()> {
+    // Assuming `session_version` is a field in your `User` model.
+    let update_result = db.update_one(
         doc! { "email": email },
-        doc! { "$set": { "password": new_hashed_password } },
+        doc! {
+            "$set": { "password": new_hashed_password },
+            "$inc": { "session_version": 1 } // Remove placeholders.
+        },
         None
-    ).await?;
-    Ok(())
+    ).await;
+
+    update_result.map(|_| ())
 }
+
 
 pub async fn update_user_profile(user_id: &str, form: &UserProfileUpdateForm, db: &Database) -> mongodb::error::Result<()> {
     let users_collection = db.collection::<User>("users");
@@ -120,3 +127,5 @@ pub async fn delete_user(email: &str, db: &Database) -> mongodb::error::Result<(
     users_collection.delete_one(doc! { "email": email }, None).await?;
     Ok(())
 }
+
+

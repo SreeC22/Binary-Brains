@@ -26,7 +26,6 @@ const ProfileSettingsPage = () => {
             setMessage('');
         }
     };
-
     const handleSubmitPasswordChange = async (event) => {
         event.preventDefault();
         const formData = new FormData(event.target);
@@ -35,10 +34,13 @@ const ProfileSettingsPage = () => {
             setMessage('Password changed successfully.');
             setErrorMessage('');
         } catch (error) {
-            setErrorMessage('Failed to change password.');
+            // Adjust this based on the actual structure of the error response
+            const errorMessage = error.response?.data?.error || 'Failed to change password.';
+            setErrorMessage(errorMessage);
             setMessage('');
         }
     };
+    
 
     const handleDeleteAccount = async () => {
         if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
