@@ -58,6 +58,13 @@ pub struct Feedback {
     pub rating: i32,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Translation {
+    source_code: String,
+    target_lang: String,
+    translated_code: String,
+}
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlacklistedToken {
@@ -79,9 +86,36 @@ pub struct LoginRequest {
     pub remember_me: bool,
 }
 
-//Vanhika's Code
 #[derive(Deserialize)]
 pub struct CodeTranslationRequest {
     pub source_code: String,
     pub target_language: String,
 }
+#[derive(Deserialize)]
+pub struct PasswordChangeForm {
+    pub current_password: String,
+    pub new_password: String,
+}
+
+#[derive(Deserialize)]
+pub struct UserProfileUpdateForm {
+    pub username: Option<String>,
+    pub email: Option<String>,
+}
+
+
+//Struct for backend logic/preprocessing - Jesica PLEASE DO NOT TOUCH 
+#[derive(Deserialize)]
+pub struct backendtranslationrequest {
+    pub source_code: String,
+    pub source_language: String,
+    pub target_language: String,
+}
+
+#[derive(Deserialize)]
+pub struct preprocessingCodeInput {
+    pub code: String,
+    pub source_lang: String,
+}
+
+//end of warning 

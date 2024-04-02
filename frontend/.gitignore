@@ -21,6 +21,3 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-backend/target/debug/deps/libmongodb-5d4f1403b78931af.rlib
-backend/target/debug/deps/backend.pdb
