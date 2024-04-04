@@ -25,7 +25,6 @@ import React, { useState, useEffect } from "react";
 import AceEditor from 'react-ace';
 // import React, { useEffect } from 'react';
 import { motion } from "framer-motion"; // Import motion from Framer Motion
-import { BiSolidDownArrowAlt } from "react-icons/bi";
 import { FaCode, FaCog, FaCube, FaPaste,FaTimes } from 'react-icons/fa';
 import {  FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
 import axios from 'axios';
@@ -60,6 +59,14 @@ const TranslateCode = () => {
         setGptStatus(true); // Update the state instead of directly modifying the variable
       } catch (error) {
         console.error("Error calling API:", error);
+        toast({
+          title: "API Error",
+          description: "Please check your internet connection or try again later.",
+          status: "error",
+          duration: null,
+          isClosable: true,
+          position: "top",
+        });
       }
     };
     callAPI(); // Call the API when the component mounts
@@ -123,10 +130,10 @@ const handleCopyOutputCode = () => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+  
       const result = await response.json();
       console.log("API response:", result);
-      setOutputCode(result.translated_code); // Set the translated code received from the API
+      setOutputCode(result.translated_code);
       toast({
         title: "Translation Successful",
         description: "Translation completed successfully.",
@@ -135,34 +142,33 @@ const handleCopyOutputCode = () => {
         isClosable: true,
         position: "top",
       });
-    } 
-  catch (error) {
-    console.error("Error during translation:", error);
-    toast({
-      title: "Translation Error",
-      description: error.message,
-      status: "error",
-      duration: 9000, // Display the error message for 5 seconds
-      isClosable: true,
-      position: "top",
-    });
-    setError(error);
-
-  } 
+    } catch (error) {
+      console.error("Error during translation:", error);
+      if (error.message === "Rate Limit Exceeded") {
+        toast({
+          title: "Rate Limit Exceeded",
+          description: "The rate limit for translation API has been exceeded. Please try again later.",
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+          position: "top",
+        });
+      } else {
+        toast({
+          title: "Translation Error",
+          description: error.message,
+          status: "error",
+          duration: 9000, 
+          isClosable: true,
+          position: "top",
+        });
+      }
+    }
   };
-
-
 //the way handleconvert works : when u press convert button, it calls preprocess api in the handle convert function 
 //and then it calls the translate api which is in the fetchtranslate code function
   const handleConvert = async () => {
-    toast({
-      title: "Translation Queued",
-      description: "Your translation is being processed. Please wait...",
-      status: "info",
-      duration: 5000, // Setting duration to null to make it persist until user interaction
-      isClosable: true,
-      position: "top",
-    });
+    
     if (!sourceLanguage || !targetLanguage) {
       setError("Both source and target languages are required");
       return;
@@ -175,6 +181,14 @@ const handleCopyOutputCode = () => {
       setError("Input code is required");
       return;
     }
+    toast({
+      title: "Translation Queued",
+      description: "Your translation is being processed. Please wait...",
+      status: "info",
+      duration: 5000, 
+      isClosable: true,
+      position: "top",
+    });
       try {
       const preprocessedCodeResponse = await fetch('http://127.0.0.1:8080/preprocess_code', {
         method: 'POST',
@@ -195,34 +209,49 @@ const handleCopyOutputCode = () => {
 
     } catch (error) {
       console.error("Error during preprocessing:", error);
-      setError("There was an error in preprocessing");
+      setError("There was an error in preprocessing. Check your input to make sure it's correct.");
     }
   };
   
   const handleCopy = () => {
     navigator.clipboard.writeText(inputCode).then(() => {
       toast({
-        title: "Copied.",
-        description: "Code copied to clipboard successfully.",
+        title: "Input Copied.",
+        description: "Input code copied to clipboard successfully.",
         status: "success",
         duration: 5000,
         isClosable: true,
       });
     }).catch((err) => {
-      setError('Error in copying text: ', err);
+      setError('Error copying input code: ' + err.message);
+      toast({
+        title: "Error",
+        description: "An error occurred while copying input code: " + err.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     });
     navigator.clipboard.writeText(outputCode).then(() => {
       toast({
-        title: "Copied.",
-        description: "Code copied to clipboard successfully.",
+        title: "Output Copied.",
+        description: "Output code copied to clipboard successfully.",
         status: "success",
         duration: 5000,
         isClosable: true,
       });
     }).catch((err) => {
-      setError('Error in copying text: ', err);
+      setError('Error copying output code: ' + err.message);
+      toast({
+        title: "Error",
+        description: "An error occurred while copying output code: " + err.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     });
   };
+  
 
   const HeadingSteps = () => (
     

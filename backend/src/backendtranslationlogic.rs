@@ -4,7 +4,7 @@ use serde_json::json;
 use std::env;
 use std::error::Error;
 use log::{error, info};
-
+use serde_json::Value;
 
 
 // Code for the backend Logic - Jesica PLEASE DO NOT TOUCH
@@ -39,22 +39,11 @@ pub async fn backend_translation_logic(
             Ok(response) => {
                 match response.text().await {
                     Ok(response_body) => {
-                        let response_json: serde_json::Value = match serde_json::from_str(&response_body) {
-                            Ok(value) => value,
-                            Err(err) => {
-                                error!("Error parsing response body: {}", err);
-                                return Err(Box::new(err));
-                            }
-                        };
-                        let translated_text = match response_json["choices"][0]["text"].as_str() {
-                            Some(text) => text.to_string(),
-                            None => {
-                                let error_message = "Failed to extract translated text";
-                                error!("{}", error_message);
-                                
-                                return Err(error_message.into());
-                            }
-                        };
+                        let response_json: Value = serde_json::from_str(&response_body)?;
+                        let translated_text = response_json["choices"][0]["text"]
+                            .as_str()
+                            .ok_or("Failed to extract translated text")?
+                            .to_string();
                         info!("Translation successful");
                         Ok(translated_text)
                     },
@@ -65,6 +54,9 @@ pub async fn backend_translation_logic(
                 }
             },
             Err(err) => {
+                if err.status().map_or(false, |s| s == reqwest::StatusCode::TOO_MANY_REQUESTS) {
+                    return Err("Rate Limit Exceeded".into());
+                }
                 error!("Error sending request: {}", err);
                 Err(Box::new(err))
             }
