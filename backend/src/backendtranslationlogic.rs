@@ -6,7 +6,6 @@ use std::error::Error;
 use log::{error, info};
 use serde_json::Value;
 
-
 // Code for the backend Logic - Jesica PLEASE DO NOT TOUCH
 pub async fn backend_translation_logic(
     source_code: &str,
@@ -55,6 +54,7 @@ pub async fn backend_translation_logic(
             },
             Err(err) => {
                 if err.status().map_or(false, |s| s == reqwest::StatusCode::TOO_MANY_REQUESTS) {
+                    error!("Rate Limit Exceeded: {}", err);
                     return Err("Rate Limit Exceeded".into());
                 }
                 error!("Error sending request: {}", err);
@@ -72,7 +72,10 @@ pub async fn translate_and_collect(
 
     match backend_translation_logic(source_code, source_language, target_language).await {
         Ok(translated_text) => results.push(translated_text),
-        Err(err) => return Err(err),
+        Err(err) => {
+            error!("Translation error: {}", err);
+            return Err(err);
+        }
     }
 
     Ok(results)

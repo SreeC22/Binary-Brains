@@ -116,17 +116,23 @@ const handleCopyOutputCode = () => {
   };
   const fetchTranslatedCode = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8080/backendtranslationlogic', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          source_code: inputCode,
-          source_language: sourceLanguage,
-          target_language: targetLanguage,
+      const response = await Promise.race([
+        fetch('http://127.0.0.1:8080/backendtranslationlogic', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            source_code: inputCode,
+            source_language: sourceLanguage,
+            target_language: targetLanguage,
+          }),
         }),
-      });
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Translation timeout')), 5 * 60 * 1000 * 2) // 5 minutes timeout
+        ),
+      ]);
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -148,6 +154,15 @@ const handleCopyOutputCode = () => {
         toast({
           title: "Rate Limit Exceeded",
           description: "The rate limit for translation API has been exceeded. Please try again later.",
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+          position: "top",
+        });
+      } else if (error.message === "Translation timeout") {
+        toast({
+          title: "Translation Timeout",
+          description: "Translation took longer than 10 minutes. Please try again later.",
           status: "error",
           duration: 9000,
           isClosable: true,
