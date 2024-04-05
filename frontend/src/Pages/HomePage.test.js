@@ -25,18 +25,7 @@ describe('HomePage Component', () => {
     expect(screen.getByText(/Transform Your Code with Ease and Efficiency/i)).toBeInTheDocument();
     expect(screen.getByText(/Get Started with Our Code Translation Tool/i)).toBeInTheDocument();
     expect(screen.getByText(/Experience seamless code translation with our user-friendly interface./i)).toBeInTheDocument();
-    //expect(screen.getByText(/FAQs/i)).toBeInTheDocument();
   });
-
-  //   test('navigation buttons trigger navigation', () => {
-  //     setup();
-
-  //     // Example test for navigation button
-  //     const getStartedButton = screen.getByText(/Get Started/i);
-  //     expect(getStartedButton).toBeInTheDocument();
-  //     // Note: Actual navigation testing might require more setup or a different approach,
-  //     // as this test just ensures the button is present.
-  //   });
 
   test('renders responsive elements for different screen sizes', () => {
     // Example of responsiveness test, focusing on conditional rendering or layout changes
@@ -50,6 +39,4 @@ describe('HomePage Component', () => {
     // Clean up after altering global values
     global.innerWidth = 1024; // Reset to default for other tests
   });
-
-  // Add more tests as needed for other interactive elements, such as accordions, modals, etc.
 });
