@@ -3,7 +3,7 @@ use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
 use crate::auth::{hash_password, verify_password};
 use crate::db::{change_user_password, update_user_profile, delete_user, get_user_by_email};
-use actix_web::{get, web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode};
+use actix_web::{get, web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode, ResponseError};
 use actix_web_httpauth::headers::authorization::Authorization;
 use actix_web::error::{ErrorUnauthorized};
 use bcrypt::{hash, DEFAULT_COST, verify};
@@ -414,21 +414,20 @@ use crate::errors::ServiceError;
 use crate::db;
 use actix_web::web::Data;
 pub async fn change_password_handler(
-    password_change_form: web::Json<PasswordChangeForm>,
-    db: web::Data<Database>,
-    auth: actix_web::web::ReqData<crate::auth::Claims>,
-) -> Result<HttpResponse, actix_web::Error> {
-    let user_email = &auth.email;
-    let form = password_change_form.into_inner();
+    auth: BearerAuth,
+    form: web::Json<PasswordChangeForm>,
+    db: web::Data<mongodb::Database>,
+) -> impl Responder {
 
-    crate::db::change_user_password(user_email, &form.current_password, &form.new_password, &db.get_ref()).await
-        .map(|_| HttpResponse::Ok().json("Password changed successfully"))
-        .map_err(|e| {
-            // Convert your ServiceError or custom error type to actix_web::Error
-            // This requires your custom error type to implement ResponseError
-            actix_web::error::ErrorInternalServerError(e) // Example conversion, adjust based on your error handling strategy
-        })
+    // Attempt to decode JWT to extract email. Ensure this part is within the same async block as your password change logic.
+    let claims = decode_jwt(auth.token()).map_err(|_| ServiceError::Unauthorized)?;
+    let email = claims.email; // The 'email' variable is now declared and should be in scope for the subsequent use.
+
+    change_user_password(&db, &email, &form.current_password, &form.new_password).await
+        .map(|_| HttpResponse::Ok().json(serde_json::json!({"message": "Password changed successfully"})))
+        .map_err(|e| actix_web::error::ErrorInternalServerError(e.to_string()))
 }
+
 
 pub async fn update_user_profile_handler(
     user_id: web::Path<String>,

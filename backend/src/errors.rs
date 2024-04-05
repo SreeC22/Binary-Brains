@@ -1,9 +1,6 @@
-use actix_web::{HttpResponse, ResponseError};
+use actix_web::{error, HttpResponse, http::StatusCode, ResponseError};
 use derive_more::Display;
 use serde::Serialize;
-//se mongodb::error::Error as MongoError;
-use std::fmt;
-
 
 #[derive(Debug, Display, Serialize)]
 pub enum ServiceError {
@@ -19,21 +16,21 @@ pub enum ServiceError {
     #[display(fmt = "NotFound")]
     NotFound,
 
-    // Define other error types as needed
+    #[display(fmt = "Incorrect Password")]
+    IncorrectPassword,
 }
 
 impl ResponseError for ServiceError {
     fn error_response(&self) -> HttpResponse {
         match self {
-            ServiceError::InternalServerError => {
-                HttpResponse::InternalServerError().json("Internal Server Error")
-            },
-            ServiceError::Unauthorized => HttpResponse::Unauthorized().json("Unauthorized"),
-            ServiceError::BadRequest(msg) => HttpResponse::BadRequest().json(msg),
-            ServiceError::NotFound => HttpResponse::NotFound().json("Not Found"),
-            // Handle other errors similarly
+            ServiceError::Unauthorized => HttpResponse::Unauthorized().finish(),
+            // Handle other errors
+            _ => HttpResponse::InternalServerError().finish(),
         }
     }
+
+    // This method constructs the HTTP response to be sent back
+
 }
 impl From<bcrypt::BcryptError> for ServiceError {
     fn from(_: bcrypt::BcryptError) -> Self {

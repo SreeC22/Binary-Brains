@@ -16,7 +16,7 @@ use mongodb::bson::document::Document;
 
 use crate::db::{init_mongo, init_feedback_collection};
 use crate::models::{Feedback, User};
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback,change_password_handler, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route};
 
 
 
@@ -59,6 +59,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(oauth_config.clone()))
             .app_data(web::Data::new(feedback_collection.clone()))
             .app_data(web::Data::new(user_collection.clone()))
+            .app_data(web::Data::new(mongo_database.clone()))
+
             // Routes configuration...
 
             
@@ -75,9 +77,9 @@ async fn main() -> std::io::Result<()> {
             //.route("/api/user/change_password", web::post().to(handlers::change_password_handler))
             .route("/api/user/update_profile", web::put().to(update_user_profile_handler))
             .route("/api/user/delete", web::delete().to(delete_account_handler))
-           .service(
-               web::resource("/api/user/change_password")
-               .route(web::post().to(handlers::change_password_handler)),
+            .service(
+                web::resource("/api/user/change_password")
+                .route(web::post().to(change_password_handler)),
             )
             .service(handlers::feedback::get_feedback) // Use the endpoint function from the feedback module
             .service(web::resource("/preprocess_code").route(web::post().to(preprocess_code_route)))

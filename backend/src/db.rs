@@ -89,31 +89,46 @@ async fn insert_translation(history: Translation) -> mongodb::error::Result<()> 
 use mongodb::error::{Error as MongoError, ErrorKind as MongoErrorKind};
 use log::{error, warn};
 use crate::errors::ServiceError; 
+use actix_web::web;
 
 use bcrypt::{BcryptError};
-pub async fn change_user_password(email: &str, current_password: &str, new_password: &str, db: &Database) -> Result<(), ServiceError> {
+pub async fn change_user_password(
+    db: &Database, 
+    email: &str, 
+    current_password: &str, 
+    new_password: &str
+) -> Result<(), ServiceError> {
     let user_collection = db.collection::<User>("users");
-    let user = user_collection.find_one(doc! {"email": email}, None).await
+
+    let user = user_collection
+        .find_one(doc! {"email": email}, None)
+        .await
         .map_err(|_| ServiceError::InternalServerError)?
         .ok_or(ServiceError::NotFound)?;
 
-    if let Some(db_password) = user.password {
-        if verify_password(current_password, &db_password)? {
+    // Unwrap the Option<String> for the password
+    if let Some(db_password) = &user.password {
+        if verify_password(current_password, db_password)? {
             let new_hashed_password = hash_password(new_password)?;
-            user_collection.update_one(
-                doc! { "email": email },
-                doc! { "$set": { "password": new_hashed_password } },
-                None
-            ).await.map_err(|_| ServiceError::InternalServerError)?;
+            user_collection
+                .update_one(
+                    doc! {"email": email},
+                    doc! {"$set": {"password": new_hashed_password}},
+                    None,
+                )
+                .await
+                .map_err(|_| ServiceError::InternalServerError)?;
         } else {
-            return Err(ServiceError::BadRequest("Current password does not match.".into()));
+            return Err(ServiceError::IncorrectPassword);
         }
     } else {
-        return Err(ServiceError::BadRequest("No password set for this user.".into()));
+        return Err(ServiceError::InternalServerError); // Adjust based on your logic
     }
 
     Ok(())
 }
+
+
 pub async fn update_user_profile(user_id: &str, form: &UserProfileUpdateForm, db: &Database) -> mongodb::error::Result<()> {
     let users_collection = db.collection::<User>("users");
 

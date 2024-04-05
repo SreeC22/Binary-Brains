@@ -70,7 +70,8 @@ export const AuthProvider = ({ children }) => {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${user.token}`,
             },
-            body: JSON.stringify({ currentPassword, newPassword }),
+            // Correct the field names to match the backend expectation
+            body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
           });
       
           if (!response.ok) {
@@ -88,7 +89,6 @@ export const AuthProvider = ({ children }) => {
           throw error;
         }
       };
-      
 
     const deleteAccount = async () => {
         try {
