@@ -64,7 +64,6 @@ const NavBar = () => {
       {/* Center - Navigation Links */}
       <Box display="flex" alignItems="center">
         <RouterLink to="/translate" style={{ marginRight: '20px', color: 'inherit' }}>Translate Code</RouterLink>
-        {/* <RouterLink to="/code-conversion" style={{ marginRight: '20px', color: 'inherit' }}>Code Conversion</RouterLink> */}
         <RouterLink to="/feedback" style={{ marginRight: '20px', color: 'inherit' }}>Feedback</RouterLink>
 
         {/* More Dropdown */}
@@ -85,10 +84,15 @@ const NavBar = () => {
         {/* Authentication */}
         {user ? (
           <>
-            <Button onClick={handleLogout} size="sm" mr="4" bg={darkerShade} color={buttonTextColor}>
-              Logout
-            </Button>
-            <span>Hi, {user.name || user.email}</span>
+            <Menu>
+              <MenuButton as={Button} rightIcon={<ChevronDownIcon />} bg={darkerShade} color={buttonTextColor}>
+                {user.name || user.email} {/* Display user's name or email */}
+              </MenuButton>
+              <MenuList>
+                <MenuItem as={RouterLink} to="/profile-settings">Profile Settings</MenuItem>
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              </MenuList>
+            </Menu>
           </>
         ) : (
           <RouterLink to="/login">

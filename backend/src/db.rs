@@ -1,5 +1,5 @@
-use mongodb::{bson::{doc}, Client, Collection, options::ClientOptions, error::Result as MongoResult};
-use crate::models::{User, UserInfo, GitHubUserInfo, Feedback};
+use mongodb::{bson::{doc, Document}, Client, Database, Collection, options::ClientOptions, error::Result as MongoResult};
+use crate::models::{User, UserInfo, GitHubUserInfo, Feedback, UserProfileUpdateForm,  PasswordChangeForm, Translation};
 use std::env;
 
 // initializes the mongo client and user collection
@@ -72,3 +72,60 @@ pub async fn insert_feedback(db: &Collection<Feedback>, feedback: Feedback) -> m
     db.insert_one(feedback, None).await?;
     Ok(())
 }
+
+//inserts translation history
+async fn insert_translation(history: Translation) -> mongodb::error::Result<()> {
+    let client_options = ClientOptions::parse("your_mongodb_connection_string").await?;
+    let client = Client::with_options(client_options)?;
+    let db = client.database("your_database_name");
+    let collection: Collection<Translation> = db.collection("translation_history");
+
+    collection.insert_one(history, None).await?;
+
+    Ok(())
+}
+// At the top of your db.rs file, add:
+use actix_web::web;
+
+pub async fn update_user_password(email: &str, new_hashed_password: &str, db: &web::Data<Collection<User>>) -> mongodb::error::Result<()> {
+    // Assuming `session_version` is a field in your `User` model.
+    let update_result = db.update_one(
+        doc! { "email": email },
+        doc! {
+            "$set": { "password": new_hashed_password },
+            "$inc": { "session_version": 1 } // Remove placeholders.
+        },
+        None
+    ).await;
+
+    update_result.map(|_| ())
+}
+
+
+pub async fn update_user_profile(user_id: &str, form: &UserProfileUpdateForm, db: &Database) -> mongodb::error::Result<()> {
+    let users_collection = db.collection::<User>("users");
+
+    let mut update_doc = doc! {};
+    if let Some(username) = &form.username {
+        update_doc.insert("username", username);
+    }
+    if let Some(email) = &form.email {
+        update_doc.insert("email", email);
+    }
+
+    users_collection.update_one(
+        doc! { "_id": user_id },
+        doc! { "$set": update_doc },
+        None
+    ).await?;
+
+    Ok(())
+}
+
+pub async fn delete_user(email: &str, db: &Database) -> mongodb::error::Result<()> {
+    let users_collection = db.collection::<User>("users");
+    users_collection.delete_one(doc! { "email": email }, None).await?;
+    Ok(())
+}
+
+

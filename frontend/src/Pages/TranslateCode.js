@@ -1,4 +1,7 @@
-import { Alert, Icon, useColorModeValue,  AlertDescription, AlertIcon, AlertTitle, Box, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Menu, MenuButton, MenuItem, Slide, MenuList, Text, VStack, useColorMode, ChakraProvider, Center } from "@chakra-ui/react";
+
+//BEFORE CHANGING ANY CODE PLEASE CALL ME - JESICA 
+
+import { Alert, Icon, useColorModeValue,  AlertDescription, AlertIcon, AlertTitle,IconButton, Box, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Menu, MenuButton, MenuItem, Slide, MenuList, Text, VStack, useColorMode, ChakraProvider, Center } from "@chakra-ui/react";
 import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
 import 'ace-builds/src-noconflict/mode-c_cpp';
 import 'ace-builds/src-noconflict/mode-csharp';
@@ -14,22 +17,23 @@ import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools'; 
 import 'ace-builds/src-noconflict/ext-beautify';
+
+
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
-import hljs from 'highlight.js';
 
 import { useToast } from "@chakra-ui/react";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect ,useRef} from "react";
 import AceEditor from 'react-ace';
 // import React, { useEffect } from 'react';
-
 import { motion } from "framer-motion"; // Import motion from Framer Motion
 import { BiSolidDownArrowAlt } from "react-icons/bi";
-import { FaCode, FaCog, FaCube, FaPaste} from 'react-icons/fa';
+import { FaCode, FaCog, FaCube, FaPaste,FaTimes,FaUpload } from 'react-icons/fa';
 import {  FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
 import axios from 'axios';
 import { SiConvertio } from "react-icons/si";
-import { set } from "ace-builds/src-noconflict/ace";
+
+
 const languages = [
   { label: "Python", value: "python", icon: <PythonOriginal /> },
   { label: "Java", value: "java", icon: <JavaOriginal /> },
@@ -41,27 +45,29 @@ const languages = [
   { label: "Perl", value: "perl", icon: <PerlOriginal /> },
   { label: "Swift", value: "swift", icon: <SwiftOriginal /> },
   { label: "MatLab", value: "matlab", icon: <MatlabOriginal /> },
-
 ];
 
+
+
 const TranslateCode = () => {
-  const [apiResponse, setApiResponse] = useState({ status_code: null, message: '' });
-
+  const [gptStatus, setGptStatus] = useState(false);
+  const aceEditorRef = useRef(null);
   useEffect(() => {
-    // Adjust the URL to match your endpoint
-    const url = 'http://127.0.0.1:8080/api/test_gpt3';
-
-    fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        setApiResponse({ status_code: data.status_code, message: data.message });
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-        setApiResponse({ status_code: 'Error', message: 'Failed to fetch data' });
-      });
+    const callAPI = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8080/api/test_gpt3');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("API response:", data);
+        setGptStatus(true); // Update the state instead of directly modifying the variable
+      } catch (error) {
+        console.error("Error calling API:", error);
+      }
+    };
+    callAPI(); // Call the API when the component mounts
   }, []);
-  const sourcelangchosen = ("");
   const toast = useToast();
   const { colorMode } = useColorMode();
   const backgroundColor = colorMode === "light" ? "#fbf2e3" : "#2D3748";
@@ -74,101 +80,145 @@ const TranslateCode = () => {
   const [sourceLanguage, setSourceLanguage] = useState("");
   const [outputCode, setOutputCode] = useState("// The generated code will be displayed here ->");
   const [error, setError] = useState("");
-  const [editorMode, setEditorMode] = useState("text");
+  // const [editorMode, setEditorMode] = useState("text");
   const [fontSize, setFontSize] = useState(14);
-
+  const fileInputRef = useRef(null);
   useEffect(() => {
     console.log("Selected source language:", sourceLanguage);
 }, [sourceLanguage]);
 
 
- 
-  const handleZoomIn = () => {
-    setFontSize((prevFontSize) => prevFontSize + 2);
-  };
-  
-  const handleZoomOut = () => {
-    setFontSize((prevFontSize) => Math.max(prevFontSize - 2, 8)); // Prevents font size from getting too small
-  };
+const handleZoomIn = () => {
+  setFontSize(prevFontSize => prevFontSize + 2);
+};
+const handleZoomOut = () => {
+  setFontSize(prevFontSize => Math.max(prevFontSize - 2, 8));
+};
+
+const handleCopyOutputCode = () => {
+  navigator.clipboard.writeText(outputCode).then(() => {
+    toast({
+      title: "Copied.",
+      description: "Code copied to clipboard successfully.",
+      status: "success",
+      duration: 5000,
+      isClosable: true,
+    });
+  }).catch((err) => {
+    setError('Error in copying text: ', err);
+  });
+};
   const handleClose = () => {
     setError(""); // Clear the error message
   };
-
-  const handleConvert = async() => {
-    if (!sourceLanguage || !targetLanguage) {
-      setError("Both source and target languages are required");
-      return;
-    }
-
-
-    if (sourceLanguage === targetLanguage) {
-      setError("Source and target languages cannot be the same");
-      return;
-    }
-
-    if (!inputCode.trim()) {
-      setError("Input code is required");
-      return;
-    }
+  const fetchTranslatedCode = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8080/translate', {
+      const response = await fetch('http://127.0.0.1:8080/backendtranslationlogic', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           source_code: inputCode,
+          source_language: sourceLanguage,
           target_language: targetLanguage,
         }),
       });
-  
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       const result = await response.json();
       console.log("API response:", result);
-      setOutputCode(result.translated_code);
-      // setOutputCode(result);
-    } catch (error) {
-      console.error("Error during translation:", error);
-      
-    }
+      setOutputCode(result.translated_code); // Set the translated code received from the API
+      toast({
+        title: "Translation Successful",
+        description: "Translation completed successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } 
+  catch (error) {
+    console.error("Error during translation:", error);
+    toast({
+      title: "Translation Error",
+      description: error.message,
+      status: "error",
+      duration: 9000, // Display the error message for 5 seconds
+      isClosable: true,
+      position: "top",
+    });
+    setError(error);
 
-
-    // try {
-    //   console.log(sourceLanguage)
-    //   const response = await fetch('http://127.0.0.1:8080/preprocess_code', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
-
-        
-    //         });
-
-    //   if (!response.ok) {
-    //     throw new Error(`HTTP error! status: ${response.status}`);
-    //   }
-
-    //   const result = await response.json();
-    //   console.log(result); // Do something with the processed code
-
-    // } catch (error) {
-    //   console.error("Error during code preprocessing:", error);
-    //   setError("was an error in preprocessing")
-    //   // Handle errors here
-    // }
-    
-    // // Call the translation API here
-    // console.log("Input code:", inputCode);
-    // console.log("Source language:", sourceLanguage);
-    // console.log("Target language:", targetLanguage);
-    // setOutputCode(`Generated code in the target language will go here`);
-    // setError("");
+  } 
   };
- 
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => setInputCode(e.target.result);
+      reader.readAsText(file);
+    }
+  };
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };  
+//the way handleconvert works : when u press convert button, it calls preprocess api in the handle convert function 
+//and then it calls the translate api which is in the fetchtranslate code function
+  const handleConvert = async () => {
+    toast({
+      title: "Translation Queued",
+      description: "Your translation is being processed. Please wait...",
+      status: "info",
+      duration: 5000, // Setting duration to null to make it persist until user interaction
+      isClosable: true,
+      position: "top",
+    });
+    if (!sourceLanguage || !targetLanguage) {
+      setError("Both source and target languages are required");
+      return;
+    }
+    if (sourceLanguage === targetLanguage) {
+      setError("Source and target languages cannot be the same");
+      return;
+    }
+    if (!inputCode.trim()) {
+      setError("Input code is required");
+      return;
+    }
+      try {
+      const preprocessedCodeResponse = await fetch('http://127.0.0.1:8080/preprocess_code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
+      });
+      if (!preprocessedCodeResponse.ok) {
+        // throw new Error(`HTTP error! status: ${preprocessedCodeResponse.status}`);
+        const errorBody = await preprocessedCodeResponse.json();
+        const errorMessage = errorBody.error || `HTTP error! Status: ${preprocessedCodeResponse.status}`;
+        throw new Error(errorMessage);
+      }
+      const preprocessedCodeResult = await preprocessedCodeResponse.json();
+      console.log(preprocessedCodeResult);
+      const unescapedCode = JSON.parse(JSON.stringify(preprocessedCodeResult.processed_code));
+      setInputCode(unescapedCode);
+      await fetchTranslatedCode();
+      
+
+    } catch (error) {
+      console.error("Error during preprocessing:", error);
+      setError(error.message);
+      setTimeout(() => {
+        setError(''); 
+      }, 4000);
+  
+    }
+  };
+  
   const handleCopy = () => {
     navigator.clipboard.writeText(inputCode).then(() => {
       toast({
@@ -221,46 +271,36 @@ const TranslateCode = () => {
 
   return (
      <>
-       <div>
-        <p>GPT-3 API Status Code: {apiResponse.status_code}</p>
-        <p>Message: {apiResponse.message}</p>
-    </div>
+
     <ChakraProvider>
     <HeadingSteps />
-    <VStack spacing={4} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}>
-      {/* <Box  bg="#DFD3D33B" p={4} borderRadius="16" textAlign="center" display="flex" alignItems="center" justifyContent="center">
-        <Text fontFamily="Roboto" marginBottom={0} fontSize={24}>Drop your code here!</Text>
-        <Box ml={2}>
-          <BiSolidDownArrowAlt size={32} />
-        </Box>
-      </Box> */}
+    <VStack spacing={4} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}> 
           <Flex
-                justifyContent="center" // Center Horizontally             
+          justifyContent="center"              
                  >
-          {/* <Box
-            width="47.75%"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            p={4}
-            bg={useColorModeValue('gray.100', 'gray.700')}
-            borderRadius="lg"
-            borderWidth="1px"
-            borderColor={isGPTActive ? 'green.500' : 'red.500'}
-          >
-            <Icon
-              as={isGPTActive ? AiOutlineCheckCircle : AiOutlineCloseCircle}
-              color={isGPTActive ? 'green.500' : 'red.500'}
-              w={6}
-              h={6}
-              mr={2}
-            />
-            <Text color={useColorModeValue('gray.800', 'whiteAlpha.900')} fontWeight="medium">
-              GPT Status: {isGPTActive ? 'Active' : 'Inactive'}
-            </Text>
-          </Box> */}
+          <Box
+              width="47.75%"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              p={4}
+              bg={useColorModeValue('gray.100', 'gray.700')}
+              borderRadius="lg"
+              borderWidth="1px"
+              borderColor={gptStatus ? 'green.500' : 'red.500'}
+            >
+              <Icon
+                as={gptStatus ? AiOutlineCheckCircle : AiOutlineCloseCircle}
+                color={gptStatus ? 'green.500' : 'red.500'}
+                w={6}
+                h={6}
+                mr={2}
+              />
+              <Text color={useColorModeValue('gray.800', 'whiteAlpha.900')} fontWeight="medium">
+                GPT Status: {gptStatus ? 'Active' : 'Inactive'}
+              </Text>
+            </Box>
         </Flex>
-
       <Flex justifyContent="space-between">
         <Box position="relative">
         <Menu>
@@ -286,25 +326,15 @@ const TranslateCode = () => {
                         data-testid={`language-option-${lang.value}`} 
                         onClick={() => {
                             setSourceLanguage(lang.value); // Set the source language state
-
                         }}>
                         <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 36 })}</span>
                         <span>{lang.label}</span>
                     </MenuItem>
                 ))}
-              {/* {languages.map(lang => (
-                <MenuItem key={lang.value} data-testid={`language-option-${lang.value}`} onClick={() => {
-                  setSourceLanguage(lang.value);
-                  
-                  setEditorMode(getEditorMode(lang.value)); // Update editor mode based on the selected source language
-                }}>
-                  <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 36 })}</span>
-                  <span>{lang.label}</span>
-                </MenuItem>
-              ))} */}
             </MenuList>
-          </Menu>
+        </Menu>
         </Box>
+
         <Box position="relative">
           <Menu>
             <MenuButton
@@ -326,8 +356,6 @@ const TranslateCode = () => {
               {languages.map(lang => (
                 <MenuItem key={lang.value} onClick={() => {
                   setTargetLanguage(lang.value);
-                  // Optionally set the editor mode to the target language, depending on your app's flow
-                  // setEditorMode(getEditorMode(lang.value));
                 }}>
                   <span style={{ marginRight: '8px' }}>{React.cloneElement(lang.icon, { size: 36 })}</span>
                   <span>{lang.label}</span>
@@ -346,36 +374,78 @@ const TranslateCode = () => {
                    <FaCode />
                  </Box>
                </FormLabel>
-              
+             
               <div style={{ position: 'relative' ,  border: '10px solid black' }}>
-                 
-                  <button
-                  title = 'Copy'
-                  style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    zIndex: '999',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'white',
-                  }}
-                  onClick={handleCopy} 
-                >
-                  <FaPaste size={24} /> 
-                  </button>
-                  <button onClick={handleZoomIn} title="Zoom in" style={{ bottom: '10px',
-                      right: '8px',  position: 'absolute', marginLeft: '10px',color: 'white',zIndex: '999',
-                    }}>
-                    <FaSearchPlus size={24} />
-                  </button>
-                  <button onClick={handleZoomOut} title="Zoom out" style={{ bottom: '10px',
-                      right: '40px',  position: 'absolute', marginLeft: '10px',color: 'white',zIndex: '999',
-                    }}>
-                    <FaSearchMinus size={24} />
-                  </button>
+              
+                  <IconButton
+                  title="Copy"
+                  icon={<FaPaste />}
+                  onClick={() => handleCopy()}
+                  position="absolute"
+                  top="8px"
+                  right="8px"
+                  zIndex="999"
+                  backgroundColor="transparent"
+                  border="none"
+                  cursor="pointer"
+                  color="white"
+                  />
+                    <IconButton
+                      title="Clear"
+                      icon={<FaTimes />}
+                      onClick={() => setInputCode('')}
+                      position="absolute"
+                      top="65px"
+                      right="8px"
+                      zIndex="999"
+                      backgroundColor="transparent"
+                      border="none"
+                      cursor="pointer"
+                      color="white"
+                    />
+                    <IconButton
+                      title="Zoom in"
+                      icon={<FaSearchPlus />}
+                      onClick={handleZoomIn}
+                      position="absolute"
+                      bottom="10px"
+                      right="8px"
+                      zIndex="999"
+                      color="white"
+                      backgroundColor="transparent"
+                    />
+                    <IconButton
+                      title="Zoom out"
+                      icon={<FaSearchMinus />}
+                      onClick={handleZoomOut}
+                      position="absolute"
+                      bottom="10px"
+                      right="40px"
+                      zIndex="999"
+                      color="white"
+                      backgroundColor="transparent"
+                    />
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }} // Hide the file input
+                    />
+                    <IconButton
+                      icon={<FaUpload />}
+                      onClick={handleUploadClick}
+                      title="Upload"
+                      position="absolute"
+                      top="35px"
+                      right="8px"
+                      zIndex="999"
+                      backgroundColor="transparent"
+                      border="none"
+                      cursor="pointer"
+                      color="white"
+                    />
                   <AceEditor
+                      ref={aceEditorRef}
                       id="inputCode"
                       name="input"
                       fontSize={`${fontSize}px`}
@@ -389,8 +459,8 @@ const TranslateCode = () => {
                       height="500px"
                       value={inputCode}
                       onChange={setInputCode}
-                      // editorProps={{ $blockScrolling: true }}
                      
+
                     />
               </div>
             </Box>
@@ -403,46 +473,48 @@ const TranslateCode = () => {
                 </Box>
               </FormLabel>
               <div style={{ position: 'relative',  border: '10px solid black' }}>
-                  <button
-                  title = 'Copy'
-                  style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    zIndex: '999',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'white',
-                  }}
-                  onClick={handleCopy} 
-                >
-                  <FaPaste size={24} /> 
-                  </button>
-                  <button onClick={handleZoomIn} title="Zoom in" style={{ bottom: '10px',
-                      right: '8px',  position: 'absolute', marginLeft: '10px',color: 'white',zIndex: '999',
-                    }}>
-                    <FaSearchPlus size={24} />
-                  </button>
-                  <button onClick={handleZoomOut} title="Zoom out" style={{ bottom: '10px',
-                      right: '40px',  position: 'absolute', marginLeft: '10px',color: 'white',zIndex: '999',
-                    }}>
-                    <FaSearchMinus size={24} />
-                  </button>
+                    <IconButton
+                    title="Copy"
+                    icon={<FaPaste />}
+                    onClick={() => handleCopyOutputCode()}
+                    position="absolute"
+                    top="8px"
+                    right="8px"
+                    zIndex="999"
+                    backgroundColor="transparent"
+                    border="none"
+                    cursor="pointer"
+                    color="white"
+                  />
+                  <IconButton
+                    title="Clear"
+                    icon={<FaTimes />}
+                    onClick={() => setOutputCode('')}
+                    position="absolute"
+                    top="45px"
+                    right="8px"
+                    zIndex="999"
+                    backgroundColor="transparent"
+                    border="none"
+                    cursor="pointer"
+                    color="white"
+                  />
+                 
+                
                   <AceEditor
                     id="outputCode"
                     mode={targetLanguage ? (targetLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === targetLanguage)?.value || "text") : "text"}
                     theme="monokai"
                     width="100%"
                     height="500px"
-                    value={outputCode}
+                    value= {outputCode}
                     readOnly={true}
                     useWorker={false}
                   />
               </div>
             </Box>
           </Box>
-     
+
 
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, pointerEvents: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <Slide in={Boolean(error)} direction="bottom">
@@ -470,7 +542,7 @@ const TranslateCode = () => {
             )}
           </Slide>
         </div>
-  
+
         <CustomButton
           backgroundColor="black"
           color="white"
@@ -487,7 +559,7 @@ const TranslateCode = () => {
         >
           Convert
         </CustomButton>
-  
+
         <Text mt={4} fontSize="22" fontFamily="Roboto" textAlign="center">
           How to use this tool?<br />
         </Text>
@@ -502,7 +574,7 @@ const TranslateCode = () => {
           &nbsp;&nbsp;&nbsp;2. Describe the code you want to generate here in this box<br />
           &nbsp;&nbsp;&nbsp;3. Click convert
         </Text>
-  
+
         <Box>
           <Text fontSize="21" textAlign="center" >Try our Code Generators in other languages:</Text>
           <Flex justifyContent="center" flexWrap="wrap">
@@ -528,5 +600,4 @@ const TranslateCode = () => {
   );
 
 };
-
 export default TranslateCode;
