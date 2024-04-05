@@ -63,33 +63,38 @@ export const AuthProvider = ({ children }) => {
     };
 
     const changePassword = async (currentPassword, newPassword) => {
-        try {
-          const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/change_password`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${user.token}`,
-            },
-            // Correct the field names to match the backend expectation
-            body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
-          });
-      
-          if (!response.ok) {
-            // Attempt to read response as text if not OK
-            const errorText = await response.text();
-            console.error("Non-JSON response or error received:", errorText);
-            throw new Error(`Failed to change password: ${errorText}`);
-          }
-      
-          // Parse JSON only if response is OK
-          const data = await response.json();
-          return data;
-        } catch (error) {
-          console.error("Error in changePassword:", error);
-          throw error;
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token'); // Retrieve the token directly
+        console.log("Token for password change: ", token); // Debug log
+    
+        if (!token) {
+            console.error("Token not found");
+            throw new Error("Authentication token not found.");
         }
-      };
-
+    
+        try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/change_password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`, // Use the directly retrieved token
+                },
+                body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+            });
+    
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Non-JSON response or error received:", errorText);
+                throw new Error(`Failed to change password: ${errorText}`);
+            }
+    
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("Error in changePassword:", error);
+            throw error;
+        }
+    };
+    
     const deleteAccount = async () => {
         try {
             await axios.delete('/api/user/delete', {
