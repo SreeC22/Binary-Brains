@@ -145,7 +145,7 @@ const handleCopyOutputCode = () => {
         description: "Translation completed successfully.",
         status: "success",
         duration: 5000,
-        isClosable: true,
+        isClosable: true, 
         position: "top",
       });
     } catch (error) {
@@ -223,8 +223,20 @@ const handleCopyOutputCode = () => {
       
 
     } catch (error) {
+      if (error.message === "Rate Limit Exceeded") {
+        toast({
+          title: "Rate Limit Exceeded",
+          description: "The rate limit for translation API has been exceeded. Please try again later.",
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+          position: "top",
+        });
+      } 
+      else{
       console.error("Error during preprocessing:", error);
       setError("There was an error in preprocessing. Check your input to make sure it's correct.");
+      }
     }
   };
   
@@ -402,7 +414,7 @@ const handleCopyOutputCode = () => {
               <div style={{ position: 'relative' ,  border: '10px solid black' }}>
               
                   <IconButton
-                  title="Copy"
+                  title="CopyInput"
                   icon={<FaPaste />}
                   onClick={() => handleCopy()}
                   position="absolute"
@@ -476,7 +488,7 @@ const handleCopyOutputCode = () => {
               </FormLabel>
               <div style={{ position: 'relative',  border: '10px solid black' }}>
                     <IconButton
-                    title="Copy"
+                    title="CopyOutput"
                     icon={<FaPaste />}
                     onClick={() => handleCopyOutputCode()}
                     position="absolute"
@@ -546,6 +558,7 @@ const handleCopyOutputCode = () => {
         </div>
 
         <CustomButton
+          aria-label="Convert"
           backgroundColor="black"
           color="white"
           fontFamily="Roboto"
