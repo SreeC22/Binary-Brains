@@ -18,7 +18,7 @@ use crate::backendtranslationlogic;
 use crate::preprocessing::preprocess_code;
 use crate::models::preprocessingCodeInput;
 use crate::models::backendtranslationrequest;
-use log::error;
+use log::{debug, error};
 
 
 pub async fn get_user_profile(
@@ -416,16 +416,43 @@ use actix_web::web::Data;
 pub async fn change_password_handler(
     auth: BearerAuth,
     form: web::Json<PasswordChangeForm>,
-    db: web::Data<mongodb::Database>,
-) -> impl Responder {
+    db: web::Data<mongodb::Database>, // Ensure that you are passing the correct type here
+) -> Result<HttpResponse, actix_web::Error> {
+    debug!("Received request to change password");
 
-    // Attempt to decode JWT to extract email. Ensure this part is within the same async block as your password change logic.
-    let claims = decode_jwt(auth.token()).map_err(|_| ServiceError::Unauthorized)?;
-    let email = claims.email; // The 'email' variable is now declared and should be in scope for the subsequent use.
+    // Attempt to decode JWT to extract email
+    let claims = decode_jwt(auth.token()).map_err(|_| {
+        error!("JWT decoding failed or unauthorized access attempted");
+        actix_web::error::ErrorUnauthorized("Unauthorized")
+    })?;
+    let email = claims.email;
+    debug!("JWT decoded successfully for email: {}", email);
 
-    change_user_password(&db, &email, &form.current_password, &form.new_password).await
-        .map(|_| HttpResponse::Ok().json(serde_json::json!({"message": "Password changed successfully"})))
-        .map_err(|e| actix_web::error::ErrorInternalServerError(e.to_string()))
+    // Proceed to change the user's password
+    match change_user_password(&db, &email, &form.current_password, &form.new_password).await {
+        Ok(_) => {
+            debug!("Password changed successfully for user: {}", email);
+            Ok(HttpResponse::Ok().json(json!({"message": "Password changed successfully"})))
+        },
+        Err(e) => match e {
+            ServiceError::Unauthorized => {
+                error!("Unauthorized attempt to change password for email: {}", email);
+                Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
+            },
+            ServiceError::NotFound => {
+                error!("User not found for email: {}", email);
+                Err(actix_web::error::ErrorNotFound("User not found"))
+            },
+            ServiceError::IncorrectPassword => {
+                error!("Incorrect current password provided for email: {}", email);
+                Err(actix_web::error::ErrorBadRequest("Incorrect current password"))
+            },
+            _ => {
+                error!("Internal server error occurred while changing password for email: {}", email);
+                Err(actix_web::error::ErrorInternalServerError("Internal server error"))
+            },
+        },
+    }
 }
 
 
