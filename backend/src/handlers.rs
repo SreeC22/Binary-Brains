@@ -18,18 +18,28 @@ use crate::backendtranslationlogic;
 use crate::preprocessing::preprocess_code;
 use crate::models::preprocessingCodeInput;
 use crate::models::backendtranslationrequest;
+use log::error;
 
 
-pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
+pub async fn get_user_profile(
+    auth: BearerAuth, 
+    db: web::Data<Collection<User>>
+) -> impl Responder {
     match decode_jwt(auth.token()) {
         Ok(claims) => {
             match get_user_by_email(&db, &claims.email).await {
                 Ok(Some(user)) => HttpResponse::Ok().json(user),
                 Ok(None) => HttpResponse::NotFound().json("User not found"),
-                Err(_) => HttpResponse::InternalServerError().finish(),
+                Err(e) => {
+                    error!("Database error: {:?}", e);
+                    HttpResponse::InternalServerError().finish()
+                },
             }
         },
-        Err(_) => HttpResponse::Unauthorized().json("Invalid token"),
+        Err(e) => {
+            error!("JWT decoding error: {:?}", e);
+            HttpResponse::Unauthorized().json("Invalid token")
+        },
     }
 }
 // google oauth callback
@@ -140,6 +150,7 @@ pub async fn logout(
 
     // Directly use `db` to insert the document
     match db.insert_one(blacklisted_token_doc, None).await {
+        
         Ok(_) => Ok(HttpResponse::Ok().json("Logged out successfully")),
         Err(e) => {
             eprintln!("Could not insert token into blacklist: {}", e);
@@ -397,15 +408,27 @@ pub async fn translate_code_endpoint(
         },
     }
 }
+use crate::errors::ServiceError;
 
 
 use crate::db;
-
 use actix_web::web::Data;
+pub async fn change_password_handler(
+    password_change_form: web::Json<PasswordChangeForm>,
+    db: web::Data<Database>,
+    auth: actix_web::web::ReqData<crate::auth::Claims>,
+) -> Result<HttpResponse, actix_web::Error> {
+    let user_email = &auth.email;
+    let form = password_change_form.into_inner();
 
-
-
-
+    crate::db::change_user_password(user_email, &form.current_password, &form.new_password, &db.get_ref()).await
+        .map(|_| HttpResponse::Ok().json("Password changed successfully"))
+        .map_err(|e| {
+            // Convert your ServiceError or custom error type to actix_web::Error
+            // This requires your custom error type to implement ResponseError
+            actix_web::error::ErrorInternalServerError(e) // Example conversion, adjust based on your error handling strategy
+        })
+}
 
 pub async fn update_user_profile_handler(
     user_id: web::Path<String>,

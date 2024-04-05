@@ -1,6 +1,8 @@
 use mongodb::{bson::{doc, Document}, Client, Database, Collection, options::ClientOptions, error::Result as MongoResult};
 use crate::models::{User, UserInfo, GitHubUserInfo, Feedback, UserProfileUpdateForm,  PasswordChangeForm, Translation};
 use std::env;
+use crate::auth::hash_password;
+use crate::auth::verify_password;
 
 // initializes the mongo client and user collection
 pub async fn init_mongo() -> mongodb::error::Result<Collection<User>> {
@@ -84,33 +86,34 @@ async fn insert_translation(history: Translation) -> mongodb::error::Result<()> 
 
     Ok(())
 }
+use mongodb::error::{Error as MongoError, ErrorKind as MongoErrorKind};
+use log::{error, warn};
+use crate::errors::ServiceError; 
 
-use actix_web::web;
-pub async fn change_user_password(email: &str, current_password: &str, new_password: &str, db: &Database) -> mongodb::error::Result<()> {
+use bcrypt::{BcryptError};
+pub async fn change_user_password(email: &str, current_password: &str, new_password: &str, db: &Database) -> Result<(), ServiceError> {
     let user_collection = db.collection::<User>("users");
+    let user = user_collection.find_one(doc! {"email": email}, None).await
+        .map_err(|_| ServiceError::InternalServerError)?
+        .ok_or(ServiceError::NotFound)?;
 
-    if let Ok(Some(user)) = user_collection.find_one(doc! {"email": email}, None).await {
-        if let Some(db_password) = user.password {
-            if verify_password(current_password, &db_password)? {
-                let new_hashed_password = hash_password(new_password)?;
-                let update_result = user_collection.update_one(
-                    doc! { "email": email },
-                    doc! { "$set": { "password": new_hashed_password } },
-                    None
-                ).await;
-                update_result.map(|_| ())
-            } else {
-                Err(mongodb::error::Error::from("Current password does not match"))
-            }
+    if let Some(db_password) = user.password {
+        if verify_password(current_password, &db_password)? {
+            let new_hashed_password = hash_password(new_password)?;
+            user_collection.update_one(
+                doc! { "email": email },
+                doc! { "$set": { "password": new_hashed_password } },
+                None
+            ).await.map_err(|_| ServiceError::InternalServerError)?;
         } else {
-            Err(mongodb::error::Error::from("No password set for this user"))
+            return Err(ServiceError::BadRequest("Current password does not match.".into()));
         }
     } else {
-        Err(mongodb::error::Error::from("User not found"))
+        return Err(ServiceError::BadRequest("No password set for this user.".into()));
     }
+
+    Ok(())
 }
-
-
 pub async fn update_user_profile(user_id: &str, form: &UserProfileUpdateForm, db: &Database) -> mongodb::error::Result<()> {
     let users_collection = db.collection::<User>("users");
 

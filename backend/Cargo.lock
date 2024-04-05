@@ -480,6 +480,7 @@ dependencies = [
  "bcrypt",
  "bson",
  "chrono",
+ "derive_more",
  "dotenv",
  "env_logger",
  "futures-util",

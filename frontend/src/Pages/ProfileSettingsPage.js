@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { useAuth } from '../Components/AuthContext';
 import {Box, VStack, Input, Button, FormControl, FormLabel, useToast, useColorModeValue} 
     from '@chakra-ui/react';
@@ -33,27 +33,7 @@ const ProfileSettingsPage = () => {
     }
   };
 
-  const handleSubmitPasswordChange = async (e) => {
-    e.preventDefault();
-    try {
-      await changePassword(currentPassword, newPassword);
-      toast({
-        title: "Password changed.",
-        description: "Your password has been successfully changed.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: "Password change failed.",
-        description: "Failed to change password, please try again.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
+
 
   const handleDeleteAccount = async () => {
     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
@@ -69,6 +49,28 @@ const ProfileSettingsPage = () => {
           isClosable: true,
         });
       }
+    }
+  };
+
+  const handleSubmitPasswordChange = async (e) => {
+    e.preventDefault();
+    try {
+      await changePassword(currentPassword, newPassword);
+      toast({
+        title: "Password changed.",
+        description: "Your password has been successfully changed.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Password change failed.",
+        description: error.message || "Failed to change password, please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 

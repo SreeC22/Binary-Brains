@@ -25,6 +25,7 @@ mockall = "0.10.2"
 futures-util = "0.3"
 bson = "2.0"
 actix-rt = "2.5"
+derive_more = "0.99.16"
 
 log = "0.4"
 env_logger = "0.9"

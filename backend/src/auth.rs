@@ -30,7 +30,7 @@ pub fn decode_jwt(token: &str) -> Result<Claims, JwtError> {
     )
     .map(|data| data.claims)
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub email: String,
     pub exp: i64, // Ensure this matches the type expected by the JWT library, which is typically i64 for Unix timestamps
