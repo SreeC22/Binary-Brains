@@ -84,21 +84,30 @@ async fn insert_translation(history: Translation) -> mongodb::error::Result<()> 
 
     Ok(())
 }
-// At the top of your db.rs file, add:
+
 use actix_web::web;
+pub async fn change_user_password(email: &str, current_password: &str, new_password: &str, db: &Database) -> mongodb::error::Result<()> {
+    let user_collection = db.collection::<User>("users");
 
-pub async fn update_user_password(email: &str, new_hashed_password: &str, db: &web::Data<Collection<User>>) -> mongodb::error::Result<()> {
-    // Assuming `session_version` is a field in your `User` model.
-    let update_result = db.update_one(
-        doc! { "email": email },
-        doc! {
-            "$set": { "password": new_hashed_password },
-            "$inc": { "session_version": 1 } // Remove placeholders.
-        },
-        None
-    ).await;
-
-    update_result.map(|_| ())
+    if let Ok(Some(user)) = user_collection.find_one(doc! {"email": email}, None).await {
+        if let Some(db_password) = user.password {
+            if verify_password(current_password, &db_password)? {
+                let new_hashed_password = hash_password(new_password)?;
+                let update_result = user_collection.update_one(
+                    doc! { "email": email },
+                    doc! { "$set": { "password": new_hashed_password } },
+                    None
+                ).await;
+                update_result.map(|_| ())
+            } else {
+                Err(mongodb::error::Error::from("Current password does not match"))
+            }
+        } else {
+            Err(mongodb::error::Error::from("No password set for this user"))
+        }
+    } else {
+        Err(mongodb::error::Error::from("User not found"))
+    }
 }
 
 

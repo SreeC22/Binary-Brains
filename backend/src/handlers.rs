@@ -2,7 +2,7 @@ use crate::db::{find_or_create_user_by_google_id, find_or_create_user_by_github_
 use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
 use crate::auth::{hash_password, verify_password};
-use crate::db::{update_user_password, update_user_profile, delete_user, get_user_by_email};
+use crate::db::{change_user_password, update_user_profile, delete_user, get_user_by_email};
 use actix_web::{get, web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode};
 use actix_web_httpauth::headers::authorization::Authorization;
 use actix_web::error::{ErrorUnauthorized};
