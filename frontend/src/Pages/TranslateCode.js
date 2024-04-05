@@ -17,18 +17,22 @@ import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools'; 
 import 'ace-builds/src-noconflict/ext-beautify';
+
+
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
 
 import { useToast } from "@chakra-ui/react";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect ,useRef} from "react";
 import AceEditor from 'react-ace';
 // import React, { useEffect } from 'react';
 import { motion } from "framer-motion"; // Import motion from Framer Motion
-import { FaCode, FaCog, FaCube, FaPaste,FaTimes } from 'react-icons/fa';
+import { BiSolidDownArrowAlt } from "react-icons/bi";
+import { FaCode, FaCog, FaCube, FaPaste,FaTimes,FaUpload } from 'react-icons/fa';
 import {  FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
 import axios from 'axios';
 import { SiConvertio } from "react-icons/si";
+
 
 const languages = [
   { label: "Python", value: "python", icon: <PythonOriginal /> },
@@ -47,6 +51,7 @@ const languages = [
 
 const TranslateCode = () => {
   const [gptStatus, setGptStatus] = useState(false);
+  const aceEditorRef = useRef(null);
   useEffect(() => {
     const callAPI = async () => {
       try {
@@ -85,7 +90,7 @@ const TranslateCode = () => {
   const [error, setError] = useState("");
   // const [editorMode, setEditorMode] = useState("text");
   const [fontSize, setFontSize] = useState(14);
-
+  const fileInputRef = useRef(null);
   useEffect(() => {
     console.log("Selected source language:", sourceLanguage);
 }, [sourceLanguage]);
@@ -180,6 +185,17 @@ const handleCopyOutputCode = () => {
       }
     }
   };
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => setInputCode(e.target.result);
+      reader.readAsText(file);
+    }
+  };
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };  
 //the way handleconvert works : when u press convert button, it calls preprocess api in the handle convert function 
 //and then it calls the translate api which is in the fetchtranslate code function
   const handleConvert = async () => {
@@ -213,7 +229,10 @@ const handleCopyOutputCode = () => {
         body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
       });
       if (!preprocessedCodeResponse.ok) {
-        throw new Error(`HTTP error! status: ${preprocessedCodeResponse.status}`);
+        // throw new Error(`HTTP error! status: ${preprocessedCodeResponse.status}`);
+        const errorBody = await preprocessedCodeResponse.json();
+        const errorMessage = errorBody.error || `HTTP error! Status: ${preprocessedCodeResponse.status}`;
+        throw new Error(errorMessage);
       }
       const preprocessedCodeResult = await preprocessedCodeResponse.json();
       console.log(preprocessedCodeResult);
@@ -235,8 +254,11 @@ const handleCopyOutputCode = () => {
       } 
       else{
       console.error("Error during preprocessing:", error);
-      setError("There was an error in preprocessing. Check your input to make sure it's correct.");
-      }
+      setError(error.message);
+      setTimeout(() => {
+        setError(''); 
+      }, 4000);
+  
     }
   };
   
@@ -310,7 +332,7 @@ const handleCopyOutputCode = () => {
 
     <ChakraProvider>
     <HeadingSteps />
-    <VStack spacing={4} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}>
+    <VStack spacing={4} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}> 
           <Flex
           justifyContent="center"              
                  >
@@ -431,7 +453,7 @@ const handleCopyOutputCode = () => {
                       icon={<FaTimes />}
                       onClick={() => setInputCode('')}
                       position="absolute"
-                      top="45px"
+                      top="65px"
                       right="8px"
                       zIndex="999"
                       backgroundColor="transparent"
@@ -448,6 +470,7 @@ const handleCopyOutputCode = () => {
                       right="8px"
                       zIndex="999"
                       color="white"
+                      backgroundColor="transparent"
                     />
                     <IconButton
                       title="Zoom out"
@@ -458,8 +481,29 @@ const handleCopyOutputCode = () => {
                       right="40px"
                       zIndex="999"
                       color="white"
+                      backgroundColor="transparent"
+                    />
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }} // Hide the file input
+                    />
+                    <IconButton
+                      icon={<FaUpload />}
+                      onClick={handleUploadClick}
+                      title="Upload"
+                      position="absolute"
+                      top="35px"
+                      right="8px"
+                      zIndex="999"
+                      backgroundColor="transparent"
+                      border="none"
+                      cursor="pointer"
+                      color="white"
                     />
                   <AceEditor
+                      ref={aceEditorRef}
                       id="inputCode"
                       name="input"
                       fontSize={`${fontSize}px`}
@@ -613,6 +657,6 @@ const handleCopyOutputCode = () => {
      </>
 
   );
-
+            }
 };
 export default TranslateCode;

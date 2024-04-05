@@ -18,7 +18,7 @@ pub async fn backend_translation_logic(
     headers.insert(AUTHORIZATION, format!("Bearer {}", api_key).parse().unwrap());
 
     let prompt = format!(
-        "Translate the following code from {} to {}: \n\n{}",
+        "Translate the following code from {} to {},OPTIMIZE THE OUTPUT CODE: \n\n{}",
         source_language, target_language, source_code
     );
 
