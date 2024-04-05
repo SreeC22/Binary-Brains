@@ -398,8 +398,7 @@ pub async fn translate_code_endpoint(
         translation_request.target_language, translation_request.source_code
     );
 
-    // Assuming you have a function similar to test_gpt3_api that accepts a prompt
-    // and returns the completion result. You might need to adjust this part.
+
     match crate::gpt3::translate_code(&translation_prompt, &api_key).await {
         Ok(translated_code) => HttpResponse::Ok().json(translated_code),
         Err(e) => {
@@ -469,16 +468,20 @@ pub async fn update_user_profile_handler(
 
 
 pub async fn delete_account_handler(
-    email: web::Path<String>,
+    auth: BearerAuth,
     db: web::Data<Database>,
-) -> HttpResponse {
-    let users_collection = db.collection::<User>("users");
+) -> Result<HttpResponse, ServiceError> {
+    let claims = decode_jwt(auth.token()).map_err(|_| ServiceError::Unauthorized)?;
+    let email = claims.email;
 
-    match delete_user(&email.into_inner(), &db).await {
-        Ok(_) => HttpResponse::Ok().json(json!({"message": "Account deleted successfully"})),
-        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Failed to delete account"})),
-    }
+    delete_user(&email, &db).await.map_err(|e| {
+        log::error!("Failed to delete account for user {}: {:?}", email, e);
+        ServiceError::InternalServerError
+    })?;
+
+    Ok(HttpResponse::Ok().json(serde_json::json!({"message": "Account deleted successfully"})))
 }
+
 
 
 //handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH 

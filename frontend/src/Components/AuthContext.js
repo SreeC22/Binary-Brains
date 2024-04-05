@@ -94,21 +94,40 @@ export const AuthProvider = ({ children }) => {
             throw error;
         }
     };
-    
     const deleteAccount = async () => {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token'); 
+        console.log("Token for account deletion: ", token); 
+    
+        if (!token) {
+            console.error("Token not found");
+            alert("Authentication token not found. Please log in again.");
+            return;
+        }
+    
         try {
-            await axios.delete('/api/user/delete', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/delete`, {
+                method: 'DELETE',
                 headers: {
-                    Authorization: `Bearer ${user.token}`,
+                    'Authorization': `Bearer ${token}`,
                 },
             });
-            // Handle what happens after the account is successfully deleted
-            // For example, log the user out, clear the user state, or redirect to a login page
-            setUser(null);
+    
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Error received:", errorText);
+                alert(`Failed to delete account: ${errorText}`);
+                return;
+            }
+    
+            console.log("Account deleted successfully");
+            setUser(null); 
+            navigate('/login'); 
         } catch (error) {
-            throw new Error(error.response.data.message);
+            console.error("Failed to delete account:", error);
+            alert("An error occurred while trying to delete the account. Please try again.");
         }
     };
+    
     useEffect(() => {
         fetchUserData();
     }, []);
