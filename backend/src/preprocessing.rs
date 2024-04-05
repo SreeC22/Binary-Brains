@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpResponse, HttpServer, Responder};
 use reqwest::{Client, header::{HeaderMap, AUTHORIZATION}};
 use std::process::Command;
 use std::fs::{self, File};
@@ -11,6 +11,7 @@ use tempfile::NamedTempFile;
 use std::path::Path;
 use std::error::Error;
 use crate::gpt3::Gpt3Client;
+use std::io;
 
 
 pub async fn detect_language(
@@ -70,10 +71,16 @@ pub fn remove_comments(code: &str, language: &str) -> String {
     match detected_lang_result {
         Ok(lang) => {
             // Remove leading '\n\n' and double quotes from the detected language string
-            let detected_lang = lang.replace("\n\n", "").replace('"', "");
+            let detected_lang = lang.replace("\n", "").replace('"', "");
             println!("Detected language: {:?}", detected_lang);
             if detected_lang.to_lowercase() != source_lang.to_lowercase() {
-                return Err(Box::new(std::fmt::Error::default())); // Need a real error here
+                return Err(Box::new(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("Detected language {} does not match source language {}", detected_lang, source_lang)
+                )));
+                // let err_msg = format!("Detected language ({}) does not match source language ({})", detected_lang, source_lang);
+                // return Err(Box::new(io::Error::new(io::ErrorKind::InvalidInput, err_msg)));
+                // return Err(Box::new(std::fmt::Error::default())); // Need a real error here
             }
         },
         Err(_) => return Err(Box::new(std::fmt::Error::default())), // You might want to forward or handle the actual error
