@@ -22,9 +22,6 @@ pub fn verify_password(password: &str, hash: &str) -> Result<bool, bcrypt::Bcryp
     verify(password, hash)
 }
 
-
-// Token handling utilities
-
 pub fn decode_jwt(token: &str) -> Result<Claims, ServiceError> {
     let secret_key = env::var("JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
     
@@ -39,11 +36,11 @@ pub fn decode_jwt(token: &str) -> Result<Claims, ServiceError> {
         },
         Err(err) => match *err.kind() {
             ErrorKind::ExpiredSignature => {
-                warn!("Token expired for token: {}", token); // Log the token or a hash of it for security purposes
+                warn!("Token expired for token: {}", token); 
                 Err(ServiceError::ExpiredToken)
             },
             ErrorKind::InvalidToken | ErrorKind::InvalidSignature => {
-                warn!("Invalid token encountered: {}", token); // Consider logging a hash of the token instead
+                warn!("Invalid token encountered: {}", token);
                 Err(ServiceError::InvalidToken)
             },
             _ => {
@@ -57,13 +54,13 @@ pub fn decode_jwt(token: &str) -> Result<Claims, ServiceError> {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub email: String,
-    pub exp: i64, // Ensure this matches the type expected by the JWT library, which is typically i64 for Unix timestamps
+    pub exp: i64, 
 }
 pub fn generate_jwt(email: &str, remember_me: bool) -> Result<String, JwtError> {
     let expiration = if remember_me {
-        Utc::now() + Duration::days(30) // Extend expiration for "Remember Me"
+        Utc::now() + Duration::days(30) 
     } else {
-        Utc::now() + Duration::hours(1) // Standard expiration
+        Utc::now() + Duration::hours(1)
     };
 
     let claims = Claims {

@@ -106,7 +106,6 @@ pub async fn change_user_password(
         .map_err(|_| ServiceError::InternalServerError)?
         .ok_or(ServiceError::NotFound)?;
 
-    // Unwrap the Option<String> for the password
     if let Some(db_password) = &user.password {
         if verify_password(current_password, db_password)? {
             let new_hashed_password = hash_password(new_password)?;
@@ -122,7 +121,7 @@ pub async fn change_user_password(
             return Err(ServiceError::IncorrectPassword);
         }
     } else {
-        return Err(ServiceError::InternalServerError); // Adjust based on your logic
+        return Err(ServiceError::InternalServerError); 
     }
 
     Ok(())

@@ -61,7 +61,6 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(user_collection.clone()))
             .app_data(web::Data::new(mongo_database.clone()))
 
-            // Routes configuration...
 
             
             .route("/login", web::post().to(login))
@@ -73,15 +72,14 @@ async fn main() -> std::io::Result<()> {
             .route("/submit_feedback", web::post().to(handlers::submit_feedback))
             .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
             .route("/api/translate_code", web::post().to(handlers::translate_code_endpoint))
-            // Added routes for account management
-            //.route("/api/user/change_password", web::post().to(handlers::change_password_handler))
+
             .route("/api/user/update_profile", web::put().to(update_user_profile_handler))
             .route("/api/user/delete", web::delete().to(delete_account_handler))
             .service(
                 web::resource("/api/user/change_password")
                 .route(web::post().to(change_password_handler)),
             )
-            .service(handlers::feedback::get_feedback) // Use the endpoint function from the feedback module
+            .service(handlers::feedback::get_feedback)
             .service(web::resource("/preprocess_code").route(web::post().to(preprocess_code_route)))
             .service(
                 web::resource("/backendtranslationlogic").route(web::post().to(backend_translate_code_handler)),

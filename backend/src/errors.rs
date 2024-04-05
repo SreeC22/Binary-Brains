@@ -38,14 +38,13 @@ impl ResponseError for ServiceError {
             ServiceError::BadRequest(_) => StatusCode::BAD_REQUEST,
             ServiceError::NotFound => StatusCode::NOT_FOUND,
             ServiceError::IncorrectPassword => StatusCode::FORBIDDEN,
-            ServiceError::JWTError(_) => StatusCode::INTERNAL_SERVER_ERROR, // You might choose a more appropriate status code
+            ServiceError::JWTError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
     fn error_response(&self) -> HttpResponse {
         HttpResponse::build(self.status_code()).json(json!({
             "error": self.to_string(),
-            // Optionally include more details for certain errors
             "details": match self {
                 ServiceError::JWTError(details) => Some(details),
                 _ => None,

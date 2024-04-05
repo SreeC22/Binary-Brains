@@ -416,11 +416,10 @@ use actix_web::web::Data;
 pub async fn change_password_handler(
     auth: BearerAuth,
     form: web::Json<PasswordChangeForm>,
-    db: web::Data<mongodb::Database>, // Ensure that you are passing the correct type here
+    db: web::Data<mongodb::Database>, 
 ) -> Result<HttpResponse, actix_web::Error> {
     debug!("Received request to change password");
 
-    // Attempt to decode JWT to extract email
     let claims = decode_jwt(auth.token()).map_err(|_| {
         error!("JWT decoding failed or unauthorized access attempted");
         actix_web::error::ErrorUnauthorized("Unauthorized")
@@ -428,7 +427,6 @@ pub async fn change_password_handler(
     let email = claims.email;
     debug!("JWT decoded successfully for email: {}", email);
 
-    // Proceed to change the user's password
     match change_user_password(&db, &email, &form.current_password, &form.new_password).await {
         Ok(_) => {
             debug!("Password changed successfully for user: {}", email);
