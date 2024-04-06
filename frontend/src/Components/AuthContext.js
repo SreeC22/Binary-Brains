@@ -49,18 +49,27 @@ export const AuthProvider = ({ children }) => {
         }
     };
     const updateProfile = async ({ email, username }) => {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) {
+            alert("Authentication required.");
+            return;
+        }
+    
         try {
-            const response = await axios.put('/api/user/update_profile', { email, username }, {
-                headers: {
-                    Authorization: `Bearer ${user.token}`, // Assuming the token is stored in the user object
-                },
-            });
-            // Assuming the backend returns the updated user object
-            setUser(response.data);
+            const response = await axios.put(
+                `${process.env.REACT_APP_BACKEND_URL}/api/user/update_profile`, 
+                { email, username },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            setUser(response.data); // Update local user state
         } catch (error) {
-            throw new Error(error.response.data.message);
+            console.error("Failed to update profile:", error);
+            alert(error.response.data.message || "An error occurred while updating the profile.");
         }
     };
+    
 
     const changePassword = async (currentPassword, newPassword) => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token'); // Retrieve the token directly

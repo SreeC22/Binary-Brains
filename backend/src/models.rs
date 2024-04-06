@@ -97,12 +97,11 @@ pub struct PasswordChangeForm {
     pub new_password: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UserProfileUpdateForm {
-    pub username: Option<String>,
     pub email: Option<String>,
+    pub username: Option<String>,
 }
-
 
 //Struct for backend logic/preprocessing - Jesica PLEASE DO NOT TOUCH 
 #[derive(Deserialize)]

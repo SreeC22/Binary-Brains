@@ -68,7 +68,10 @@ async fn main() -> std::io::Result<()> {
             .route("/oauth_callback", web::get().to(oauth_callback))
             .route("/github_oauth_callback", web::get().to(github_oauth_callback))
             .route("/logout", web::get().to(logout))
-            .route("/api/user/profile", web::get().to(get_user_profile))
+            .service(
+                web::resource("/api/user/update_profile").route(web::put().to(update_user_profile_handler)),
+            )
+                   
             .route("/submit_feedback", web::post().to(handlers::submit_feedback))
             .route("/api/test_gpt3", web::get().to(handlers::test_gpt3_endpoint))
             .route("/api/translate_code", web::post().to(handlers::translate_code_endpoint))

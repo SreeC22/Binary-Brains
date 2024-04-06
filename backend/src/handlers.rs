@@ -454,17 +454,41 @@ pub async fn change_password_handler(
 
 
 pub async fn update_user_profile_handler(
-    user_id: web::Path<String>,
     form: web::Json<UserProfileUpdateForm>,
     db: web::Data<Database>,
-) -> HttpResponse {
+    auth: BearerAuth, // Using BearerAuth to extract user details
+) -> Result<HttpResponse, ServiceError> {
     let users_collection = db.collection::<User>("users");
 
-    match update_user_profile(&user_id, &form.into_inner(), &db).await {
-        Ok(_) => HttpResponse::Ok().json(json!({"message": "Profile updated successfully"})),
-        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Failed to update profile"})),
+    // Decode JWT to get the email
+    let claims = match decode_jwt(auth.token()) {
+        Ok(claims) => claims,
+        Err(e) => return Err(e),
+    };   
+    let user_email = claims.email;
+
+
+    // Use the decoded email for the filter
+    let filter = doc! { "email": &user_email };
+    let update_doc = doc! { 
+        "$set": { 
+            "username": &form.username, 
+            "email": &form.email 
+        } 
+    };
+
+    let update_result = users_collection
+        .update_one(filter, update_doc, None)
+        .await
+        .map_err(|_| ServiceError::InternalServerError)?;
+
+    if update_result.matched_count == 0 {
+        Err(ServiceError::NotFound)
+    } else {
+        Ok(HttpResponse::Ok().json(web::Json(json!({"message": "Profile updated successfully"}))))
     }
 }
+
 
 
 pub async fn delete_account_handler(
