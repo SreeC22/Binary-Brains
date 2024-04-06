@@ -63,12 +63,16 @@ export const AuthProvider = ({ children }) => {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
+            // Assuming response.data contains the updated user object
             setUser(response.data); // Update local user state
+            // Optionally, refresh user data to ensure UI is in sync with the backend
+            await fetchUserData(); 
         } catch (error) {
             console.error("Failed to update profile:", error);
             alert(error.response.data.message || "An error occurred while updating the profile.");
         }
     };
+    
     
 
     const changePassword = async (currentPassword, newPassword) => {

@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { useEffect, createContext, useContext, useState } from 'react';
 import { useAuth } from '../Components/AuthContext';
-import {Box, VStack, Input, Button, FormControl, FormLabel, useToast, useColorModeValue} 
-    from '@chakra-ui/react';
+import { Box, VStack, Input, Button, FormControl, FormLabel, useToast, useColorModeValue, Heading } from '@chakra-ui/react';
 
 const ProfileSettingsPage = () => {
   const { user, updateProfile, changePassword, deleteAccount } = useAuth();
@@ -11,6 +10,12 @@ const ProfileSettingsPage = () => {
   const [newPassword, setNewPassword] = useState('');
   const toast = useToast();
 
+  useEffect(() => {
+    setEmail(user?.email || '');
+    setUsername(user?.username || ''); // This will set username based on the current user object
+  }, [user]);
+
+  const greetingText = `Hello ${username}`; 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
     try {
@@ -75,6 +80,9 @@ const ProfileSettingsPage = () => {
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" w="full" p={8} bg={useColorModeValue('gray.100', 'gray.700')}>
+       {/* Additional changes start here */}
+       <Heading mb={4}>{greetingText}</Heading>
+      {/* Additional changes end here */}
       <VStack spacing={4} w="full" maxW="md" boxShadow="xl" p="6" rounded="lg" bg={useColorModeValue('white', 'gray.800')}>
         <FormControl isRequired>
           <FormLabel>Email</FormLabel>

@@ -107,6 +107,7 @@ pub async fn login(
                             "token": token,
                             "user": {
                                 "email": existing_user.email,
+                                "username": existing_user.username
                             }
                         }));
                     } else {

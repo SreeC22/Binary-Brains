@@ -85,9 +85,9 @@ const NavBar = () => {
         {user ? (
           <>
             <Menu>
-              <MenuButton as={Button} rightIcon={<ChevronDownIcon />} bg={darkerShade} color={buttonTextColor}>
-                {user.name || user.email} {/* Display user's name or email */}
-              </MenuButton>
+            <MenuButton as={Button} rightIcon={<ChevronDownIcon />} bg={darkerShade} color={buttonTextColor}>
+                {user.username} {/* Use username, fallback to 'User' if not available */}
+            </MenuButton>
               <MenuList>
                 <MenuItem as={RouterLink} to="/profile-settings">Profile Settings</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
