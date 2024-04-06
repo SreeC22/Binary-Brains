@@ -20,13 +20,32 @@ import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/ext-beautify';
 
 const TranslationHistoryPage = () => {
-    const [history, setHistory] = useState([]);
-    const [selectedEntry, setSelectedEntry] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   
-    useEffect(() => {
-      const storedHistory = JSON.parse(localStorage.getItem('translationHistory')) || [];
-      setHistory(storedHistory);
-    }, []);
+  useEffect(() => {
+    const fetchTranslationHistory = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('http://localhost:8080/api/translation_history');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setHistory(data); // Make sure the backend returns the array of histories
+      } catch (error) {
+        console.error("Could not fetch translation history:", error);
+        setError('Failed to load translation history');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    fetchTranslationHistory();
+  }, []);
+  
   
 
     const getModeForLanguage = (language) => {
@@ -47,51 +66,60 @@ const TranslationHistoryPage = () => {
     };
   
     const handleSelectionChange = (event) => {
-        const selectedIndex = event.target.value;
+      const selectedIndex = event.target.value;
         setSelectedEntry(history[selectedIndex]);
       };
-    
-      return (
+
+
+
+      if (isLoading) {
+        return <Box>Loading...</Box>;
+    }
+
+    if (error) {
+        return <Box>Error loading translation history: {error}</Box>;
+    }
+
+    return (
         <VStack spacing={8} align="stretch">
-          <Box p={5}>
-            <Text fontSize="2xl" fontWeight="bold" mb={4}>Translation History</Text>
-            <Select placeholder="Select your translation history" onChange={handleSelectionChange}>
-              {history.map((entry, index) => (
-                <option key={index} value={index}>
-                  {entry.sourceLanguage.toUpperCase()} to {entry.targetLanguage.toUpperCase()} - {new Date(entry.timestamp).toLocaleString()}
-                </option>
-              ))}
-            </Select>
-            {selectedEntry && (
-              <Flex direction={{ base: "column", md: "row" }} mt={4}>
-                <Box flex="1" borderWidth="1px" borderRadius="lg" overflow="hidden" p="4">
-                  <Text>From: {selectedEntry.sourceLanguage.toUpperCase()}</Text>
-                  <AceEditor
-                    mode={getModeForLanguage(selectedEntry.sourceLanguage)}
-                    theme="monokai"
-                    value={selectedEntry.inputCode}
-                    readOnly
-                    height="500px"
-                    width="100%"
-                  />
-                </Box>
-                <Box flex="1" borderWidth="1px" borderRadius="lg" overflow="hidden" p="4" ml={{ md: 4 }}>
-                  <Text>To: {selectedEntry.targetLanguage.toUpperCase()}</Text>
-                  <AceEditor
-                    mode={getModeForLanguage(selectedEntry.targetLanguage)}
-                    theme="monokai"
-                    value={selectedEntry.outputCode}
-                    readOnly
-                    height="500px"
-                    width="100%"
-                  />
-                </Box>
-              </Flex>
-            )}
-            {!selectedEntry && history.length === 0 && <Text>No translation history found.</Text>}
-          </Box>
+            <Box p={5}>
+                <Text fontSize="2xl" fontWeight="bold" mb={4}>Translation History</Text>
+                <Select placeholder="Select your translation history" onChange={handleSelectionChange}>
+                    {history.map((entry, index) => (
+                        <option key={index} value={index}>
+                            {entry.sourceLanguage.toUpperCase()} to {entry.targetLanguage.toUpperCase()} - {new Date(entry.timestamp).toLocaleString()}
+                        </option>
+                    ))}
+                </Select>
+                {selectedEntry && (
+                    <Flex direction={{ base: "column", md: "row" }} mt={4}>
+                        <Box flex="1" borderWidth="1px" borderRadius="lg" overflow="hidden" p="4">
+                            <Text>From: {selectedEntry.sourceLanguage.toUpperCase()}</Text>
+                            <AceEditor
+                                mode={getModeForLanguage(selectedEntry.sourceLanguage)}
+                                theme="monokai"
+                                value={selectedEntry.inputCode}
+                                readOnly
+                                height="500px"
+                                width="100%"
+                            />
+                        </Box>
+                        <Box flex="1" borderWidth="1px" borderRadius="lg" overflow="hidden" p="4" ml={{ md: 4 }}>
+                            <Text>To: {selectedEntry.targetLanguage.toUpperCase()}</Text>
+                            <AceEditor
+                                mode={getModeForLanguage(selectedEntry.targetLanguage)}
+                                theme="monokai"
+                                value={selectedEntry.outputCode}
+                                readOnly
+                                height="500px"
+                                width="100%"
+                            />
+                        </Box>
+                    </Flex>
+                )}
+                {!selectedEntry && history.length === 0 && <Text>No translation history found.</Text>}
+            </Box>
         </VStack>
-      );
-    };
-    
-    export default TranslationHistoryPage;
+    );
+};
+export default TranslationHistoryPage;

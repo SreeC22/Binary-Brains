@@ -406,9 +406,6 @@ use crate::db;
 use actix_web::web::Data;
 
 
-
-
-
 pub async fn update_user_profile_handler(
     user_id: web::Path<String>,
     form: web::Json<UserProfileUpdateForm>,
@@ -465,12 +462,14 @@ pub async fn preprocess_code_route(
 //Translation History 
 use crate::db::{insert_translation_history, init_translation_history_collection};
 use crate::models::NewTranslationHistory;
+use futures::stream::TryStreamExt;
+use mongodb::results::InsertOneResult;
 
 
 pub async fn save_translation_history(
     form: web::Json<NewTranslationHistory>,
+    db: web::Data<Collection<TranslationHistory>>,
 ) -> impl Responder {
-    // Extract the inner NewTranslationHistory value from form just once
     let new_translation_history = form.into_inner();
     println!("Received translation history: {:?}", new_translation_history);
 
@@ -484,16 +483,67 @@ pub async fn save_translation_history(
     };
     println!("2");
 
-    // Use the new_translation_history variable here
-    match insert_translation_history(&db, new_translation_history).await {
-        Ok(object_id) => {
-            println!("3"); // This print statement will only execute if the operation was successful.
-            HttpResponse::Ok().json(json!({ "id": object_id.to_hex() }))
+    // Create a TranslationHistory instance from NewTranslationHistory
+    let translation_history = TranslationHistory {
+        id: None,
+        source_code: new_translation_history.source_code,
+        translated_code: new_translation_history.translated_code,
+        source_language: new_translation_history.source_language,
+        target_language: new_translation_history.target_language,
+        created_at: bson::DateTime::now(),
+    };
+
+    let insert_result: Result<InsertOneResult, mongodb::error::Error> = db.insert_one(translation_history, None).await;
+    match insert_result {
+        Ok(result) => {
+            println!("3"); // Successful insertion
+            match result.inserted_id.as_object_id() {
+                Some(object_id) => {
+                    // Fetch the saved item using its ObjectId
+                    match db.find_one(doc! {"_id": object_id}, None).await {
+                        Ok(Some(saved_item)) => {
+                            println!("Successfully fetched the saved item.");
+                            HttpResponse::Ok().json(saved_item) // Return the saved item
+                        },
+                        _ => {
+                            println!("Failed to fetch the saved item.");
+                            HttpResponse::InternalServerError().json(json!({ "error": "Failed to fetch saved item" }))
+                        }
+                    }
+                },
+                None => HttpResponse::InternalServerError().json(json!({ "error": "Failed to get ObjectId" })),
+            }
         },
         Err(e) => {
-            println!("Error occurred during insert: {}", e); // Print the error if insertion fails.
+            println!("Error occurred during insert: {}", e);
             HttpResponse::InternalServerError().json(json!({ "error": e.to_string() }))
         },
+    }
+}
+
+#[get("/api/translation_history")]
+pub async fn get_translation_history(db: web::Data<Collection<TranslationHistory>>) -> impl Responder {
+    println!("Attempting to fetch translation history...");
+    match db.find(None, None).await {
+        Ok(mut cursor) => {
+            let mut histories = Vec::new();
+            while let Ok(Some(history)) = cursor.try_next().await {
+                println!("Fetched history document: {:?}", history);
+                histories.push(history);
+            }
+            
+            if histories.is_empty() {
+                println!("No translation history documents found.");
+                HttpResponse::Ok().json(json!({"message": "No translation history found"}))
+            } else {
+                println!("Fetched {} history documents", histories.len());
+                HttpResponse::Ok().json(histories)
+            }
+        },
+        Err(e) => {
+            println!("Failed to execute find query: {}", e);
+            HttpResponse::InternalServerError().json(json!({ "error": "Failed to fetch translation history" }))
+        }
     }
 }
 
