@@ -1,7 +1,7 @@
 
 //BEFORE CHANGING ANY CODE PLEASE CALL ME - JESICA 
 
-import { Alert, Icon, useColorModeValue,  AlertDescription, AlertIcon, AlertTitle,IconButton, Box, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Menu, MenuButton, MenuItem, Slide, MenuList, Text, VStack, useColorMode, ChakraProvider, Center } from "@chakra-ui/react";
+import { Alert, Icon, useColorModeValue,  AlertDescription, AlertIcon, AlertTitle,IconButton, Box, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Menu, MenuButton, MenuItem, Slide, MenuList, Text, VStack, useColorMode, ChakraProvider } from "@chakra-ui/react";
 import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
 import 'ace-builds/src-noconflict/mode-c_cpp';
 import 'ace-builds/src-noconflict/mode-csharp';
@@ -17,17 +17,12 @@ import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools'; 
 import 'ace-builds/src-noconflict/ext-beautify';
-
-
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
-
 import { useToast } from "@chakra-ui/react";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
 import React, { useState, useEffect ,useRef} from "react";
 import AceEditor from 'react-ace';
-// import React, { useEffect } from 'react';
-import { motion } from "framer-motion"; // Import motion from Framer Motion
-import { BiSolidDownArrowAlt } from "react-icons/bi";
+import { motion } from "framer-motion";
 import { FaCode, FaCog, FaCube, FaPaste,FaTimes,FaUpload } from 'react-icons/fa';
 import {  FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
 import axios from 'axios';
