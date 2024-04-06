@@ -1,7 +1,8 @@
+import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
 
 import React, { useState, useEffect, useRef } from "react";
 import { Icon } from "@chakra-ui/react";
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button as CustomButton, Center, ChakraProvider, CloseButton, Flex, FormLabel, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList, Slide, Text, useColorMode, useColorModeValue, useToast, VStack } from "@chakra-ui/react";
+import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button as CustomButton, Center, ChakraProvider, CloseButton, Flex, FormLabel, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList, Slide, Text, useColorMode, useColorModeValue, VStack } from "@chakra-ui/react";
 import 'ace-builds/src-noconflict/ext-beautify';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/mode-c_cpp';
@@ -22,14 +23,11 @@ import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/ext-beautify';
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
 import { useToast } from "@chakra-ui/react";
-import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
-import React, { useState, useEffect ,useRef} from "react";
 import AceEditor from 'react-ace';
 import { motion } from "framer-motion"; // Import motion from Framer Motion
 import { FaCode, FaCog, FaCube, FaPaste,FaTimes,FaUpload, FaSearchPlus, FaSearchMinus, FaDownload } from 'react-icons/fa';
 import axios from 'axios';
 import { SiConvertio } from "react-icons/si";
-
 
 const languages = [
   { label: "Python", value: "python", icon: <PythonOriginal /> },
