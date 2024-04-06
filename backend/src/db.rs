@@ -142,7 +142,7 @@ pub async fn insert_translation_history(
 ) -> MongoResult<ObjectId> {
     let translation_history = TranslationHistory {
         id: None,  // MongoDB will auto-generate this
-        user_id: new_translation_history.user_id, 
+        //user_id: new_translation_history.user_id, 
         source_code: new_translation_history.source_code,
         translated_code: new_translation_history.translated_code,
         source_language: new_translation_history.source_language,
@@ -157,4 +157,3 @@ pub async fn insert_translation_history(
         None => Err(mongodb::error::Error::custom("No ObjectId found")),
     }
 }
-

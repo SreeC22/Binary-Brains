@@ -468,16 +468,32 @@ use crate::models::NewTranslationHistory;
 
 
 pub async fn save_translation_history(
-    db: web::Data<Client>, 
-    form: web::Json<NewTranslationHistory>, // Parameters should be declared first
+    form: web::Json<NewTranslationHistory>,
 ) -> impl Responder {
-    //println!("Received translation history: {:?}", form.into_inner()); // Use statements after the parameters
+    // Extract the inner NewTranslationHistory value from form just once
+    let new_translation_history = form.into_inner();
+    println!("Received translation history: {:?}", new_translation_history);
 
-    let db = init_translation_history_collection().await.unwrap();
+    println!("1");
+    let db = match init_translation_history_collection().await {
+        Ok(db) => db,
+        Err(e) => {
+            println!("Failed to initialize the database collection: {}", e);
+            return HttpResponse::InternalServerError().json(json!({ "error": "Database initialization error" }));
+        }
+    };
+    println!("2");
 
-    match insert_translation_history(&db, form.into_inner()).await {
-        Ok(object_id) => HttpResponse::Ok().json(json!({ "id": object_id.to_hex() })),
-        Err(e) => HttpResponse::InternalServerError().json(json!({ "error": e.to_string() })),
+    // Use the new_translation_history variable here
+    match insert_translation_history(&db, new_translation_history).await {
+        Ok(object_id) => {
+            println!("3"); // This print statement will only execute if the operation was successful.
+            HttpResponse::Ok().json(json!({ "id": object_id.to_hex() }))
+        },
+        Err(e) => {
+            println!("Error occurred during insert: {}", e); // Print the error if insertion fails.
+            HttpResponse::InternalServerError().json(json!({ "error": e.to_string() }))
+        },
     }
 }
 
