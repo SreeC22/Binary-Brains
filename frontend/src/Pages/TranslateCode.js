@@ -1,8 +1,15 @@
 
-//BEFORE CHANGING ANY CODE PLEASE CALL ME - JESICA 
-
-import { Alert, Icon, useColorModeValue,  AlertDescription, AlertIcon, AlertTitle,IconButton, Box, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Menu, MenuButton, MenuItem, Slide, MenuList, Text, VStack, useColorMode, ChakraProvider } from "@chakra-ui/react";
-import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
+import React, { useState, useEffect, useRef } from "react";
+import { Icon } from "@chakra-ui/react";
+import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button as CustomButton, Center, ChakraProvider, CloseButton, Flex, FormLabel, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList, Slide, Text, useColorMode, useColorModeValue, useToast, VStack } from "@chakra-ui/react";
+import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
+import { FaCode, FaCog, FaCube, FaPaste, FaTimes, FaUpload } from 'react-icons/fa';
+import { FaSearchMinus, FaSearchPlus } from 'react-icons/fa';
+import { SiConvertio } from "react-icons/si";
+import AceEditor from 'react-ace';
+import axios from 'axios';
+import 'ace-builds/src-noconflict/ext-beautify';
+import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/mode-c_cpp';
 import 'ace-builds/src-noconflict/mode-csharp';
 import 'ace-builds/src-noconflict/mode-java';
@@ -15,19 +22,9 @@ import 'ace-builds/src-noconflict/mode-swift';
 import 'ace-builds/src-noconflict/mode-typescript';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
-import 'ace-builds/src-noconflict/ext-language_tools'; 
-import 'ace-builds/src-noconflict/ext-beautify';
-import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
-import { useToast } from "@chakra-ui/react";
+import { motion } from "framer-motion"; // Import motion from Framer Motion
+import { BiSolidDownArrowAlt } from "react-icons/bi";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
-import React, { useState, useEffect ,useRef} from "react";
-import AceEditor from 'react-ace';
-import { motion } from "framer-motion";
-import { FaCode, FaCog, FaCube, FaPaste,FaTimes,FaUpload } from 'react-icons/fa';
-import {  FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
-import axios from 'axios';
-import { SiConvertio } from "react-icons/si";
-
 
 const languages = [
   { label: "Python", value: "python", icon: <PythonOriginal /> },
@@ -42,11 +39,24 @@ const languages = [
   { label: "MatLab", value: "matlab", icon: <MatlabOriginal /> },
 ];
 
-
-
 const TranslateCode = () => {
   const [gptStatus, setGptStatus] = useState(false);
+  const [inputCode, setInputCode] = useState(`To use this tool, take the following steps -
+    1. Select the programming language from the dropdown above
+    2. Describe the code you want to generate here in this box
+    3. Click Convert`);
+  const [targetLanguage, setTargetLanguage] = useState("");
+  const [sourceLanguage, setSourceLanguage] = useState("");
+  const [outputCode, setOutputCode] = useState("// The generated code will be displayed here ->");
+  const [error, setError] = useState("");
+  const [fontSize, setFontSize] = useState(14);
+  const fileInputRef = useRef(null);
   const aceEditorRef = useRef(null);
+  const toast = useToast();
+  const { colorMode } = useColorMode();
+  const backgroundColor = colorMode === "light" ? "#fbf2e3" : "#2D3748";
+  const textColor = colorMode === "light" ? "black" : "black";
+
   useEffect(() => {
     const callAPI = async () => {
       try {
@@ -56,99 +66,30 @@ const TranslateCode = () => {
         }
         const data = await response.json();
         console.log("API response:", data);
-        setGptStatus(true); // Update the state instead of directly modifying the variable
+        setGptStatus(true);
       } catch (error) {
         console.error("Error calling API:", error);
       }
     };
-    callAPI(); // Call the API when the component mounts
+    callAPI();
   }, []);
-  const toast = useToast();
-  const { colorMode } = useColorMode();
-  const backgroundColor = colorMode === "light" ? "#fbf2e3" : "#2D3748";
-  const textColor = colorMode === "light" ? "black" : "black";
-  const [inputCode, setInputCode] = useState(`To use this tool, take the following steps -
-    1. Select the programming language from the dropdown above
-    2. Describe the code you want to generate here in this box
-    3. Click Convert`);
-  const [targetLanguage, setTargetLanguage] = useState("");
-  const [sourceLanguage, setSourceLanguage] = useState("");
-  const [outputCode, setOutputCode] = useState("// The generated code will be displayed here ->");
-  const [error, setError] = useState("");
-  // const [editorMode, setEditorMode] = useState("text");
-  const [fontSize, setFontSize] = useState(14);
-  const fileInputRef = useRef(null);
+
   useEffect(() => {
     console.log("Selected source language:", sourceLanguage);
-}, [sourceLanguage]);
+  }, [sourceLanguage]);
 
+  const handleZoomIn = () => {
+    setFontSize(prevFontSize => prevFontSize + 2);
+  };
 
-const handleZoomIn = () => {
-  setFontSize(prevFontSize => prevFontSize + 2);
-};
-const handleZoomOut = () => {
-  setFontSize(prevFontSize => Math.max(prevFontSize - 2, 8));
-};
+  const handleZoomOut = () => {
+    setFontSize(prevFontSize => Math.max(prevFontSize - 2, 8));
+  };
 
-const handleCopyOutputCode = () => {
-  navigator.clipboard.writeText(outputCode).then(() => {
-    toast({
-      title: "Copied.",
-      description: "Code copied to clipboard successfully.",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
-  }).catch((err) => {
-    setError('Error in copying text: ', err);
-  });
-};
   const handleClose = () => {
-    setError(""); // Clear the error message
+    setError("");
   };
-  const fetchTranslatedCode = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:8080/backendtranslationlogic', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          source_code: inputCode,
-          source_language: sourceLanguage,
-          target_language: targetLanguage,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
-      const result = await response.json();
-      console.log("API response:", result);
-      setOutputCode(result.translated_code); // Set the translated code received from the API
-      toast({
-        title: "Translation Successful",
-        description: "Translation completed successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-        position: "top",
-      });
-    } 
-  catch (error) {
-    console.error("Error during translation:", error);
-    toast({
-      title: "Translation Error",
-      description: error.message,
-      status: "error",
-      duration: 9000, // Display the error message for 5 seconds
-      isClosable: true,
-      position: "top",
-    });
-    setError(error);
-
-  } 
-  };
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -157,63 +98,25 @@ const handleCopyOutputCode = () => {
       reader.readAsText(file);
     }
   };
+
   const handleUploadClick = () => {
     fileInputRef.current.click();
-  };  
-//the way handleconvert works : when u press convert button, it calls preprocess api in the handle convert function 
-//and then it calls the translate api which is in the fetchtranslate code function
-  const handleConvert = async () => {
-    toast({
-      title: "Translation Queued",
-      description: "Your translation is being processed. Please wait...",
-      status: "info",
-      duration: 5000, // Setting duration to null to make it persist until user interaction
-      isClosable: true,
-      position: "top",
-    });
-    if (!sourceLanguage || !targetLanguage) {
-      setError("Both source and target languages are required");
-      return;
-    }
-    if (sourceLanguage === targetLanguage) {
-      setError("Source and target languages cannot be the same");
-      return;
-    }
-    if (!inputCode.trim()) {
-      setError("Input code is required");
-      return;
-    }
-      try {
-      const preprocessedCodeResponse = await fetch('http://127.0.0.1:8080/preprocess_code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
-      });
-      if (!preprocessedCodeResponse.ok) {
-        // throw new Error(`HTTP error! status: ${preprocessedCodeResponse.status}`);
-        const errorBody = await preprocessedCodeResponse.json();
-        const errorMessage = errorBody.error || `HTTP error! Status: ${preprocessedCodeResponse.status}`;
-        throw new Error(errorMessage);
-      }
-      const preprocessedCodeResult = await preprocessedCodeResponse.json();
-      console.log(preprocessedCodeResult);
-      const unescapedCode = JSON.parse(JSON.stringify(preprocessedCodeResult.processed_code));
-      setInputCode(unescapedCode);
-      await fetchTranslatedCode();
-      
-
-    } catch (error) {
-      console.error("Error during preprocessing:", error);
-      setError(error.message);
-      setTimeout(() => {
-        setError(''); 
-      }, 4000);
-  
-    }
   };
-  
+
+  const handleCopyOutputCode = () => {
+    navigator.clipboard.writeText(outputCode).then(() => {
+      toast({
+        title: "Copied.",
+        description: "Code copied to clipboard successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    }).catch((err) => {
+      setError('Error in copying text: ', err);
+    });
+  };
+
   const handleCopy = () => {
     navigator.clipboard.writeText(inputCode).then(() => {
       toast({
@@ -239,30 +142,116 @@ const handleCopyOutputCode = () => {
     });
   };
 
+  const fetchTranslatedCode = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8080/backendtranslationlogic', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          source_code: inputCode,
+          source_language: sourceLanguage,
+          target_language: targetLanguage,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("API response:", result);
+      setOutputCode(result.translated_code);
+      toast({
+        title: "Translation Successful",
+        description: "Translation completed successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } catch (error) {
+      console.error("Error during translation:", error);
+      toast({
+        title: "Translation Error",
+        description: error.message,
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+        position: "top",
+      });
+      setError(error);
+    }
+  };
+
+  const handleConvert = async () => {
+    toast({
+      title: "Translation Queued",
+      description: "Your translation is being processed. Please wait...",
+      status: "info",
+      duration: 5000,
+      isClosable: true,
+      position: "top",
+    });
+    if (!sourceLanguage || !targetLanguage) {
+      setError("Both source and target languages are required");
+      return;
+    }
+    if (sourceLanguage === targetLanguage) {
+      setError("Source and target languages cannot be the same");
+      return;
+    }
+    if (!inputCode.trim()) {
+      setError("Input code is required");
+      return;
+    }
+    try {
+      const preprocessedCodeResponse = await fetch('http://127.0.0.1:8080/preprocess_code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
+      });
+      if (!preprocessedCodeResponse.ok) {
+        const errorBody = await preprocessedCodeResponse.json();
+        const errorMessage = errorBody.error || `HTTP error! Status: ${preprocessedCodeResponse.status}`;
+        throw new Error(errorMessage);
+      }
+      const preprocessedCodeResult = await preprocessedCodeResponse.json();
+      console.log(preprocessedCodeResult);
+      const unescapedCode = JSON.parse(JSON.stringify(preprocessedCodeResult.processed_code));
+      setInputCode(unescapedCode);
+      await fetchTranslatedCode();
+    } catch (error) {
+      console.error("Error during preprocessing:", error);
+      setError(error.message);
+      setTimeout(() => {
+        setError('');
+      }, 4000);
+    }
+  };
+
   const HeadingSteps = () => (
-    
     <Box paddingY={4} ml="auto" style={{ backgroundColor }}>
-      <HStack spacing={16} justify="center" marginTop={16} marginBottom={16} style={{ backgroundColor }}> {/* Increased spacing */}
+      <HStack spacing={16} justify="center" marginTop={16} marginBottom={16} style={{ backgroundColor }}>
         <VStack align="left" spacing={2} >
           <FaCube size={40} color={"black"} />
           <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Step-by-Step Code Translation Process</Text>
-          <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
+          <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text>
         </VStack>
         <VStack align="left" spacing={2}>
           <FaCube size={40} color={"black"} />
           <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Submit Your Code</Text>
-          <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Easily submit your code and select the desired language.</Text> {/* Removed space */}
+          <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Easily submit your code and select the desired language.</Text>
         </VStack>
         <VStack align="left" spacing={2}>
           <FaCube size={40} color={"black"} />
           <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Translation Output</Text>
-          <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">View the translated code with enhanced readability features.</Text> {/* Removed space */}
+          <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">View the translated code with enhanced readability features.</Text>
         </VStack>
       </HStack>
     </Box>
   );
-
-
 
   return (
      <>
