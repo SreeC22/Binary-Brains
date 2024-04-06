@@ -11,10 +11,11 @@ mod gpt3;
 mod backendtranslationlogic;
 mod preprocessing;
 use mongodb::bson::document::Document;
+extern crate serde;
 
 use crate::db::{init_mongo, init_feedback_collection};
 use crate::models::{Feedback, User};
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route,save_translation_history};
 
 
 
@@ -23,7 +24,6 @@ use crate::handlers::{login, register, oauth_callback, github_oauth_callback, lo
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
-
     let mongo_uri = env::var("MONGO_URI").expect("MONGO_URI is not set in .env file");
 
     let mongo_client = mongodb::Client::with_uri_str(&mongo_uri).await.expect("Failed to connect to MongoDB");
@@ -78,6 +78,8 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/backendtranslationlogic").route(web::post().to(backend_translate_code_handler)),
             )
+            //.route("/user/{user_id}/translation_history", web::get().to(handlers::get_translation_history))
+            .route("/save_translation_history", web::post().to(save_translation_history))
 
     })
     .bind("127.0.0.1:8080")?

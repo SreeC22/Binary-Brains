@@ -17,6 +17,8 @@ import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools'; 
 import 'ace-builds/src-noconflict/ext-beautify';
+import { useAuth } from '../Components/AuthContext'; 
+
 
 
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
@@ -82,6 +84,11 @@ const TranslateCode = () => {
   const [error, setError] = useState("");
   // const [editorMode, setEditorMode] = useState("text");
   const [fontSize, setFontSize] = useState(14);
+  //Translation
+  const [translationHistories, setTranslationHistories] = useState([]);
+  const { user } = useAuth();
+
+
   const fileInputRef = useRef(null);
   useEffect(() => {
     console.log("Selected source language:", sourceLanguage);
@@ -207,6 +214,7 @@ const handleCopyOutputCode = () => {
       const unescapedCode = JSON.parse(JSON.stringify(preprocessedCodeResult.processed_code));
       setInputCode(unescapedCode);
       await fetchTranslatedCode();
+      await saveTranslationHistory();
       
 
     } catch (error) {
@@ -218,6 +226,52 @@ const handleCopyOutputCode = () => {
   
     }
   };
+
+  const saveTranslationHistory = async () => {
+    // Make sure there's a logged-in user
+    if (!user) {
+        console.error("No user logged in.");
+        return;
+    }
+
+    // Extract user ID, assuming it's directly on the `user` object
+    const userId = user.id; // Adjust according to your user object structure
+  
+    const requestData = {
+      user_id: user.id,
+      source_code: inputCode,
+      translated_code: outputCode,
+      source_language: sourceLanguage,
+      target_language: targetLanguage,
+    };
+  
+    // Log to double-check requestData
+    console.log("Sending request with data:", requestData);
+  
+    try {
+      const response = await fetch('http://localhost:8080/save_translation_history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          source_code: inputCode,
+          translated_code: outputCode,
+          source_language: sourceLanguage,
+          target_language: targetLanguage,
+        }),      });
+  
+      if (!response.ok) {
+        console.error(`HTTP error! status: ${response.status}`);
+        return;
+      }
+  
+      console.log("Translation history saved successfully");
+    } catch (error) {
+      console.error("Error saving translation history:", error);
+    }
+  };
+  
+  
   
   const handleCopy = () => {
     navigator.clipboard.writeText(inputCode).then(() => {

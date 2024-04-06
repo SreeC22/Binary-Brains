@@ -1,6 +1,12 @@
-use mongodb::{bson::{doc, Document}, Client, Database, Collection, options::ClientOptions, error::Result as MongoResult};
-use crate::models::{User, UserInfo, GitHubUserInfo, Feedback, UserProfileUpdateForm,  PasswordChangeForm, Translation};
+use mongodb::{bson::{doc, Document,Bson}, Client, Database, Collection, options::ClientOptions, error::Result as MongoResult};
+use crate::models::{User, UserInfo, GitHubUserInfo, Feedback, UserProfileUpdateForm,  PasswordChangeForm, TranslationHistory};
 use std::env;
+use futures::stream::TryStreamExt;
+use serde::{Serialize, Deserialize};
+use chrono::{DateTime, Utc};
+use mongodb::bson::oid::ObjectId;
+use mongodb::options::FindOptions;
+use actix_web::error::{ErrorUnauthorized, ErrorInternalServerError};
 
 // initializes the mongo client and user collection
 pub async fn init_mongo() -> mongodb::error::Result<Collection<User>> {
@@ -73,17 +79,6 @@ pub async fn insert_feedback(db: &Collection<Feedback>, feedback: Feedback) -> m
     Ok(())
 }
 
-//inserts translation history
-async fn insert_translation(history: Translation) -> mongodb::error::Result<()> {
-    let client_options = ClientOptions::parse("your_mongodb_connection_string").await?;
-    let client = Client::with_options(client_options)?;
-    let db = client.database("your_database_name");
-    let collection: Collection<Translation> = db.collection("translation_history");
-
-    collection.insert_one(history, None).await?;
-
-    Ok(())
-}
 // At the top of your db.rs file, add:
 use actix_web::web;
 
@@ -128,4 +123,38 @@ pub async fn delete_user(email: &str, db: &Database) -> mongodb::error::Result<(
     Ok(())
 }
 
+
+//Translation History 
+use crate::models::NewTranslationHistory;
+
+pub async fn init_translation_history_collection() -> mongodb::error::Result<Collection<TranslationHistory>> {
+    dotenv::dotenv().ok();
+    let mongo_uri = env::var("MONGO_URI").expect("MONGO_URI must be set");
+    let client_options = ClientOptions::parse(&mongo_uri).await?;
+    let client = Client::with_options(client_options)?;
+    let database = client.database("my_app");
+    Ok(database.collection::<TranslationHistory>("translation_history"))
+}
+
+pub async fn insert_translation_history(
+    db: &Collection<TranslationHistory>,
+    new_translation_history: NewTranslationHistory,
+) -> MongoResult<ObjectId> {
+    let translation_history = TranslationHistory {
+        id: None,  // MongoDB will auto-generate this
+        user_id: new_translation_history.user_id, 
+        source_code: new_translation_history.source_code,
+        translated_code: new_translation_history.translated_code,
+        source_language: new_translation_history.source_language,
+        target_language: new_translation_history.target_language,
+        created_at: bson::DateTime::now(),
+    };
+
+    let insert_result = db.insert_one(translation_history, None).await?;
+
+    match insert_result.inserted_id.as_object_id() {
+        Some(object_id) => Ok(object_id),
+        None => Err(mongodb::error::Error::custom("No ObjectId found")),
+    }
+}
 

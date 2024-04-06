@@ -1,5 +1,5 @@
 use crate::db::{find_or_create_user_by_google_id, find_or_create_user_by_github_id};
-use crate::auth::decode_jwt;
+use crate::auth::{decode_jwt,extract_jwt_from_req};
 use crate::auth::generate_jwt;
 use crate::auth::{hash_password, verify_password};
 use crate::db::{update_user_password, update_user_profile, delete_user, get_user_by_email};
@@ -11,13 +11,15 @@ use mongodb::{Collection, bson::doc};
 use std::collections::HashMap;
 use mongodb::bson;
 use serde_json::json;
-use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery,PasswordChangeForm, UserProfileUpdateForm, LoginRequest,CodeTranslationRequest};
+use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery,PasswordChangeForm, UserProfileUpdateForm, LoginRequest,CodeTranslationRequest,TranslationHistory};
 use serde::Deserialize;
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use crate::backendtranslationlogic;
 use crate::preprocessing::preprocess_code;
 use crate::models::preprocessingCodeInput;
 use crate::models::backendtranslationrequest;
+use mongodb::bson::oid::ObjectId;
+use mongodb::options::FindOptions;
 
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
@@ -459,3 +461,24 @@ pub async fn preprocess_code_route(
 }
 
 //handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH End of warning 
+
+//Translation History 
+use crate::db::{insert_translation_history, init_translation_history_collection};
+use crate::models::NewTranslationHistory;
+
+
+pub async fn save_translation_history(
+    db: web::Data<Client>, 
+    form: web::Json<NewTranslationHistory>, // Parameters should be declared first
+) -> impl Responder {
+    //println!("Received translation history: {:?}", form.into_inner()); // Use statements after the parameters
+
+    let db = init_translation_history_collection().await.unwrap();
+
+    match insert_translation_history(&db, form.into_inner()).await {
+        Ok(object_id) => HttpResponse::Ok().json(json!({ "id": object_id.to_hex() })),
+        Err(e) => HttpResponse::InternalServerError().json(json!({ "error": e.to_string() })),
+    }
+}
+
+
