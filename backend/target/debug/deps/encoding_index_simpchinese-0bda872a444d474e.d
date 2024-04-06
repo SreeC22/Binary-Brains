@@ -1,0 +1,9 @@
+/mnt/c/Users/davor/OneDrive - NJIT/Desktop/github/Binary-Brains/backend/target/debug/deps/libencoding_index_simpchinese-0bda872a444d474e.rmeta: /home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/lib.rs /home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/gb18030.rs /home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/gb18030_ranges.rs
+
+/mnt/c/Users/davor/OneDrive - NJIT/Desktop/github/Binary-Brains/backend/target/debug/deps/libencoding_index_simpchinese-0bda872a444d474e.rlib: /home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/lib.rs /home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/gb18030.rs /home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/gb18030_ranges.rs
+
+/mnt/c/Users/davor/OneDrive - NJIT/Desktop/github/Binary-Brains/backend/target/debug/deps/encoding_index_simpchinese-0bda872a444d474e.d: /home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/lib.rs /home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/gb18030.rs /home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/gb18030_ranges.rs
+
+/home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/lib.rs:
+/home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/gb18030.rs:
+/home/dp788/.cargo/registry/src/index.crates.io-6f17d22bba15001f/encoding-index-simpchinese-1.20141219.5/gb18030_ranges.rs:

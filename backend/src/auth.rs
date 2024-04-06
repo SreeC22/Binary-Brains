@@ -11,7 +11,11 @@ use log::{warn, info};
 use derive_more::{Display, Error};
 
 use serde::{Serialize, Deserialize};
+use lettre::{transport::smtp::authentication::Credentials, Message, SmtpTransport, Transport,transport::smtp::Error as SmtpError};
+use lettre_email::EmailBuilder;
+use lettre::{message::{header, Mailbox}};
 
+use rand::{distributions::Alphanumeric, Rng};
 // hashes a password using bcrypt
 pub fn hash_password(password: &str) -> Result<String, bcrypt::BcryptError> {
     hash(password, DEFAULT_COST)
@@ -72,4 +76,44 @@ pub fn generate_jwt(email: &str, remember_me: bool) -> Result<String, JwtError> 
 
     let secret_key = env::var("JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
     encode(&Header::default(), &claims, &EncodingKey::from_secret(secret_key.as_bytes()))
+}
+
+
+
+pub fn generate_reset_token() -> String {
+    rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(30)
+        .map(char::from) // Convert u8 to char
+        .collect()
+}
+
+pub fn send_reset_email(email: &str, token: &str) -> Result<(), SmtpError> {
+    let email_body = format!(
+        "Please click on the link to reset your password: {}/reset-password/{}",
+        env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:3000".to_string()),
+        token
+    );
+
+    let email = Message::builder()
+        .from("noreply@yourdomain.com".parse().unwrap())
+        .to(email.parse().unwrap())
+        .subject("Password Reset Request")
+        .body(email_body)
+        .unwrap();
+
+    let creds = Credentials::new(
+        env::var("SMTP_USERNAME").expect("SMTP_USERNAME must be set"),
+        env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set"),
+    );
+
+    let mailer = SmtpTransport::relay("smtp.yourdomain.com")
+        .unwrap()
+        .credentials(creds)
+        .build();
+
+    match mailer.send(&email) {
+        Ok(_response) => Ok(()),
+        Err(e) => Err(e),
+    }
 }
