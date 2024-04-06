@@ -12,6 +12,10 @@ pub async fn backend_translation_logic(
     source_language: &str,
     target_language: &str,
 ) -> Result<String, Box<dyn std::error::Error>> {
+    // Initialize logger
+    let _ = env_logger::try_init();
+
+
     let api_key = env::var("GPT3_API_KEY").expect("GPT3_API_KEY must be set");
     let client = Client::new();
     let mut headers = HeaderMap::new();

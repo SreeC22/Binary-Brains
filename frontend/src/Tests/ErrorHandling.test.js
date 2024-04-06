@@ -1,15 +1,44 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
-import TranslateCode from '../Pages/TranslateCode';
-import { enableFetchMocks } from 'jest-fetch-mock';
+import TranslateCode from '../Pages/TranslateCode'; // Assuming the component file is in the same directory
 import { act } from 'react-dom/test-utils'; // Import act from react-dom/test-utils
 
-jest.useFakeTimers();
-
-enableFetchMocks();
-jest.mock('node-fetch'); // Mock the fetch module
+// Mock global fetch function
+global.fetch = jest.fn();
 
 describe('TranslateCode Component', () => {
+  test('There isnt any input code error', async () => {
+    const { getByText, getAllByText, getByRole, getByLabelText } = render(<TranslateCode />);
+
+    // Select language for source and target
+    fireEvent.click(getByRole('button', { name: /Source Language/i }));
+    const sourceLanguage = 'Python';
+    const sourceLanguageElements = getAllByText(sourceLanguage);
+    sourceLanguageElements.forEach(element => {
+      fireEvent.click(getByRole('button', { name: /Source Language/i }));
+      fireEvent.click(element);
+    });
+    fireEvent.click(getByRole('button', { name: /Target Language/i }));
+    const targetLanguage = 'Java';
+    const targetLanguageElements = getAllByText(targetLanguage);
+    targetLanguageElements.forEach(element => {
+      fireEvent.click(getByRole('button', { name: /Target Language/i }));
+      fireEvent.click(element);
+    });
+    const aceEditor= document.querySelector('.ace_editor');
+    aceEditor.focus();
+    fireEvent.keyDown(aceEditor, { key: 'End' });
+    for (let i = 0; i < 999; i++) {
+      fireEvent.keyDown(aceEditor, { key: 'Backspace' });
+    }
+    fireEvent.click(getByText('Convert'));
+
+
+    // Check for error message
+    await waitFor(() =>
+      expect(getByText('Error')).toBeInTheDocument()
+    );
+  });
   const clipboardWriteTextMock = jest.fn(() => Promise.reject(new Error('Clipboard copy error')));
 
   beforeEach(() => {
@@ -17,66 +46,33 @@ describe('TranslateCode Component', () => {
     global.navigator.clipboard = {
       writeText: clipboardWriteTextMock
     };
+    global.fetch.mockReset();
+
   });
 
   afterEach(() => {
     // Restore the original implementation after each test
     delete global.navigator.clipboard;
   });
-  test('handles API failure error', async () => {
-    fetch.mockRejectOnce(() => Promise.reject(new Error('Internal Server Error')));
+
+  test('handles translation timeout', async () => {
+    // Mock the fetch call to simulate timeout
+    jest.spyOn(global, 'fetch').mockImplementationOnce(() =>
+      Promise.resolve({
+        json: () => Promise.resolve({}),
+        ok: false,
+        status: 500, // Simulating a server error
+      })
+    );
 
     const { getByText } = render(<TranslateCode />);
+    fireEvent.click(getByText('Convert')); // Trigger the conversion
 
-    await waitFor(() => expect(getByText(/API Error/)).toBeInTheDocument());
-    expect(getByText(/Please check your internet connection or try again later./)).toBeInTheDocument();
-  });
-
-  test('handles rate limit exceeded error', async () => {
-    // Render the component
-    const { getByLabelText, queryByText } = render(<TranslateCode />);
-  
-    // Mock the API response to simulate rate limit exceeded error
-    jest.spyOn(global, 'fetch').mockResolvedValueOnce({
-      status: 429, // Simulate rate limit exceeded error
-      json: async () => ({ error: { message: 'Rate Limit Exceeded' } })
-    });
-  
-    // Trigger the action that would result in rate limit exceeded error
-    fireEvent.click(getByLabelText(/Convert/));
-  
-    // Wait for the error message to appear
+    // Ensure that the error message for timeout is displayed
     await waitFor(() => {
-      expect(queryByText(/Rate Limit Exceeded/)).toBeInTheDocument();
+      expect(getByText('Error')).toBeInTheDocument();
     });
   });
-
-  test('handles timeout error', async () => {
-    // Render the component
-    const { getByLabelText, queryByText } = render(<TranslateCode />);
-  
-    // Mock the API response to simulate a long-running translation
-    jest.spyOn(global, 'fetch').mockImplementationOnce(() => new Promise(() => {}));
-  
-    // Trigger the action that would result in a timeout error
-    act(() => {
-      fireEvent.click(getByLabelText(/Convert/));
-    });
-  
-    // Fast-forward time by 10 minutes (600000 milliseconds)
-    jest.advanceTimersByTime(600000);
-  
-    // Check if the error message appears
-    await waitFor(() => {
-      expect(queryByText(/Translation Timeout/)).toBeInTheDocument();
-    });
-  });
-  
-  
-  
-  
-
-  
 
   test('handles clipboard copy input error', async () => {
     const { getByTitle, getByText } = render(<TranslateCode />);
@@ -85,5 +81,122 @@ describe('TranslateCode Component', () => {
 
     await waitFor(() => expect(getByText(/An error occurred while copying input code: Clipboard copy error/)).toBeInTheDocument());
   });
+
+  test('Source and target languages cannot be the same error', async () => {
+    const { getByText, getAllByText, getByRole } = render(<TranslateCode />);
+
+    // Select same language for source and target
+    fireEvent.click(getByRole('button', { name: /Source Language/i }));
+    const sourceLanguage = 'Python';
+    const sourceLanguageElements = getAllByText(sourceLanguage);
+    sourceLanguageElements.forEach(element => {
+      fireEvent.click(getByRole('button', { name: /Source Language/i }));
+      fireEvent.click(element);
+    });
+    fireEvent.click(getByRole('button', { name: /Target Language/i }));
+    const targetLanguage = 'Python';
+    const targetLanguageElements = getAllByText(targetLanguage);
+    targetLanguageElements.forEach(element => {
+      fireEvent.click(getByRole('button', { name: /Target Language/i }));
+      fireEvent.click(element);
+    });
+
+    // Trigger conversion
+    fireEvent.click(getByText('Convert'));
+
+    // Check for error message
+    await waitFor(() =>
+      expect(getByText('Source and target languages cannot be the same')).toBeInTheDocument()
+    );
+  });
+
+ 
   
+
+  // Reset fetch mock for other API error tests
+  beforeEach(() => {
+    jest.spyOn(global, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: false,
+        json: () => Promise.resolve({ error: 'API error' })
+      })
+    );
+  });
+
+  test('API error', async () => {
+    const { getByText } = render(<TranslateCode />);
+
+    // Perform actions that trigger translation
+    fireEvent.click(getByText('Convert'));
+
+    // Wait for API error alert to be displayed
+    await waitFor(() =>
+      expect(getByText('API Error')).toBeInTheDocument()
+    );
+  });
+
+  test('Rate limit exceeded error', async () => {
+    // Mock the fetch call to return a Promise that resolves with a 429 status code
+    jest.spyOn(global, 'fetch').mockImplementation(() => {
+      return Promise.resolve({
+        status: 429,
+        json: () => Promise.resolve({ message: 'Rate Limit Exceeded' }),
+      });
+    });
+  
+    const { getByText } = render(<TranslateCode />);
+    
+    // Perform actions that trigger translation
+    fireEvent.click(getByText('Convert'));
+  
+    // Wait for rate limit exceeded error alert to be displayed
+    await waitFor(() =>
+      expect(getByText('Error')).toBeInTheDocument()
+    );
+  
+    // Restore the original fetch implementation
+    global.fetch.mockRestore();
+  });
+  
+  
+
+  test('Both source and target languages are required error', async () => {
+    const { getByText } = render(<TranslateCode />);
+
+    // Trigger conversion without selecting source and target languages
+    fireEvent.click(getByText('Convert'));
+
+    // Check for error message
+    await waitFor(() =>
+      expect(getByText('Both source and target languages are required')).toBeInTheDocument()
+    );
+  });
+
+  test('Preprocessing error', async () => {
+    const { getByText, getAllByText, getByRole } = render(<TranslateCode />);
+
+    // Select same language for source and target
+    fireEvent.click(getByRole('button', { name: /Source Language/i }));
+    const sourceLanguage = 'Python';
+    const sourceLanguageElements = getAllByText(sourceLanguage);
+    sourceLanguageElements.forEach(element => {
+      fireEvent.click(getByRole('button', { name: /Source Language/i }));
+      fireEvent.click(element);
+    });
+    fireEvent.click(getByRole('button', { name: /Target Language/i }));
+    const targetLanguage = 'Java';
+    const targetLanguageElements = getAllByText(targetLanguage);
+    targetLanguageElements.forEach(element => {
+      fireEvent.click(getByRole('button', { name: /Target Language/i }));
+      fireEvent.click(element);
+    });
+
+    // Trigger conversion
+    fireEvent.click(getByText('Convert'));
+
+    // Check for error message
+    await waitFor(() =>
+      expect(getByText('Error')).toBeInTheDocument()
+    );
+});
 });

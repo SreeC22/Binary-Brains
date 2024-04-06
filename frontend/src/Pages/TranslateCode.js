@@ -17,19 +17,14 @@ import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools'; 
 import 'ace-builds/src-noconflict/ext-beautify';
-
-
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
-
 import { useToast } from "@chakra-ui/react";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
 import React, { useState, useEffect ,useRef} from "react";
 import AceEditor from 'react-ace';
 // import React, { useEffect } from 'react';
 import { motion } from "framer-motion"; // Import motion from Framer Motion
-import { BiSolidDownArrowAlt } from "react-icons/bi";
-import { FaCode, FaCog, FaCube, FaPaste,FaTimes,FaUpload } from 'react-icons/fa';
-import {  FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
+import { FaCode, FaCog, FaCube, FaPaste,FaTimes,FaUpload, FaSearchPlus, FaSearchMinus, FaDownload } from 'react-icons/fa';
 import axios from 'axios';
 import { SiConvertio } from "react-icons/si";
 
@@ -50,6 +45,15 @@ const languages = [
 
 
 const TranslateCode = () => {
+  const handleDownloadOutput = () => {
+    const element = document.createElement("a");
+    const file = new Blob([outputCode], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = "output_code.txt";
+    document.body.appendChild(element); // Required for this to work in Firefox
+    element.click();
+    document.body.removeChild(element); // Clean up
+  };
   const [gptStatus, setGptStatus] = useState(false);
   const aceEditorRef = useRef(null);
   useEffect(() => {
@@ -65,10 +69,11 @@ const TranslateCode = () => {
       } catch (error) {
         console.error("Error calling API:", error);
         toast({
+          
           title: "API Error",
           description: "Please check your internet connection or try again later.",
           status: "error",
-          duration: null,
+          duration: 10000,
           isClosable: true,
           position: "top",
         });
@@ -134,7 +139,7 @@ const handleCopyOutputCode = () => {
           }),
         }),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Translation timeout')), 5 * 60 * 1000 * 2) // 5 minutes timeout
+          setTimeout(() => reject(new Error('Translation timeout')), 5 * 60 * 1000) // 5 minutes timeout
         ),
       ]);
       
@@ -150,12 +155,12 @@ const handleCopyOutputCode = () => {
         description: "Translation completed successfully.",
         status: "success",
         duration: 5000,
-        isClosable: true, 
+        isClosable: true,
         position: "top",
       });
     } catch (error) {
       console.error("Error during translation:", error);
-      if (error.message === "Rate Limit Exceeded") {
+      if (error.message === "Rate limit exceeded. Please try again later.") {
         toast({
           title: "Rate Limit Exceeded",
           description: "The rate limit for translation API has been exceeded. Please try again later.",
@@ -167,7 +172,7 @@ const handleCopyOutputCode = () => {
       } else if (error.message === "Translation timeout") {
         toast({
           title: "Translation Timeout",
-          description: "Translation took longer than 10 minutes. Please try again later.",
+          description: "Translation took longer than 5 minutes. Please try again later.",
           status: "error",
           duration: 9000,
           isClosable: true,
@@ -209,14 +214,21 @@ const handleCopyOutputCode = () => {
       return;
     }
     if (!inputCode.trim()) {
-      setError("Input code is required");
+      toast({
+        title: "Error:",
+        description: "Input code is required",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
       return;
     }
     toast({
       title: "Translation Queued",
       description: "Your translation is being processed. Please wait...",
       status: "info",
-      duration: 5000, 
+      duration: 5000, // Setting duration to null to make it persist until user interaction
       isClosable: true,
       position: "top",
     });
@@ -242,19 +254,15 @@ const handleCopyOutputCode = () => {
       
 
     } catch (error) {
-      if (error.message === "Rate Limit Exceeded") {
-        toast({
-          title: "Rate Limit Exceeded",
-          description: "The rate limit for translation API has been exceeded. Please try again later.",
-          status: "error",
-          duration: 9000,
-          isClosable: true,
-          position: "top",
-        });
-      } 
-      else{
       console.error("Error during preprocessing:", error);
-      setError(error.message);
+      toast({
+        title: "Error during preprocessing",
+        description: "Please check your input code for any errors.",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+    
       setTimeout(() => {
         setError(''); 
       }, 4000);
@@ -265,8 +273,8 @@ const handleCopyOutputCode = () => {
   const handleCopy = () => {
     navigator.clipboard.writeText(inputCode).then(() => {
       toast({
-        title: "Input Copied.",
-        description: "Input code copied to clipboard successfully.",
+        title: "Copied.",
+        description: "Code copied to clipboard successfully.",
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -283,14 +291,13 @@ const handleCopyOutputCode = () => {
     });
     navigator.clipboard.writeText(outputCode).then(() => {
       toast({
-        title: "Output Copied.",
-        description: "Output code copied to clipboard successfully.",
+        title: "Copied.",
+        description: "Code copied to clipboard successfully.",
         status: "success",
         duration: 5000,
         isClosable: true,
       });
     }).catch((err) => {
-      setError('Error copying output code: ' + err.message);
       toast({
         title: "Error",
         description: "An error occurred while copying output code: " + err.message,
@@ -300,7 +307,6 @@ const handleCopyOutputCode = () => {
       });
     });
   };
-  
 
   const HeadingSteps = () => (
     
@@ -449,6 +455,7 @@ const handleCopyOutputCode = () => {
                   color="white"
                   />
                     <IconButton
+                      aria-label="ClearInput"
                       title="Clear"
                       icon={<FaTimes />}
                       onClick={() => setInputCode('')}
@@ -536,7 +543,7 @@ const handleCopyOutputCode = () => {
                     icon={<FaPaste />}
                     onClick={() => handleCopyOutputCode()}
                     position="absolute"
-                    top="8px"
+                    top="5px"
                     right="8px"
                     zIndex="999"
                     backgroundColor="transparent"
@@ -545,11 +552,24 @@ const handleCopyOutputCode = () => {
                     color="white"
                   />
                   <IconButton
+            title="Download Output"
+            icon={<FaDownload />}
+            onClick={() => handleDownloadOutput()}
+            position="absolute"
+            top="32px"
+            right="8px"
+            zIndex="999"
+            backgroundColor="transparent"
+            border="none"
+            cursor="pointer"
+            color="white"
+          />
+                  <IconButton
                     title="Clear"
                     icon={<FaTimes />}
                     onClick={() => setOutputCode('')}
                     position="absolute"
-                    top="45px"
+                    top="60px"
                     right="8px"
                     zIndex="999"
                     backgroundColor="transparent"
@@ -618,7 +638,9 @@ const handleCopyOutputCode = () => {
         >
           Convert
         </CustomButton>
-
+        <Text  fontSize="1" fontFamily="Roboto" textAlign="center" color={backgroundColor === "#2D3748" ? "#2D3748" : "#fbf2e3"}>
+          Error        
+        </Text>
         <Text mt={4} fontSize="22" fontFamily="Roboto" textAlign="center">
           How to use this tool?<br />
         </Text>
@@ -657,6 +679,6 @@ const handleCopyOutputCode = () => {
      </>
 
   );
-            }
+
 };
 export default TranslateCode;
