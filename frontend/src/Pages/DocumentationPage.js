@@ -1,5 +1,5 @@
+import { Box, Text, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
-import { Box, Text, Button, VStack, Image, HStack,ListItem, ListIcon,List,Grid ,Divider,GridItem, useColorModeValue, Accordion,AccordionItem,AccordionButton,AccordionPanel,Link,AccordionIcon, layout} from '@chakra-ui/react';
 
 const DocumentationPage = () => {
     return (

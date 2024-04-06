@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Spacer, Text } from '@chakra-ui/react';
 import Editor from '@monaco-editor/react';
-import { Flex, Box, Text, FormLabel, Menu, MenuButton, MenuItem, MenuList, Button, Spacer, useDisclosure } from '@chakra-ui/react';
-import { FaPaste, FaCopy, FaCog, FaDownload } from 'react-icons/fa';
 import {
-  PythonOriginal, JavaOriginal, CplusplusOriginal, RubyOriginal, RustOriginal,
-  TypescriptOriginal, CsharpOriginal, PerlOriginal, SwiftOriginal, MatlabOriginal
+  CplusplusOriginal,
+  CsharpOriginal,
+  JavaOriginal,
+  MatlabOriginal,
+  PerlOriginal,
+  PythonOriginal,
+  RubyOriginal, RustOriginal,
+  SwiftOriginal,
+  TypescriptOriginal
 } from 'devicons-react';
+import React, { useState } from 'react';
+import { FaCog, FaCopy, FaDownload } from 'react-icons/fa';
 
 const languages = [
   { label: "Python", value: "python", icon: <PythonOriginal /> },
