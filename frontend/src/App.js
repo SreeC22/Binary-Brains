@@ -37,7 +37,7 @@ function App() {
             <Route path="/profile-settings" element={<ProfileSettingsPage />} />
             <Route path="/reset-request" element={<RequestReset />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
           </Routes>
         </AuthProvider>
