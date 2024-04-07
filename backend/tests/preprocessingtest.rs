@@ -13,29 +13,90 @@ pub async fn detect_language(client: &impl Gpt3Client, input: &str) -> Result<St
 }
 pub fn remove_comments(code: &str, language: &str) -> String {
     match language {
-        "python" | "ruby" | "perl" | "matlab" | "swift" => {
-            // First, remove ''' and """ multiline comments
-            let multi_line_re = Regex::new(r#"('''[\s\S]*?'''|\"\"\"[\s\S]*?\"\"\")"#).unwrap();
+        "ruby" => {
+            // Handle Ruby multi-line comments (=begin ... =end)
+            let multi_line_re = Regex::new(r"=begin[\s\S]*?=end").unwrap();
             let without_multi_line = multi_line_re.replace_all(code, "").to_string();
             
-            // Then, remove # single line comments
-            let single_line_re = Regex::new(r#"((?m)^\s*#.*$)"#).unwrap();
+            // Adjusted to remove any instance of # followed by text until the end of the line
+            let single_line_re = Regex::new(r"(?m)#.*$").unwrap();
+            single_line_re.replace_all(&without_multi_line, "").to_string()
+        },        
+        "python" => {
+            let multi_line_re = Regex::new(r#"('''[\s\S]*?'''|\"\"\"[\s\S]*?\"\"\")"#).unwrap();
+            let without_multi_line = multi_line_re.replace_all(code, "").to_string();
+
+            let single_line_re = Regex::new(r"(?m)^\s*#.*$|\s+#.*").unwrap();
             single_line_re.replace_all(&without_multi_line, "").to_string()
         },
-        "rust" | "cpp" | "csharp" | "java" | "typescript" => {
-            // Remove // single line comments and /* */ multiline comments
+        "perl" => {
+            let multi_line_re = Regex::new(r"=begin comment[\s\S]*?=cut").unwrap();
+            let without_multi_line = multi_line_re.replace_all(code, "").to_string();
+            let re = Regex::new(r"(?m)#.*$").unwrap(); // Match '#' to the end of the line, multiline mode
+            re.replace_all(&without_multi_line, "").to_string() // Apply to 'without_multi_line', not 'code'
+        },
+        
+        "matlab" => {
+            let block_comment_re = Regex::new(r"%\{[\s\S]*?%\}").unwrap();
+            let without_block_comments = block_comment_re.replace_all(code, "").to_string();
+            let single_line_re = Regex::new(r"(?m)%.*$").unwrap();
+            let cleaned_code = single_line_re.replace_all(&without_block_comments, "").to_string();
+        
+            return cleaned_code;
+        },
+        "swift" => {
+            let multi_line_re = Regex::new(r#"(/\*[\s\S]*?\*/)"#).unwrap();
+            let without_multi_line = multi_line_re.replace_all(code, "").to_string();
+            let single_line_re = Regex::new(r#"((?m)^\s*//.*$)"#).unwrap();
+            single_line_re.replace_all(&without_multi_line, "").to_string()
+        },
+        "rust" | "cpp" | "csharp" => {
+            let re = Regex::new(r#"((?m)//.*?$)|(/\*[\s\S]*?\*/)"#).unwrap();
+            re.replace_all(code, "").to_string()
+        },
+        "java" | "typescript" => {
+            // Java and TypeScript also use // and /* */ for comments
             let re = Regex::new(r#"((?m)//.*?$)|(/\*[\s\S]*?\*/)"#).unwrap();
             re.replace_all(code, "").to_string()
         },
         _ => code.to_owned(),
     }
 }
+pub async fn preprocess_code(
+    client: &impl Gpt3Client, 
+    input: &str, 
+    source_lang: &str
+) -> Result<String, Box<dyn Error>> {
+    println!("Source language: {}", source_lang);
+
+    let detected_lang_result = detect_language(client,input).await;
+    match detected_lang_result {
+        Ok(lang) => {
+            // Remove leading '\n' and double quotes from the detected language string
+            let detected_lang = lang.replace("\n", "").replace('"', "");
+            println!("Detected language: {:?}", detected_lang);
+            if detected_lang.to_lowercase() != source_lang.to_lowercase() {
+                return Err(Box::new(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("Detected language {} does not match source language {}", detected_lang, source_lang)
+                )));
+
+            }
+        },
+        Err(_) => return Err(Box::new(std::fmt::Error::default())), // You might want to forward or handle the actual error
+    }
+    Ok(remove_comments(input, source_lang))
+}
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use mockall::predicate::*;
     use tokio::test;
+
+
+
 
     #[tokio::test]
     async fn test_detect_language_success_rust() {
@@ -50,6 +111,65 @@ mod tests {
         let result = detect_language(&mock_gpt3, source_code).await;
         assert_eq!(result.unwrap(), "rust");
     }
+   
+
+
+    #[tokio::test]
+    async fn test_detect_language_success_typescript() {
+        let mut mock_gpt3 = MockGpt3Client::new();
+        let expected_prompt = "What is the programming language of the following code. Give a one-word answer from these choices: python, ruby, perl, matlab, swift, rust, cpp, csharp, java, typescript, \"none\"?\n\nconsole.log('Hello, world!');";
+        let expected_output = "typescript";
+        mock_gpt3.expect_call_gpt3_api()
+                .with(predicate::eq(expected_prompt))
+                .times(1)
+                .returning(move |_| Ok(expected_output.to_string()));
+        let source_code = "console.log('Hello, world!');";
+        let result = detect_language(&mock_gpt3, source_code).await;
+        assert_eq!(result.unwrap(), "typescript");
+    }
+    
+    #[tokio::test]
+    async fn test_detect_language_success_swift() {
+        let mut mock_gpt3 = MockGpt3Client::new();
+        let expected_prompt = "What is the programming language of the following code. Give a one-word answer from these choices: python, ruby, perl, matlab, swift, rust, cpp, csharp, java, typescript, \"none\"?\n\nprint(\"Hello, world!\")";
+        let expected_output = "swift";
+        mock_gpt3.expect_call_gpt3_api()
+                .with(predicate::eq(expected_prompt))
+                .times(1)
+                .returning(move |_| Ok(expected_output.to_string()));
+        let source_code = "print(\"Hello, world!\")";
+        let result = detect_language(&mock_gpt3, source_code).await;
+        assert_eq!(result.unwrap(), "swift");
+    }
+
+    #[tokio::test]
+    async fn test_detect_language_success_matlab() {
+        let mut mock_gpt3 = MockGpt3Client::new();
+        let expected_prompt = "What is the programming language of the following code. Give a one-word answer from these choices: python, ruby, perl, matlab, swift, rust, cpp, csharp, java, typescript, \"none\"?\n\ndisp('Hello, world!')";
+        let expected_output = "matlab";
+        mock_gpt3.expect_call_gpt3_api()
+                .with(predicate::eq(expected_prompt))
+                .times(1)
+                .returning(move |_| Ok(expected_output.to_string()));
+        let source_code = "disp('Hello, world!')";
+        let result = detect_language(&mock_gpt3, source_code).await;
+        assert_eq!(result.unwrap(), "matlab");
+    }
+    
+    #[tokio::test]
+    async fn test_detect_language_success_ruby() {
+        let mut mock_gpt3 = MockGpt3Client::new();
+        let expected_prompt = "What is the programming language of the following code. Give a one-word answer from these choices: python, ruby, perl, matlab, swift, rust, cpp, csharp, java, typescript, \"none\"?\n\nputs 'Hello, world!'";
+        let expected_output = "ruby";
+        mock_gpt3.expect_call_gpt3_api()
+                .with(predicate::eq(expected_prompt))
+                .times(1)
+                .returning(move |_| Ok(expected_output.to_string()));
+        let source_code = "puts 'Hello, world!'";
+        let result = detect_language(&mock_gpt3, source_code).await;
+        assert_eq!(result.unwrap(), "ruby");
+    }
+
     #[tokio::test]
     async fn test_detect_language_success_python() {
         let mut mock_gpt3 = MockGpt3Client::new();
@@ -91,9 +211,9 @@ mod tests {
             """
             "#;
         let cleaned_code = remove_comments(code, "python");
-        assert_eq!(cleaned_code.contains("#"), false);
-        assert_eq!(cleaned_code.contains("'''"), false);
-        assert_eq!(cleaned_code.contains("\"\"\""), false);
+        assert!(!cleaned_code.contains("#"), "Single-line comments were not removed");
+        assert!(!cleaned_code.contains("'''"), "Multi-line comment with ''' was not removed");
+        assert!(!cleaned_code.contains("\"\"\""), "Multi-line comment with \"\"\" was not removed");
         assert!(cleaned_code.contains("def hello_world():"));
         assert!(cleaned_code.contains("print(\"Hello, world!\")"));
     }
@@ -115,7 +235,6 @@ mod tests {
         assert!(cleaned_code.contains("print \"Hello, world!\\n\";"));
         assert!(cleaned_code.contains("print \"Hello, Perl!\\n\";"));
     }
-
     #[test]
     async fn remove_csharp_comments() {
         let csharp_code = r#"
@@ -142,8 +261,59 @@ mod tests {
         assert!(cleaned_code.contains("namespace HelloWorld"));
         assert!(cleaned_code.contains("Console.WriteLine(\"Hello, World!\");"));
     }
-
-    
-
+    #[test]
+    async fn remove_ruby_comments() {
+        let ruby_code = r#"
+            # This is a single-line comment
+            puts "Hello, world!" # Another single-line comment
+            =begin
+            This is a
+            multi-line comment
+            =end
+            puts "Ruby is fun!"
+        "#;
+        let cleaned_code = remove_comments(ruby_code, "ruby");
+        
+        // Check that single-line comments are removed
+        assert!(!cleaned_code.contains("# This is a single-line comment"));
+        assert!(!cleaned_code.contains("# Another single-line comment"));
+        
+        // Check that multi-line comments are removed
+        assert!(!cleaned_code.contains("=begin"));
+        assert!(!cleaned_code.contains("This is a"));
+        assert!(!cleaned_code.contains("multi-line comment"));
+        assert!(!cleaned_code.contains("=end"));
+        
+        // Check that code is intact
+        assert!(cleaned_code.contains("puts \"Hello, world!\""));
+        assert!(cleaned_code.contains("puts \"Ruby is fun!\""));
+    }
+    #[test]
+    async fn remove_matlab_comments() {
+        let matlab_code = r#"
+            % This is a single-line comment
+            disp('Hello, world!'); % Another single-line comment
+            %{
+            This is a
+            block comment
+            %}
+            disp('MATLAB is interesting!');
+        "#;
+        let cleaned_code = remove_comments(matlab_code, "matlab");
+        
+        // Check that single-line comments are removed
+        assert!(!cleaned_code.contains("% This is a single-line comment"));
+        assert!(!cleaned_code.contains("% Another single-line comment"));
+        
+        // Check that block comments are removed
+        assert!(!cleaned_code.contains("%{"));
+        assert!(!cleaned_code.contains("This is a"));
+        assert!(!cleaned_code.contains("block comment"));
+        assert!(!cleaned_code.contains("%}"));
+        
+        // Check that code is intact
+        assert!(cleaned_code.contains("disp('Hello, world!');"));
+        assert!(cleaned_code.contains("disp('MATLAB is interesting!');"));
+    }
 
 }
