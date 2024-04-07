@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, FormControl, FormLabel, Input, VStack, useToast } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-
+//missing smpt config
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const toast = useToast();
