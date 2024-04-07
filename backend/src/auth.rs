@@ -107,13 +107,17 @@ pub fn send_reset_email(email: &str, token: &str) -> Result<(), SmtpError> {
         env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set"),
     );
 
-    let mailer = SmtpTransport::relay("smtp.yourdomain.com")
+    let mailer = SmtpTransport::relay("smtp.mailgun.org")
         .unwrap()
         .credentials(creds)
         .build();
 
+
     match mailer.send(&email) {
-        Ok(_response) => Ok(()),
-        Err(e) => Err(e),
+        Ok(_) => Ok(()),
+        Err(e) => {
+            eprintln!("Failed to send email: {:?}", e); // Log more detailed error information
+            Err(e)
+        },
     }
 }

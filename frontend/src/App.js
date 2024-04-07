@@ -15,6 +15,7 @@ import ProfileSettingsPage from './Pages/ProfileSettingsPage';
 import { ColorModeProvider } from "./Pages/ColorModeContext";
 import RequestReset from './Pages/RequestReset';
 import ForgotPassword from './Pages/ForgotPassword';
+import ResetPasswordPage from './Pages/ResetPasswordPage';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
             <Route path="/profile-settings" element={<ProfileSettingsPage />} />
             <Route path="/reset-request" element={<RequestReset />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           </Routes>
         </AuthProvider>
