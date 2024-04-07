@@ -3,6 +3,8 @@ use crate::models::{User, UserInfo, GitHubUserInfo, Feedback, UserProfileUpdateF
 use std::env;
 use crate::auth::hash_password;
 use crate::auth::verify_password;
+use chrono::{Duration, Utc};
+use std::sync::Arc;
 
 // initializes the mongo client and user collection
 pub async fn init_mongo() -> mongodb::error::Result<Collection<User>> {
@@ -27,6 +29,8 @@ pub async fn find_or_create_user_by_google_id(db: &Collection<User>, user_info: 
                 password: None, 
                 google_id: Some(user_info.email.clone()),
                 github_id: None,
+                reset_token: None,
+                reset_token_expiry: None,
             };
             db.insert_one(new_user.clone(), None).await?;
             Ok(new_user)
@@ -47,6 +51,8 @@ pub async fn find_or_create_user_by_github_id(db: &Collection<User>, github_user
                 password: None,
                 google_id: None,
                 github_id: Some(github_user_info.login.clone()),
+                reset_token: None,
+                reset_token_expiry: None,
             };
             db.insert_one(new_user.clone(), None).await?;
             Ok(new_user)
@@ -54,12 +60,10 @@ pub async fn find_or_create_user_by_github_id(db: &Collection<User>, github_user
     }
 }
 
-// retrieves a user by email
 pub async fn get_user_by_email(db: &Collection<User>, email: &str) -> MongoResult<Option<User>> {
     db.find_one(doc! {"email": email}, None).await
 }
 
-// initializes the feedback collection
 pub async fn init_feedback_collection() -> mongodb::error::Result<Collection<Feedback>> {
     dotenv::dotenv().ok();
     let mongo_uri = env::var("MONGO_URI").expect("MONGO_URI must be set");
@@ -69,13 +73,11 @@ pub async fn init_feedback_collection() -> mongodb::error::Result<Collection<Fee
     Ok(database.collection::<Feedback>("feedback"))
 }
 
-// inserts feedback into the database
 pub async fn insert_feedback(db: &Collection<Feedback>, feedback: Feedback) -> mongodb::error::Result<()> {
     db.insert_one(feedback, None).await?;
     Ok(())
 }
 
-//inserts translation history
 async fn insert_translation(history: Translation) -> mongodb::error::Result<()> {
     let client_options = ClientOptions::parse("your_mongodb_connection_string").await?;
     let client = Client::with_options(client_options)?;
@@ -154,4 +156,55 @@ pub async fn delete_user(email: &str, db: &Database) -> mongodb::error::Result<(
     Ok(())
 }
 
+
+pub struct DbOps {
+    db: Arc<Database>,
+}
+
+impl DbOps {
+    pub fn new(db: Arc<Database>) -> Self {
+        DbOps { db }
+    }
+}
+impl DbOps {
+    pub async fn store_reset_token(&self, email: &str, token: &str, expiry: chrono::DateTime<Utc>) -> mongodb::error::Result<()> {
+        let user_collection = self.db.collection::<User>("users");
+        let expiry_bson = mongodb::bson::DateTime::from_millis(expiry.timestamp_millis());
+        user_collection.update_one(
+            doc! {"email": email},
+            doc! {
+                "$set": {
+                    "reset_token": token,
+                    "reset_token_expiry": expiry_bson
+                }
+            },
+            None
+        ).await?;
+        Ok(())
+    }
+    pub async fn validate_reset_token(&self, token: &str) -> MongoResult<Option<User>> {
+        let user_collection = self.db.collection::<User>("users");
+        let user = user_collection.find_one(
+            doc! {
+                "reset_token": token,
+                "reset_token_expiry": { "$gte": mongodb::bson::DateTime::now() }
+            },
+            None
+        ).await?;
+        Ok(user)
+    }
+
+    pub async fn update_user_password_and_remove_token(&self, email: &str, new_password_hash: &str) -> MongoResult<()> {
+        let user_collection = self.db.collection::<User>("users");
+        user_collection.update_one(
+            doc! {"email": email},
+            doc! {
+                "$set": { "password": new_password_hash },
+                "$unset": { "reset_token": "", "reset_token_expiry": "" }
+            },
+            None
+        ).await?;
+        Ok(())
+    }
+}
 

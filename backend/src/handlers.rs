@@ -19,7 +19,14 @@ use crate::preprocessing::preprocess_code;
 use crate::models::preprocessingCodeInput;
 use crate::models::backendtranslationrequest;
 use log::{debug, error};
-
+use actix_web::{post};
+use crate::models::{RequestPasswordResetForm, ResetPasswordForm};
+use crate::auth::{generate_reset_token, send_reset_email};
+use chrono::{DateTime};
+use chrono::DateTime as ChronoDateTime;
+use chrono::{Duration, Utc};
+use crate::db::DbOps;
+use std::sync::Arc;
 
 pub async fn get_user_profile(
     auth: BearerAuth, 
@@ -130,7 +137,6 @@ pub async fn login(
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
 }
 
-use chrono::{Duration, Utc};
 use crate::models::BlacklistedToken;
 use mongodb::Database;
 use mongodb::bson::Document;
@@ -189,6 +195,9 @@ pub async fn register(
             password: Some(hashed_password),
             google_id: None,
             github_id: None,
+            reset_token: None,
+            reset_token_expiry: None,
+
         };
 
         match db.insert_one(new_user.clone(), None).await {
@@ -525,7 +534,7 @@ pub async fn backend_translate_code_handler(
 }
 
 pub async fn preprocess_code_route(
-    code_data: web::Json<preprocessingCodeInput>, // Assuming PreprocessingCodeInput is correctly defined elsewhere
+    code_data: web::Json<preprocessingCodeInput>, 
 ) -> HttpResponse {
     match preprocess_code(&code_data.code, &code_data.source_lang).await {
         Ok(processed_code) => HttpResponse::Ok().json(json!({ "processed_code": processed_code })),
@@ -533,4 +542,91 @@ pub async fn preprocess_code_route(
     }
 }
 
-//handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH End of warning 
+
+
+
+pub async fn store_reset_token(db: &Database, email: &str, token: &str, expiry: DateTime<Utc>) -> mongodb::error::Result<()> {
+    let user_collection = db.collection::<User>("users");
+    user_collection.update_one(
+        doc! {"email": email},
+        doc! {
+            "$set": {
+                "reset_token": token,
+                "reset_token_expiry": mongodb::bson::DateTime::from_millis(expiry.timestamp_millis())
+            }
+        },
+        None
+    ).await?;
+    Ok(())
+}
+
+pub async fn validate_reset_token(db: &Database, token: &str) -> mongodb::error::Result<Option<User>> {
+    let user_collection = db.collection::<User>("users");
+    let user = user_collection.find_one(
+        doc! {
+            "reset_token": token,
+            "reset_token_expiry": { "$gte": mongodb::bson::DateTime::now() }
+        },
+        None
+    ).await?;
+    Ok(user)
+}
+
+pub async fn update_user_password_and_remove_token(db: &Database, email: &str, new_password_hash: &str) -> mongodb::error::Result<()> {
+    let user_collection = db.collection::<User>("users");
+    user_collection.update_one(
+        doc! {"email": email},
+        doc! {
+            "$set": { "password": new_password_hash },
+            "$unset": { "reset_token": "", "reset_token_expiry": "" }
+        },
+        None
+    ).await?;
+    Ok(())
+}
+
+#[post("/request-password-reset")]
+pub async fn request_password_reset(
+    data: web::Data<Database>, 
+    form: web::Json<RequestPasswordResetForm>,
+) -> Result<HttpResponse, actix_web::Error> {
+    let reset_token = generate_reset_token();
+    let expiry = Utc::now() + Duration::hours(1);
+
+    let db_ops = DbOps::new(data.into_inner());
+
+    db_ops.store_reset_token(&form.email, &reset_token, expiry).await
+        .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to store reset token"))?;
+
+    send_reset_email(&form.email, &reset_token)
+        .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to send email"))?;
+
+    Ok(HttpResponse::Ok().json("Reset instructions have been sent to your email."))
+}
+
+#[post("/reset-password")]
+pub async fn reset_password(
+    data: web::Data<Database>, 
+    form: web::Json<ResetPasswordForm>,
+) -> Result<HttpResponse, actix_web::Error> {
+    let db_ops = DbOps::new(data.into_inner());
+
+    let user_option = db_ops.validate_reset_token(&form.token).await
+        .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to validate reset token"))?;
+
+    if let Some(user) = user_option {
+        let new_password_hash = hash_password(&form.new_password)
+            .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to hash new password"))?;
+
+        db_ops.update_user_password_and_remove_token(&user.email, &new_password_hash).await
+            .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to update user password"))?;
+
+        Ok(HttpResponse::Ok().json("Your password has been reset successfully."))
+    } else {
+        Err(actix_web::error::ErrorNotFound("Invalid or expired reset token."))
+    }
+}
+
+
+
+
