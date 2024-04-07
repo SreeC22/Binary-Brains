@@ -13,6 +13,8 @@ import Contactus from './Pages/ContactUs';
 import TranslateCode from './Pages/TranslateCode';
 import ProfileSettingsPage from './Pages/ProfileSettingsPage';
 import { ColorModeProvider } from "./Pages/ColorModeContext";
+import RequestReset from './Pages/RequestReset';
+import ForgotPassword from './Pages/ForgotPassword';
 
 function App() {
   return (
@@ -32,6 +34,9 @@ function App() {
             <Route path="/ContactUs" element={<Contactus />} />
             <Route path="/translate" element={<TranslateCode />} />
             <Route path="/profile-settings" element={<ProfileSettingsPage />} />
+            <Route path="/reset-request" element={<RequestReset />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+
           </Routes>
         </AuthProvider>
 
