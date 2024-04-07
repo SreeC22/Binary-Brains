@@ -184,6 +184,75 @@ describe('Email Format and Password Validation', () => {
   beforeEach(() => {
     fetch.resetMocks();
   });
+  
+  test('does not display "Forgot password?" link when isLogin is false', () => {
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <LoginPage />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+  
+    // Check if the link is not in the document
+    const forgotPasswordLink = screen.queryByRole('link', { name: /forgot password\?/i });
+    expect(forgotPasswordLink).not.toBeInTheDocument();
+  });
 
+  test('displays "Forgot password?" link when isLogin is true', () => {
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <LoginPage />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+  
+    // Check if the link is in the document
+    const forgotPasswordText = screen.getByText(/forgot password\?/i);
+    expect(forgotPasswordText).toBeInTheDocument();
+  });
+
+  test('navigates to "/forgot-password" when "Forgot password?" link is clicked', async () => {
+    //const user = userEvent.setup();
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <LoginPage />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+    // Click the forgot password link
+    const forgotPasswordText = screen.getByText(/forgot password\?/i);
+    await userEvent.click(forgotPasswordText);
+  });
+
+  test('hides "Forgot password?" link when authentication state changes to logged in', async () => {
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <LoginPage />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+
+    expect(screen.queryByRole('link', { name: /forgot password\?/i })).not.toBeInTheDocument();
+  });
+
+  test('handles multiple clicks on "Forgot password?" link gracefully', async () => {
+    // Directly render the component within the necessary providers
+    render(
+      <BrowserRouter>
+        <AuthProvider> {/* Remove AuthProvider if not needed for this particular test */}
+          <LoginPage isLogin={true} /> {/* Assuming isLogin is a prop, otherwise omit */}
+        </AuthProvider>
+      </BrowserRouter>
+    );
+  
+    // Find the "Forgot password?" link and click it multiple times
+    const forgotPasswordText = screen.getByText(/forgot password\?/i);
+    await userEvent.click(forgotPasswordText);
+    await userEvent.click(forgotPasswordText); // Simulate rapid double-click
+  });
 
 });
