@@ -585,7 +585,6 @@ pub async fn update_user_password_and_remove_token(db: &Database, email: &str, n
     Ok(())
 }
 
-#[post("/request-password-reset")]
 pub async fn request_password_reset(
     data: web::Data<Database>, 
     form: web::Json<RequestPasswordResetForm>,
@@ -601,10 +600,11 @@ pub async fn request_password_reset(
     send_reset_email(&form.email, &reset_token)
         .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to send email"))?;
 
+
     Ok(HttpResponse::Ok().json("Reset instructions have been sent to your email."))
+
 }
 
-#[post("/reset-password")]
 pub async fn reset_password(
     data: web::Data<Database>, 
     form: web::Json<ResetPasswordForm>,
