@@ -1,8 +1,8 @@
 // HomePage.test.js
+import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import HomePage from './HomePage';
 import { BrowserRouter as Router } from 'react-router-dom';
+import HomePage from './HomePage';
 
 // Mock useNavigate hook
 jest.mock('react-router-dom', () => ({
