@@ -50,7 +50,7 @@ const LoginPage = () => {
     const payload = {
       email,
       password,
-      ...(isLogin ? {} : { name }),
+      ...(isLogin ? {} : { username: name }),
       remember_me, 
     };
   
