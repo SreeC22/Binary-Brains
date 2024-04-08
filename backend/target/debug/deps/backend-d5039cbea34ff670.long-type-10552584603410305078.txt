@@ -1,1 +1,0 @@
-fn(actix_web::web::Data<mongodb::Collection<TranslationHistory>>) -> impl futures_util::Future<Output = impl Responder> {get_translation_history}

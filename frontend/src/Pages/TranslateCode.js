@@ -80,7 +80,7 @@ const TranslateCode = () => {
     3. Click Convert`);
   const [targetLanguage, setTargetLanguage] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState("");
-  const [outputCode, setOutputCode] = useState("// The generated code will be displayed here ->");
+  const [outputCode, setOutputCode] = useState("");
   const [error, setError] = useState("");
   // const [editorMode, setEditorMode] = useState("text");
   const [fontSize, setFontSize] = useState(14);
@@ -92,9 +92,11 @@ const TranslateCode = () => {
     console.log("Selected source language:", sourceLanguage);
 }, [sourceLanguage]);
 useEffect(() => {
-  console.log(outputCode); // This will log the updated state
-}, [outputCode]); 
-
+  // Trim to check for whitespace-only strings too
+  if (outputCode.trim() !== "") {
+    saveTranslationHistory();
+  }
+}, [outputCode]); // Dependency on outputCode ensures this runs when outputCode updates
 const handleZoomIn = () => {
   setFontSize(prevFontSize => prevFontSize + 2);
 };
@@ -182,25 +184,20 @@ const handleUploadClick = () => {
 };
 
 const saveTranslationHistory = async () => {
-    // Make sure there's a logged-in user
-    if (!user) {
-        console.error("No user logged in.");
-        return;
-    }
+  // Ensure there's translated content to save
+  if (!user || outputCode.trim() === "") {
+    console.error("No user logged in or outputCode is empty.");
+    return;
+  }
 
-    // Extract user ID, assuming it's directly on the `user` object
-    //const userId = user.id; // Adjust according to your user object structure
+  const requestData = {
+    source_code: inputCode,
+    translated_code: outputCode,
+    source_language: sourceLanguage,
+    target_language: targetLanguage,
+  };
 
-    const requestData = {
-      //user_id: user.id,
-      source_code: inputCode,
-      translated_code: outputCode,
-      source_language: sourceLanguage,
-      target_language: targetLanguage,
-    };
-  
-    // Log to double-check requestData
-    console.log("Sending request with data:", requestData);
+  console.log("Sending request with data:", requestData);
   
     try {
       const response = await fetch('http://localhost:8080/save_translation_history', {
@@ -228,6 +225,8 @@ const saveTranslationHistory = async () => {
 //the way handleconvert works : when u press convert button, it calls preprocess api in the handle convert function 
 //and then it calls the translate api which is in the fetchtranslate code function
 const handleConvert = async () => {
+  setOutputCode(""); // Reset output code
+  setError(""); // Clear any existing errors
     toast({
       title: "Translation Queued",
       description: "Your translation is being processed. Please wait...",
