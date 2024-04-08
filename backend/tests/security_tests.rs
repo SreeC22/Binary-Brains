@@ -45,49 +45,6 @@ async fn test_csp_header() {
     assert_eq!(csp_header.to_str().unwrap(), "default-src 'self';", "CSP header does not match expected value");
 }
 
-// #[actix_rt::test]
-//     async fn test_cors_headers() {
-//         let mut app = test::init_service(create_app()).await;
-
-//         let req = test::TestRequest::get()
-//             .uri("/api/user/profile")
-//             .insert_header(("Origin", "http://localhost:3000"))
-//             .to_request();
-
-//         let resp = test::call_service(&mut app, req).await;
-
-//         assert!(resp.status().is_success(), "Should return 200 OK");
-
-//         // Verifying the CORS header is set as expected
-//         let cors_header = resp.headers().get(http::header::ACCESS_CONTROL_ALLOW_ORIGIN).expect("Access-Control-Allow-Origin header not found");
-//         assert_eq!(cors_header.to_str().unwrap(), "http://localhost:3000", "Access-Control-Allow-Origin does not match");
-// }
-
-// #[actix_rt::test]
-// async fn test_rate_limiting() {
-//     let mut app = test::init_service(
-//         App::new().route("/api/rate_limit_test", web::get().to(rate_limit_test))
-//     ).await;
-
-//     // Simulate making 100 requests which should be under the rate limit.
-//     for _ in 0..100 {
-//         let req = test::TestRequest::get()
-//             .uri("/api/rate_limit_test")
-//             .to_request();
-//         let resp = test::call_service(&mut app, req).await;
-//         assert!(resp.status().is_success(), "Request should succeed under rate limit");
-//     }
-
-//     // The next request should exceed the rate limit, if rate limiting is correctly configured.
-//     let req = test::TestRequest::get()
-//         .uri("/api/rate_limit_test")
-//         .to_request();
-//     let resp = test::call_service(&mut app, req).await;
-//     assert_eq!(resp.status(), StatusCode::TOO_MANY_REQUESTS, "Expected TOO_MANY_REQUESTS status");
-// }
-
-
-
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     use actix_web::{web, App, HttpServer};
@@ -135,4 +92,54 @@ mod tests {
 
         assert_eq!(resp.status(), StatusCode::UNAUTHORIZED, "Protected endpoint should require authorization");
     }
+
+    #[tokio::test]
+    async fn cors_headers_for_allowed_origin() {
+        let mut app = test::init_service(
+            App::new()
+                .wrap(Cors::default()
+                    .allowed_origin("http://localhost:3000")
+                    .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
+                    .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT, header::CONTENT_TYPE])
+                    .max_age(3600))
+                // Make sure to replicate your main app's setup here
+        ).await;
+
+        let req = test::TestRequest::get()
+            .insert_header(("Origin", "http://localhost:3000"))
+            .uri("/api/user/profile") // An actual CORS-protected endpoint
+            .to_request();
+
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.headers().get("Access-Control-Allow-Origin").unwrap(), "http://localhost:3000");
+    }
+
+
+    #[tokio::test]
+    async fn rate_limit_exceeded() {
+        let app = test::init_service(
+            App::new()
+                // Your application setup
+        ).await;
+    
+        // Example loop to simulate multiple requests to hit the rate limit
+        for _ in 0..100 {
+            let req = test::TestRequest::get()
+                .uri("/api/rate_limit_test")
+                .to_request();
+    
+            let _resp = test::call_service(&app, req).await;
+            // Here you might want to check the response, but it's skipped for brevity
+        }
+    
+        let rate_limited_req = test::TestRequest::get()
+            .uri("/api/rate_limit_test")
+            .to_request();
+    
+        let rate_limited_resp = test::call_service(&app, rate_limited_req).await;
+        assert_eq!(rate_limited_resp.status(), StatusCode::TOO_MANY_REQUESTS);
+    }
+    
+
+
 }
