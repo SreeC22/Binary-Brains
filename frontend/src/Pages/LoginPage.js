@@ -14,7 +14,6 @@ import {
   useColorModeValue,
   useToast
 } from '@chakra-ui/react';
-import { useToast } from '@chakra-ui/react';
 import { Link as ChakraLink } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
