@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, FormControl, FormLabel, Input, VStack, useToast } from '@chakra-ui/react';
 
 const ResetPasswordPage = () => {
@@ -7,11 +7,21 @@ const ResetPasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const toast = useToast();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token'); // Assuming the reset link includes a ?token= query parameter
+  const { token } = useParams();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const url = `${process.env.REACT_APP_BACKEND_URL}/reset-password`;
+
+    console.log("Token:", token); 
+    console.log("New Password:", newPassword); 
+  
+    if (!token) {
+      console.error("Token is null or undefined.");
+      return;
+    }
+    
     if (newPassword !== confirmPassword) {
       toast({
         title: 'Error',
@@ -23,13 +33,14 @@ const ResetPasswordPage = () => {
       return;
     }
 
-    const url = `${process.env.REACT_APP_BACKEND_URL}/reset-password`;
-
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, newPassword }),
+        body: JSON.stringify({
+          token, 
+          new_password: newPassword 
+        }),
       });
 
       if (response.ok) {
