@@ -14,6 +14,18 @@ import TranslateCode from './Pages/TranslateCode';
 import ProfileSettingsPage from './Pages/ProfileSettingsPage';
 import { ColorModeProvider } from "./Pages/ColorModeContext";
 
+const helmet = require('helmet');
+
+App.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "'unsafe-inline'", "https://example.com"],
+    styleSrc: ["'self'", "https://example.com"],
+    imgSrc: ["'self'", "data:", "https://example.com"],
+    // Add more directives as needed
+  }
+}));
+
 function App() {
   return (
     <ColorModeProvider>

@@ -1,4 +1,7 @@
 use serde_json::json;
+use actix_web::{App, http::header, HttpServer, middleware::DefaultHeaders, test::TestRequest, web, HttpResponse, http::StatusCode, test};
+use actix_cors::Cors;
+
 async fn register() -> impl actix_web::Responder {
     actix_web::HttpResponse::Ok().body("Registered")
 }
@@ -22,6 +25,68 @@ async fn get_user_profile(req: actix_web::HttpRequest) -> impl actix_web::Respon
 
     actix_web::HttpResponse::Ok().json(user_profile)
 }
+#[actix_rt::test]
+async fn test_csp_header() {
+    let mut app = test::init_service(
+        App::new()
+            .wrap(DefaultHeaders::new().header("Content-Security-Policy", "default-src 'self';"))
+            .service(web::resource("/").to(|| async {
+                HttpResponse::Ok().body("Hello, CSP!")
+            }))
+    ).await;
+
+    let req = test::TestRequest::get().uri("/").to_request();
+    let resp = test::call_service(&mut app, req).await;
+
+    assert!(resp.status().is_success(), "Should return 200 OK");
+
+    // Extracting the CSP header to verify its presence and content
+    let csp_header = resp.headers().get("Content-Security-Policy").unwrap();
+    assert_eq!(csp_header.to_str().unwrap(), "default-src 'self';", "CSP header does not match expected value");
+}
+
+// #[actix_rt::test]
+//     async fn test_cors_headers() {
+//         let mut app = test::init_service(create_app()).await;
+
+//         let req = test::TestRequest::get()
+//             .uri("/api/user/profile")
+//             .insert_header(("Origin", "http://localhost:3000"))
+//             .to_request();
+
+//         let resp = test::call_service(&mut app, req).await;
+
+//         assert!(resp.status().is_success(), "Should return 200 OK");
+
+//         // Verifying the CORS header is set as expected
+//         let cors_header = resp.headers().get(http::header::ACCESS_CONTROL_ALLOW_ORIGIN).expect("Access-Control-Allow-Origin header not found");
+//         assert_eq!(cors_header.to_str().unwrap(), "http://localhost:3000", "Access-Control-Allow-Origin does not match");
+// }
+
+// #[actix_rt::test]
+// async fn test_rate_limiting() {
+//     let mut app = test::init_service(
+//         App::new().route("/api/rate_limit_test", web::get().to(rate_limit_test))
+//     ).await;
+
+//     // Simulate making 100 requests which should be under the rate limit.
+//     for _ in 0..100 {
+//         let req = test::TestRequest::get()
+//             .uri("/api/rate_limit_test")
+//             .to_request();
+//         let resp = test::call_service(&mut app, req).await;
+//         assert!(resp.status().is_success(), "Request should succeed under rate limit");
+//     }
+
+//     // The next request should exceed the rate limit, if rate limiting is correctly configured.
+//     let req = test::TestRequest::get()
+//         .uri("/api/rate_limit_test")
+//         .to_request();
+//     let resp = test::call_service(&mut app, req).await;
+//     assert_eq!(resp.status(), StatusCode::TOO_MANY_REQUESTS, "Expected TOO_MANY_REQUESTS status");
+// }
+
+
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -56,43 +121,6 @@ mod tests {
         let response_body = test::read_body(resp).await;
         assert_eq!(response_body, "Registered");
     }
-
-    // #[tokio::test]
-    // async fn test_rate_limiting() {
-    //     let mut app = test::init_service(
-    //         App::new().route("/api/rate_limit_test", web::get().to(rate_limit_test))
-    //     ).await;
-    
-    //     for _ in 0..100 {
-    //         let req = test::TestRequest::get()
-    //             .uri("/api/rate_limit_test")
-    //             .to_request();
-    //         let resp = test::call_service(&mut app, req).await;
-    //         assert!(resp.status().is_success(), "Request should succeed under rate limit");
-    //     }
-    //     let req = test::TestRequest::get()
-    //         .uri("/api/rate_limit_test")
-    //         .to_request();
-    //     let resp = test::call_service(&mut app, req).await;
-    //     assert_eq!(resp.status(), StatusCode::TOO_MANY_REQUESTS)
-    // }
-
-    // #[tokio::test]
-    // async fn test_email_format_validation() {
-    //     let mut app = test::init_service(
-    //         App::new().route("/register", web::post().to(register))
-    //     ).await;
-
-    //     let invalid_email_payload = r#"{"username":"testuser","email":"notanemail","password":"ValidPassword123"}"#;
-    //     let req = test::TestRequest::post()
-    //         .uri("/register")
-    //         .set_payload(invalid_email_payload)
-    //         .insert_header(("Content-Type", "application/json"))
-    //         .to_request();
-    //     let resp = test::call_service(&mut app, req).await;
-
-    //     assert_eq!(resp.status(), StatusCode::BAD_REQUEST, "Registration should fail due to invalid email format");
-    // }
 
     #[tokio::test]
     async fn test_unauthorized_access_to_protected_endpoint() {
