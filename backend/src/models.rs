@@ -115,7 +115,7 @@ pub struct preprocessingCodeInput {
 //end of warning 
 
 //Translation History
-#[derive(Serialize, Deserialize,Clone)]
+#[derive(Serialize, Deserialize,Clone,Debug)]
 pub struct TranslationHistory {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,  // ID of the translation history record itself

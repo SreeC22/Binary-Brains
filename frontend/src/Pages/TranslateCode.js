@@ -87,13 +87,13 @@ const TranslateCode = () => {
   //Translation
   const [translationHistories, setTranslationHistories] = useState([]);
   const { user } = useAuth();
-
-
   const fileInputRef = useRef(null);
   useEffect(() => {
     console.log("Selected source language:", sourceLanguage);
 }, [sourceLanguage]);
-
+useEffect(() => {
+  console.log(outputCode); // This will log the updated state
+}, [outputCode]); 
 
 const handleZoomIn = () => {
   setFontSize(prevFontSize => prevFontSize + 2);
@@ -115,10 +115,12 @@ const handleCopyOutputCode = () => {
     setError('Error in copying text: ', err);
   });
 };
-  const handleClose = () => {
+
+const handleClose = () => {
     setError(""); // Clear the error message
   };
-  const fetchTranslatedCode = async () => {
+
+const fetchTranslatedCode = async () => {
     try {
       const response = await fetch('http://127.0.0.1:8080/backendtranslationlogic', {
         method: 'POST',
@@ -137,7 +139,11 @@ const handleCopyOutputCode = () => {
 
       const result = await response.json();
       console.log("API response:", result);
-      setOutputCode(result.translated_code); // Set the translated code received from the API
+      setOutputCode(result.translated_code); 
+      console.log(outputCode);// Set the translated code received from the API
+
+      await saveTranslationHistory();
+             
       toast({
         title: "Translation Successful",
         description: "Translation completed successfully.",
@@ -160,21 +166,68 @@ const handleCopyOutputCode = () => {
     setError(error);
 
   } 
-  };
-  const handleFileChange = (event) => {
+};
+
+const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => setInputCode(e.target.result);
       reader.readAsText(file);
     }
-  };
-  const handleUploadClick = () => {
+};
+
+const handleUploadClick = () => {
     fileInputRef.current.click();
-  };  
+};
+
+const saveTranslationHistory = async () => {
+    // Make sure there's a logged-in user
+    if (!user) {
+        console.error("No user logged in.");
+        return;
+    }
+
+    // Extract user ID, assuming it's directly on the `user` object
+    //const userId = user.id; // Adjust according to your user object structure
+
+    const requestData = {
+      //user_id: user.id,
+      source_code: inputCode,
+      translated_code: outputCode,
+      source_language: sourceLanguage,
+      target_language: targetLanguage,
+    };
+  
+    // Log to double-check requestData
+    console.log("Sending request with data:", requestData);
+  
+    try {
+      const response = await fetch('http://localhost:8080/save_translation_history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          //user_id: user.id,
+          source_code: inputCode,
+          translated_code: outputCode,
+          source_language: sourceLanguage,
+          target_language: targetLanguage,
+        }),      });
+  
+      if (!response.ok) {
+        console.error(`HTTP error! status: ${response.status}`);
+        return;
+      }
+  
+      console.log("Translation history saved successfully");
+    } catch (error) {
+      console.error("Error saving translation history:", error);
+    }
+  };
+
 //the way handleconvert works : when u press convert button, it calls preprocess api in the handle convert function 
 //and then it calls the translate api which is in the fetchtranslate code function
-  const handleConvert = async () => {
+const handleConvert = async () => {
     toast({
       title: "Translation Queued",
       description: "Your translation is being processed. Please wait...",
@@ -225,55 +278,9 @@ const handleCopyOutputCode = () => {
       }, 4000);
   
     }
-  };
-
-  const saveTranslationHistory = async () => {
-    // Make sure there's a logged-in user
-    if (!user) {
-        console.error("No user logged in.");
-        return;
-    }
-
-    // Extract user ID, assuming it's directly on the `user` object
-    const userId = user.id; // Adjust according to your user object structure
+};
   
-    const requestData = {
-      user_id: user.id,
-      source_code: inputCode,
-      translated_code: outputCode,
-      source_language: sourceLanguage,
-      target_language: targetLanguage,
-    };
-  
-    // Log to double-check requestData
-    console.log("Sending request with data:", requestData);
-  
-    try {
-      const response = await fetch('http://localhost:8080/save_translation_history', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user.id,
-          source_code: inputCode,
-          translated_code: outputCode,
-          source_language: sourceLanguage,
-          target_language: targetLanguage,
-        }),      });
-  
-      if (!response.ok) {
-        console.error(`HTTP error! status: ${response.status}`);
-        return;
-      }
-  
-      console.log("Translation history saved successfully");
-    } catch (error) {
-      console.error("Error saving translation history:", error);
-    }
-  };
-  
-  
-  
-  const handleCopy = () => {
+const handleCopy = () => {
     navigator.clipboard.writeText(inputCode).then(() => {
       toast({
         title: "Copied.",
@@ -296,9 +303,9 @@ const handleCopyOutputCode = () => {
     }).catch((err) => {
       setError('Error in copying text: ', err);
     });
-  };
+};
 
-  const HeadingSteps = () => (
+const HeadingSteps = () => (
     
     <Box paddingY={4} ml="auto" style={{ backgroundColor }}>
       <HStack spacing={16} justify="center" marginTop={16} marginBottom={16} style={{ backgroundColor }}> {/* Increased spacing */}
@@ -319,11 +326,9 @@ const handleCopyOutputCode = () => {
         </VStack>
       </HStack>
     </Box>
-  );
+);
 
-
-
-  return (
+return (
      <>
 
     <ChakraProvider>
@@ -651,7 +656,7 @@ const handleCopyOutputCode = () => {
     </ChakraProvider>,  
      </>
 
-  );
+);
 
 };
 export default TranslateCode;

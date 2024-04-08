@@ -1,4 +1,137 @@
-// TranslationHistoryPage.js
+import React, { useEffect, useState,useMemo } from 'react';
+import {
+  VStack,
+  Flex,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  MenuGroup,
+  Box,
+  Text,
+  Button,
+  useDisclosure,
+  Select,
+} from '@chakra-ui/react';
+import { ArrowUpIcon, ArrowDownIcon, ChevronDownIcon } from '@chakra-ui/icons';
+
+
+const TranslateHistory = () => {
+    const [history, setHistory] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [filterSourceLanguage, setFilterSourceLanguage] = useState('');
+    const [filterTargetLanguage, setFilterTargetLanguage] = useState('');
+    const [sortDirection, setSortDirection] = useState('desc'); // 'asc' or 'desc'
+
+    const languageOptions = ['Python', 'Java', 'CPP', 'Ruby', 'Rust', 'Typescript', 'Csharp', 'Perl', 'Swift', 'Matlab'];
+
+    useEffect(() => {
+      const fetchTranslationHistory = async () => {
+        try {
+          const response = await fetch('http://127.0.0.1:8080/get_translation_history');
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          // Perform the filtering and sorting on the fetched data
+          let filteredAndSortedData = data;
+          if (filterSourceLanguage) {
+            filteredAndSortedData = filteredAndSortedData.filter((h) => h.source_language.toLowerCase() === filterSourceLanguage);
+          }
+          if (filterTargetLanguage) {
+            filteredAndSortedData = filteredAndSortedData.filter((h) => h.target_language.toLowerCase() === filterTargetLanguage);
+          }
+          filteredAndSortedData.sort((a, b) => {
+            const dateA = new Date(a.created_at);
+            const dateB = new Date(b.created_at);
+            return (sortDirection === 'asc' ? dateA - dateB : dateB - dateA);
+          });
+          setHistory(filteredAndSortedData);
+          setIsLoading(false);
+        } catch (error) {
+          setError('Failed to load translation history');
+          setIsLoading(false);
+        }
+      };
+      fetchTranslationHistory();
+    }, [filterSourceLanguage, filterTargetLanguage, sortDirection]);
+    
+
+    // Function to format the date
+    const formatDate = (timestamp) => {
+      return new Date(parseInt(timestamp.$date.$numberLong, 10)).toLocaleString('en-US');
+    };
+
+
+  // Sort and filter the history
+  const filteredHistory = useMemo(() => {
+    return history.filter(item => {
+      return (!filterSourceLanguage || item.source_language.toLowerCase() === filterSourceLanguage) &&
+             (!filterTargetLanguage || item.target_language.toLowerCase() === filterTargetLanguage);
+    });
+  }, [history, filterSourceLanguage, filterTargetLanguage]);
+
+  const sortedHistory = useMemo(() => {
+    return [...filteredHistory].sort((a, b) => {
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
+      return (sortDirection === 'asc' ? dateA - dateB : dateB - dateA);
+    });
+  }, [filteredHistory, sortDirection]);
+
+  if (isLoading) return <Box>Loading...</Box>;
+  if (error) return <Box>Error: {error}</Box>;
+
+  return (
+    <VStack spacing={4} align="stretch">
+      <Flex justifyContent="space-between" p={4}>
+        <Select placeholder="Filter by Source Language" onChange={(e) => setFilterSourceLanguage(e.target.value)}>
+          {languageOptions.map((lang) => (
+            <option key={lang} value={lang.toLowerCase()}>{lang}</option>
+          ))}
+        </Select>
+
+        <Select placeholder="Filter by Target Language" onChange={(e) => setFilterTargetLanguage(e.target.value)}>
+          {languageOptions.map((lang) => (
+            <option key={lang} value={lang.toLowerCase()}>{lang}</option>
+          ))}
+        </Select>
+
+        <IconButton
+          icon={sortDirection === 'asc' ? <ArrowUpIcon /> : <ArrowDownIcon />}
+          onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+        />
+      </Flex>
+
+      {isLoading ? (
+        <Box>Loading...</Box>
+      ) : error ? (
+        <Box>Error: {error}</Box>
+      ) : (
+        <Box>
+          {history.length > 0 ? (
+            history.map((item, index) => (
+              <Box key={index} p={5} shadow="md" borderWidth="1px">
+                <Text>Source Language: {item.source_language.toUpperCase()}</Text>
+                <Text>Target Language: {item.target_language.toUpperCase()}</Text>
+                <Text>Source Code: {item.source_code}</Text>
+                <Text>Translated Code: {item.translated_code}</Text>
+                <Text>Created At: {formatDate(item.created_at)}</Text>
+              </Box>
+            ))
+          ) : (
+            <Box>No translation history found.</Box>
+          )}
+        </Box>
+      )}
+    </VStack>
+  );
+};
+
+export default TranslateHistory;
+/* 
 import React, { useEffect, useState } from 'react';
 import { Box, Text, VStack, Flex, Select } from "@chakra-ui/react";
 import AceEditor from 'react-ace';
@@ -29,20 +162,19 @@ const TranslationHistoryPage = () => {
     const fetchTranslationHistory = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('http://localhost:8080/api/translation_history');
+        const response = await fetch('http://127.0.0.1:8080/get_translation_history');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setHistory(data); // Make sure the backend returns the array of histories
+        setHistory(data); // Assuming the backend returns an array of history objects
       } catch (error) {
-        console.error("Could not fetch translation history:", error);
         setError('Failed to load translation history');
       } finally {
         setIsLoading(false);
       }
     };
-  
+
     fetchTranslationHistory();
   }, []);
   
@@ -85,9 +217,9 @@ const TranslationHistoryPage = () => {
             <Box p={5}>
                 <Text fontSize="2xl" fontWeight="bold" mb={4}>Translation History</Text>
                 <Select placeholder="Select your translation history" onChange={handleSelectionChange}>
-                    {history.map((entry, index) => (
+                    {history.map((item, index) => (
                         <option key={index} value={index}>
-                            {entry.sourceLanguage.toUpperCase()} to {entry.targetLanguage.toUpperCase()} - {new Date(entry.timestamp).toLocaleString()}
+                            {item.sourceLanguage} to {item.targetLanguage} - {new Date(item.timestamp).toLocaleString()}
                         </option>
                     ))}
                 </Select>
@@ -123,3 +255,4 @@ const TranslationHistoryPage = () => {
     );
 };
 export default TranslationHistoryPage;
+*/

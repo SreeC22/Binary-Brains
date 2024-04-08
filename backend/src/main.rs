@@ -15,7 +15,7 @@ extern crate serde;
 
 use crate::db::{init_mongo, init_feedback_collection,init_translation_history_collection};
 use crate::models::{Feedback, User,NewTranslationHistory,TranslationHistory};
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route,save_translation_history,get_translation_history};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route,save_translation_history};
 
 
 
@@ -28,11 +28,10 @@ async fn main() -> std::io::Result<()> {
 
     let mongo_client = mongodb::Client::with_uri_str(&mongo_uri).await.expect("Failed to connect to MongoDB");
     let mongo_database = mongo_client.database("my_database");
-
-    let mongo_collection = mongo_database.collection::<Document>("some_collection"); // Adjust accordingly
+    let mongo_database_for_translate_history = mongo_client.database("my_app");
     let feedback_collection = mongo_database.collection::<Feedback>("feedback");
     let user_collection = mongo_database.collection::<User>("users");
-    let translation_history_collection = mongo_database.collection::<TranslationHistory>("translation_history");
+    let translation_history_collection = mongo_database_for_translate_history.collection::<TranslationHistory>("translation_history");
 
 
     let oauth_config = models::OAuthConfig {
@@ -55,7 +54,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(middleware::Logger::default())
-            .app_data(web::Data::new(mongo_collection.clone()))
+            // .app_data(web::Data::new(mongo_collection.clone()))
             .app_data(web::Data::new(oauth_config.clone()))
             .app_data(web::Data::new(feedback_collection.clone()))
             .app_data(web::Data::new(user_collection.clone()))
@@ -83,7 +82,9 @@ async fn main() -> std::io::Result<()> {
             )
             //.route("/user/{user_id}/translation_history", web::get().to(handlers::get_translation_history))
             .route("/save_translation_history", web::post().to(handlers::save_translation_history))
-            .service(handlers::get_translation_history) // Register your GET handler
+            // .service(handlers::get_translation_history) // Register your GET handler
+            .route("/get_translation_history", web::get().to(handlers::get_translation_history))
+
 
             
     })
