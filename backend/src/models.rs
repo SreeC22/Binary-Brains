@@ -115,7 +115,7 @@ pub struct preprocessingCodeInput {
 //end of warning 
 
 //Translation History
-#[derive(Serialize, Deserialize,Clone)]
+#[derive(Serialize, Deserialize,Clone,Debug)]
 pub struct TranslationHistory {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,  // ID of the translation history record itself
@@ -125,6 +125,7 @@ pub struct TranslationHistory {
     pub source_language: String,
     pub target_language: String,
     pub created_at: DateTime, // This is bson::DateTime
+    
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -134,4 +135,6 @@ pub struct NewTranslationHistory {
     pub translated_code: String,
     pub source_language: String,
     pub target_language: String,
+    pub created_at: DateTime, // This is bson::DateTime
+    
 }

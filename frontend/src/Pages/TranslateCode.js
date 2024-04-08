@@ -258,6 +258,7 @@ const handleCopyOutputCode = () => {
           translated_code: outputCode,
           source_language: sourceLanguage,
           target_language: targetLanguage,
+          created_at: new Date().toISOString(),
         }),      });
   
       if (!response.ok) {

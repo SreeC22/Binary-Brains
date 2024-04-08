@@ -459,6 +459,7 @@ pub async fn preprocess_code_route(
 
 //handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH End of warning 
 
+
 //Translation History 
 use crate::db::{insert_translation_history, init_translation_history_collection};
 use crate::models::NewTranslationHistory;
@@ -503,6 +504,7 @@ pub async fn save_translation_history(
                     match db.find_one(doc! {"_id": object_id}, None).await {
                         Ok(Some(saved_item)) => {
                             println!("Successfully fetched the saved item.");
+                            println!("{:?}",saved_item);
                             HttpResponse::Ok().json(saved_item) // Return the saved item
                         },
                         _ => {
@@ -521,30 +523,26 @@ pub async fn save_translation_history(
     }
 }
 
-#[get("/api/translation_history")]
-pub async fn get_translation_history(db: web::Data<Collection<TranslationHistory>>) -> impl Responder {
-    println!("Attempting to fetch translation history...");
-    match db.find(None, None).await {
+pub async fn get_translation_history(
+    db: web::Data<Collection<TranslationHistory>>,
+) -> impl Responder {
+    let cursor = db.find(None, None).await;
+    match cursor {
         Ok(mut cursor) => {
             let mut histories = Vec::new();
-            while let Ok(Some(history)) = cursor.try_next().await {
-                println!("Fetched history document: {:?}", history);
-                histories.push(history);
+            while let Some(history_record) = cursor.try_next().await.unwrap() {
+                let formatted_record = TranslationHistory {
+                    id: history_record.id,
+                    source_code: history_record.source_code,
+                    translated_code: history_record.translated_code,
+                    source_language: history_record.source_language,
+                    target_language: history_record.target_language,
+                    created_at: history_record.created_at,
+                };
+                histories.push(formatted_record);
             }
-            
-            if histories.is_empty() {
-                println!("No translation history documents found.");
-                HttpResponse::Ok().json(json!({"message": "No translation history found"}))
-            } else {
-                println!("Fetched {} history documents", histories.len());
-                HttpResponse::Ok().json(histories)
-            }
-        },
-        Err(e) => {
-            println!("Failed to execute find query: {}", e);
-            HttpResponse::InternalServerError().json(json!({ "error": "Failed to fetch translation history" }))
+            HttpResponse::Ok().json(histories) // Return the list of histories with formatted dates
         }
+        Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Failed to fetch translation history" })),
     }
 }
-
-
