@@ -1,7 +1,8 @@
-use actix_web::{web, App, HttpServer, middleware};
+use actix_web::{web, App, HttpServer, HttpResponse, middleware};
 use actix_cors::Cors;
 use dotenv::dotenv;
 use std::env;
+use actix_web::http::header;
 
 mod models;
 mod handlers;
@@ -18,8 +19,11 @@ use crate::db::{init_mongo, init_feedback_collection};
 use crate::models::{Feedback, User};
 use crate::handlers::{login, register, oauth_callback, github_oauth_callback,change_password_handler, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route, request_password_reset, reset_password};
 
-
-
+async fn index() -> HttpResponse {
+    HttpResponse::Ok()
+        .insert_header((header::CONTENT_SECURITY_POLICY, "default-src 'self';"))
+        .body("Hello CSP!")
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
