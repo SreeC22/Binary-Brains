@@ -1,8 +1,28 @@
-import React, { useState } from 'react';
 import {
-  Box, Input, IconButton, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon,
-  Text, Button, Flex, VStack, Heading, List, ListItem, SimpleGrid, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, useToast, useDisclosure
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Box,
+  Button, Flex,
+  Heading,
+  IconButton,
+  Input,
+  List, ListItem,
+  Modal,
+  ModalBody, ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  SimpleGrid,
+  Text,
+  VStack,
+  useDisclosure,
+  useToast
 } from '@chakra-ui/react';
+import React, { useState } from 'react';
 import { MdKeyboardVoice } from 'react-icons/md';
 export { initialFaqs, initialResources };
 

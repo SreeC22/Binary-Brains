@@ -1,27 +1,21 @@
 // NavBar.js
-import React, { useState } from 'react';
+import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
-  Flex,
   Box,
+  Button,
+  Flex,
   IconButton,
   Menu,
   MenuButton,
-  MenuList,
   MenuItem,
-  Button,
+  MenuList,
   useColorMode,
   useColorModeValue,
-  Input,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  useDisclosure,
+  useDisclosure
 } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { FaMoon, FaSun } from 'react-icons/fa';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { FaMoon, FaSun, FaSearch } from 'react-icons/fa';
-import { ChevronDownIcon } from '@chakra-ui/icons';
 import { useAuth } from './AuthContext';
 import './navbar.css';
 
