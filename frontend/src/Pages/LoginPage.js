@@ -14,6 +14,8 @@ import {
   useColorModeValue,
   useToast
 } from '@chakra-ui/react';
+import { useToast } from '@chakra-ui/react';
+import { Link as ChakraLink } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Components/AuthContext';
@@ -60,7 +62,7 @@ const LoginPage = () => {
     const payload = {
       email,
       password,
-      ...(isLogin ? {} : { name }),
+      ...(isLogin ? {} : { username: name }),
       remember_me, 
     };
   
@@ -133,6 +135,9 @@ const LoginPage = () => {
         </FormControl>
         <FormControl id="password" isRequired isInvalid={!isPasswordValid(password) && password.length > 0}>
         <FormLabel>Password</FormLabel>
+        <Text align="center" mt="4">
+
+</Text>
 <Input
   data-testid="passwordInput" // Add this line for test ID
   type="password"
@@ -142,7 +147,11 @@ const LoginPage = () => {
 />
 {!isPasswordValid(password) && password.length > 0 && <FormErrorMessage>Password must be at least 8 characters.</FormErrorMessage>}
 </FormControl>
-
+{isLogin && (
+    <ChakraLink color="teal.500" onClick={() => navigate('/forgot-password')}>
+      Forgot password?
+    </ChakraLink>
+  )}
 {!isLogin && (
   <FormControl isRequired isInvalid={!doesPasswordMatch() && confirmPassword.length > 0}> {/* Make sure to check confirmPassword.length to avoid invalid error before user types */}
     <FormLabel>Confirm Password</FormLabel>

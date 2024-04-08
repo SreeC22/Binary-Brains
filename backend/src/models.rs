@@ -13,6 +13,8 @@ pub struct User {
     pub password: Option<String>, 
     pub google_id: Option<String>,
     pub github_id: Option<String>,
+    pub reset_token: Option<String>,
+    pub reset_token_expiry: Option<mongodb::bson::DateTime>,
 }
 #[skip_serializing_none]
 #[derive(Clone, Deserialize, Serialize)]
@@ -97,12 +99,11 @@ pub struct PasswordChangeForm {
     pub new_password: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UserProfileUpdateForm {
-    pub username: Option<String>,
     pub email: Option<String>,
+    pub username: Option<String>,
 }
-
 
 //Struct for backend logic/preprocessing - Jesica PLEASE DO NOT TOUCH 
 #[derive(Deserialize)]
@@ -118,4 +119,13 @@ pub struct preprocessingCodeInput {
     pub source_lang: String,
 }
 
-//end of warning 
+#[derive(Deserialize)]
+pub struct RequestPasswordResetForm {
+    pub email: String,
+}
+
+#[derive(Deserialize)]
+pub struct ResetPasswordForm {
+    pub token: String,
+    pub new_password: String,
+}

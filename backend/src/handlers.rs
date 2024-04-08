@@ -2,8 +2,8 @@ use crate::db::{find_or_create_user_by_google_id, find_or_create_user_by_github_
 use crate::auth::decode_jwt;
 use crate::auth::generate_jwt;
 use crate::auth::{hash_password, verify_password};
-use crate::db::{update_user_password, update_user_profile, delete_user, get_user_by_email};
-use actix_web::{get, web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode};
+use crate::db::{change_user_password, update_user_profile, delete_user, get_user_by_email};
+use actix_web::{get, web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode, ResponseError};
 use actix_web_httpauth::headers::authorization::Authorization;
 use actix_web::error::{ErrorUnauthorized};
 use bcrypt::{hash, DEFAULT_COST, verify};
@@ -18,18 +18,35 @@ use crate::backendtranslationlogic;
 use crate::preprocessing::preprocess_code;
 use crate::models::preprocessingCodeInput;
 use crate::models::backendtranslationrequest;
+use log::{debug, error};
+use actix_web::{post};
+use crate::models::{RequestPasswordResetForm, ResetPasswordForm};
+use crate::auth::{generate_reset_token, send_reset_email};
+use chrono::{DateTime};
+use chrono::DateTime as ChronoDateTime;
+use chrono::{Duration, Utc};
+use crate::db::DbOps;
+use std::sync::Arc;
 
-
-pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
+pub async fn get_user_profile(
+    auth: BearerAuth, 
+    db: web::Data<Collection<User>>
+) -> impl Responder {
     match decode_jwt(auth.token()) {
         Ok(claims) => {
             match get_user_by_email(&db, &claims.email).await {
                 Ok(Some(user)) => HttpResponse::Ok().json(user),
                 Ok(None) => HttpResponse::NotFound().json("User not found"),
-                Err(_) => HttpResponse::InternalServerError().finish(),
+                Err(e) => {
+                    error!("Database error: {:?}", e);
+                    HttpResponse::InternalServerError().finish()
+                },
             }
         },
-        Err(_) => HttpResponse::Unauthorized().json("Invalid token"),
+        Err(e) => {
+            error!("JWT decoding error: {:?}", e);
+            HttpResponse::Unauthorized().json("Invalid token")
+        },
     }
 }
 // google oauth callback
@@ -97,6 +114,7 @@ pub async fn login(
                             "token": token,
                             "user": {
                                 "email": existing_user.email,
+                                "username": existing_user.username
                             }
                         }));
                     } else {
@@ -119,7 +137,6 @@ pub async fn login(
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
 }
 
-use chrono::{Duration, Utc};
 use crate::models::BlacklistedToken;
 use mongodb::Database;
 use mongodb::bson::Document;
@@ -140,6 +157,7 @@ pub async fn logout(
 
     // Directly use `db` to insert the document
     match db.insert_one(blacklisted_token_doc, None).await {
+        
         Ok(_) => Ok(HttpResponse::Ok().json("Logged out successfully")),
         Err(e) => {
             eprintln!("Could not insert token into blacklist: {}", e);
@@ -177,6 +195,9 @@ pub async fn register(
             password: Some(hashed_password),
             google_id: None,
             github_id: None,
+            reset_token: None,
+            reset_token_expiry: None,
+
         };
 
         match db.insert_one(new_user.clone(), None).await {
@@ -387,8 +408,7 @@ pub async fn translate_code_endpoint(
         translation_request.target_language, translation_request.source_code
     );
 
-    // Assuming you have a function similar to test_gpt3_api that accepts a prompt
-    // and returns the completion result. You might need to adjust this part.
+
     match crate::gpt3::translate_code(&translation_prompt, &api_key).await {
         Ok(translated_code) => HttpResponse::Ok().json(translated_code),
         Err(e) => {
@@ -397,41 +417,105 @@ pub async fn translate_code_endpoint(
         },
     }
 }
+use crate::errors::ServiceError;
 
 
 use crate::db;
-
 use actix_web::web::Data;
+pub async fn change_password_handler(
+    auth: BearerAuth,
+    form: web::Json<PasswordChangeForm>,
+    db: web::Data<mongodb::Database>, 
+) -> Result<HttpResponse, actix_web::Error> {
+    debug!("Received request to change password");
 
+    let claims = decode_jwt(auth.token()).map_err(|_| {
+        error!("JWT decoding failed or unauthorized access attempted");
+        actix_web::error::ErrorUnauthorized("Unauthorized")
+    })?;
+    let email = claims.email;
+    debug!("JWT decoded successfully for email: {}", email);
 
-
+    match change_user_password(&db, &email, &form.current_password, &form.new_password).await {
+        Ok(_) => {
+            debug!("Password changed successfully for user: {}", email);
+            Ok(HttpResponse::Ok().json(json!({"message": "Password changed successfully"})))
+        },
+        Err(e) => match e {
+            ServiceError::Unauthorized => {
+                error!("Unauthorized attempt to change password for email: {}", email);
+                Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
+            },
+            ServiceError::NotFound => {
+                error!("User not found for email: {}", email);
+                Err(actix_web::error::ErrorNotFound("User not found"))
+            },
+            ServiceError::IncorrectPassword => {
+                error!("Incorrect current password provided for email: {}", email);
+                Err(actix_web::error::ErrorBadRequest("Incorrect current password"))
+            },
+            _ => {
+                error!("Internal server error occurred while changing password for email: {}", email);
+                Err(actix_web::error::ErrorInternalServerError("Internal server error"))
+            },
+        },
+    }
+}
 
 
 pub async fn update_user_profile_handler(
-    user_id: web::Path<String>,
     form: web::Json<UserProfileUpdateForm>,
     db: web::Data<Database>,
-) -> HttpResponse {
+    auth: BearerAuth, // Using BearerAuth to extract user details
+) -> Result<HttpResponse, ServiceError> {
     let users_collection = db.collection::<User>("users");
 
-    match update_user_profile(&user_id, &form.into_inner(), &db).await {
-        Ok(_) => HttpResponse::Ok().json(json!({"message": "Profile updated successfully"})),
-        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Failed to update profile"})),
+    // Decode JWT to get the email
+    let claims = match decode_jwt(auth.token()) {
+        Ok(claims) => claims,
+        Err(e) => return Err(e),
+    };   
+    let user_email = claims.email;
+
+
+    // Use the decoded email for the filter
+    let filter = doc! { "email": &user_email };
+    let update_doc = doc! { 
+        "$set": { 
+            "username": &form.username, 
+            "email": &form.email 
+        } 
+    };
+
+    let update_result = users_collection
+        .update_one(filter, update_doc, None)
+        .await
+        .map_err(|_| ServiceError::InternalServerError)?;
+
+    if update_result.matched_count == 0 {
+        Err(ServiceError::NotFound)
+    } else {
+        Ok(HttpResponse::Ok().json(web::Json(json!({"message": "Profile updated successfully"}))))
     }
 }
+
 
 
 pub async fn delete_account_handler(
-    email: web::Path<String>,
+    auth: BearerAuth,
     db: web::Data<Database>,
-) -> HttpResponse {
-    let users_collection = db.collection::<User>("users");
+) -> Result<HttpResponse, ServiceError> {
+    let claims = decode_jwt(auth.token()).map_err(|_| ServiceError::Unauthorized)?;
+    let email = claims.email;
 
-    match delete_user(&email.into_inner(), &db).await {
-        Ok(_) => HttpResponse::Ok().json(json!({"message": "Account deleted successfully"})),
-        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Failed to delete account"})),
-    }
+    delete_user(&email, &db).await.map_err(|e| {
+        log::error!("Failed to delete account for user {}: {:?}", email, e);
+        ServiceError::InternalServerError
+    })?;
+
+    Ok(HttpResponse::Ok().json(serde_json::json!({"message": "Account deleted successfully"})))
 }
+
 
 
 //handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH 
@@ -450,7 +534,7 @@ pub async fn backend_translate_code_handler(
 }
 
 pub async fn preprocess_code_route(
-    code_data: web::Json<preprocessingCodeInput>, // Assuming PreprocessingCodeInput is correctly defined elsewhere
+    code_data: web::Json<preprocessingCodeInput>, 
 ) -> HttpResponse {
     match preprocess_code(&code_data.code, &code_data.source_lang).await {
         Ok(processed_code) => HttpResponse::Ok().json(json!({ "processed_code": processed_code })),
@@ -458,4 +542,91 @@ pub async fn preprocess_code_route(
     }
 }
 
-//handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH End of warning 
+
+
+
+pub async fn store_reset_token(db: &Database, email: &str, token: &str, expiry: DateTime<Utc>) -> mongodb::error::Result<()> {
+    let user_collection = db.collection::<User>("users");
+    user_collection.update_one(
+        doc! {"email": email},
+        doc! {
+            "$set": {
+                "reset_token": token,
+                "reset_token_expiry": mongodb::bson::DateTime::from_millis(expiry.timestamp_millis())
+            }
+        },
+        None
+    ).await?;
+    Ok(())
+}
+
+pub async fn validate_reset_token(db: &Database, token: &str) -> mongodb::error::Result<Option<User>> {
+    let user_collection = db.collection::<User>("users");
+    let user = user_collection.find_one(
+        doc! {
+            "reset_token": token,
+            "reset_token_expiry": { "$gte": mongodb::bson::DateTime::now() }
+        },
+        None
+    ).await?;
+    Ok(user)
+}
+
+pub async fn update_user_password_and_remove_token(db: &Database, email: &str, new_password_hash: &str) -> mongodb::error::Result<()> {
+    let user_collection = db.collection::<User>("users");
+    user_collection.update_one(
+        doc! {"email": email},
+        doc! {
+            "$set": { "password": new_password_hash },
+            "$unset": { "reset_token": "", "reset_token_expiry": "" }
+        },
+        None
+    ).await?;
+    Ok(())
+}
+
+pub async fn request_password_reset(
+    data: web::Data<Database>, 
+    form: web::Json<RequestPasswordResetForm>,
+) -> Result<HttpResponse, actix_web::Error> {
+    let reset_token = generate_reset_token();
+    let expiry = Utc::now() + Duration::hours(1);
+
+    let db_ops = DbOps::new(data.into_inner());
+
+    db_ops.store_reset_token(&form.email, &reset_token, expiry).await
+        .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to store reset token"))?;
+
+    send_reset_email(&form.email, &reset_token)
+        .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to send email"))?;
+
+
+    Ok(HttpResponse::Ok().json("Reset instructions have been sent to your email."))
+
+}
+
+pub async fn reset_password(
+    data: web::Data<Database>, 
+    form: web::Json<ResetPasswordForm>,
+) -> Result<HttpResponse, actix_web::Error> {
+    let db_ops = DbOps::new(data.into_inner());
+
+    let user_option = db_ops.validate_reset_token(&form.token).await
+        .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to validate reset token"))?;
+
+    if let Some(user) = user_option {
+        let new_password_hash = hash_password(&form.new_password)
+            .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to hash new password"))?;
+
+        db_ops.update_user_password_and_remove_token(&user.email, &new_password_hash).await
+            .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to update user password"))?;
+
+        Ok(HttpResponse::Ok().json("Your password has been reset successfully."))
+    } else {
+        Err(actix_web::error::ErrorNotFound("Invalid or expired reset token."))
+    }
+}
+
+
+
+
