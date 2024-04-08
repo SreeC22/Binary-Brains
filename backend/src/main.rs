@@ -3,14 +3,15 @@ use actix_cors::Cors;
 use dotenv::dotenv;
 use std::env;
 
-mod models;
-mod handlers;
-mod db;
-mod auth;
-mod gpt3; 
-mod backendtranslationlogic;
-mod preprocessing;
-mod errors;
+pub mod models;
+pub mod handlers;
+
+pub mod gpt3; 
+pub mod backendtranslationlogic;
+pub mod preprocessing;
+pub mod errors;
+pub mod auth;
+pub mod db;
 
 use mongodb::bson::document::Document;
 
