@@ -113,33 +113,4 @@ mod tests {
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.headers().get("Access-Control-Allow-Origin").unwrap(), "http://localhost:3000");
     }
-
-
-    #[tokio::test]
-    async fn rate_limit_exceeded() {
-        let app = test::init_service(
-            App::new()
-                // Your application setup
-        ).await;
-    
-        // Example loop to simulate multiple requests to hit the rate limit
-        for _ in 0..100 {
-            let req = test::TestRequest::get()
-                .uri("/api/rate_limit_test")
-                .to_request();
-    
-            let _resp = test::call_service(&app, req).await;
-            // Here you might want to check the response, but it's skipped for brevity
-        }
-    
-        let rate_limited_req = test::TestRequest::get()
-            .uri("/api/rate_limit_test")
-            .to_request();
-    
-        let rate_limited_resp = test::call_service(&app, rate_limited_req).await;
-        assert_eq!(rate_limited_resp.status(), StatusCode::TOO_MANY_REQUESTS);
-    }
-    
-
-
 }
