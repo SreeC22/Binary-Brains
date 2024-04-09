@@ -39,6 +39,10 @@
     "web-vitals": "^2.1.4",
     "yup": "^1.3.3"
   },
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
+  },
   "jest": {
     "testEnvironment": "jsdom",
     "transform": {
@@ -109,4 +113,5 @@
     "webpack-dev-server": "^4.15.2",
     "whatwg-fetch": "^3.6.20"
   }
+  
 }
