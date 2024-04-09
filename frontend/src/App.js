@@ -16,6 +16,9 @@ import { ColorModeProvider } from "./Pages/ColorModeContext";
 import RequestReset from './Pages/RequestReset';
 import ForgotPassword from './Pages/ForgotPassword';
 import ResetPasswordPage from './Pages/ResetPasswordPage';
+import Article2 from './Pages/FaqsPage/Article2'; // Import the new component
+import Tutorial1 from './Pages/FaqsPage/Tutorial1';
+
 
 
 function App() {
@@ -31,6 +34,8 @@ function App() {
             <Route path="/feedback" element={<FeedbackPage />} />
             <Route path="/documentation" element={<DocumentationPage />} />
             <Route path="/faqs" element={<FAQsPage />} />
+            <Route path="/tutorial-1" element={<Tutorial1/>} />
+            <Route path="/article-2" element={<Article2/>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/AboutUs" element={<AboutUS />} />
             <Route path="/ContactUs" element={<Contactus />} />

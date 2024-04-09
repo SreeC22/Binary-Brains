@@ -1,30 +1,11 @@
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  Button, Flex,
-  Heading,
-  IconButton,
-  Input,
-  List, ListItem,
-  Modal,
-  ModalBody, ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  SimpleGrid,
-  Text,
-  VStack,
-  useDisclosure,
-  useToast
+  Accordion, AccordionButton, AccordionIcon, AccordionItem,AccordionPanel,Box,Button, Flex,Heading,IconButton,Input,List, ListItem,Modal,ModalBody, ModalCloseButton,ModalContent,ModalFooter,ModalHeader,ModalOverlay,SimpleGrid,Text,VStack,useDisclosure,useToast
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { MdKeyboardVoice } from 'react-icons/md';
+import { Link } from 'react-router-dom';
 export { initialFaqs, initialResources };
+
 
 const initialFaqs = [
   { question: "How does it work?", answer: "Here is how it works: Write your code..." },
@@ -35,15 +16,19 @@ const initialFaqs = [
 ];
 
 const initialResources = [
+
   {
     title: "Tutorial 1",
     description: "Learn how to get started",
-    content: "This is content for Tutorial 1.",
-    link: "#",
+    link: "/tutorial-1",
     downloadLink: "meme.png"
   },
-  { title: "Article 2", description: "Best practices in code translation", content: "Content for Article 2 goes here." },
-  { title: "Video 3", description: "Understanding code conversion", content: "Here's some information about Video 3." },
+  {
+    title: "Article 2",
+    description: "Best practices in code translation",
+    link: "/article-2" 
+  },
+  //{ title: "Video 3", description: "Understanding code conversion", content: "Here's some information about Video 3." },
 ];
 
 const FAQsPage = () => {
@@ -174,10 +159,14 @@ const FAQsPage = () => {
               <Box key={index} p={5} shadow="md" borderWidth="1px" borderRadius="lg">
                 <Text fontWeight="bold">{resource.title}</Text>
                 <Text mt={4}>{resource.description}</Text>
-                <Button mt={4} onClick={() => handleLearnMore(resource.content)} colorScheme="blue">
+                <Button as={Link} to={resource.link} mt={4} colorScheme="blue">
                   Learn More
                 </Button>
-                <Button mt={4} ml={2} as="a" href={resource.downloadLink} download colorScheme="teal">Download</Button>
+                {resource.downloadLink && (
+                  <Button mt={4} ml={2} as="a" href={resource.downloadLink} download colorScheme="teal">
+                    Download
+                  </Button>
+                )}
               </Box>
             ))}
           </SimpleGrid>
