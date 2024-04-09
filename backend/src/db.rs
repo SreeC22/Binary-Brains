@@ -1,6 +1,16 @@
 use mongodb::{bson::{doc, Document,Bson}, Client, Database, Collection, options::ClientOptions, error::Result as MongoResult};
 use crate::models::{User, UserInfo, GitHubUserInfo, Feedback, UserProfileUpdateForm,  PasswordChangeForm, TranslationHistory};
 use std::env;
+use crate::auth::hash_password;
+use crate::auth::verify_password;
+use chrono::{Duration, Utc};
+use std::sync::Arc;
+use futures::stream::TryStreamExt;
+use serde::{Serialize, Deserialize};
+use chrono::{DateTime, Utc};
+use mongodb::bson::oid::ObjectId;
+use mongodb::options::FindOptions;
+use actix_web::error::{ErrorUnauthorized, ErrorInternalServerError};
 
 // initializes the mongo client and user collection
 pub async fn init_mongo() -> mongodb::error::Result<Collection<User>> {
@@ -74,18 +84,6 @@ pub async fn insert_feedback(db: &Collection<Feedback>, feedback: Feedback) -> m
     Ok(())
 }
 
-//inserts translation history
-async fn insert_translation(history: Translation) -> mongodb::error::Result<()> {
-    let client_options = ClientOptions::parse("your_mongodb_connection_string").await?;
-    let client = Client::with_options(client_options)?;
-    let db = client.database("your_database_name");
-    let collection: Collection<Translation> = db.collection("translation_history");
-
-    collection.insert_one(history, None).await?;
-
-    Ok(())
-}
-// At the top of your db.rs file, add:
 use actix_web::web;
 
 use bcrypt::{BcryptError};
@@ -151,7 +149,6 @@ pub async fn delete_user(email: &str, db: &Database) -> mongodb::error::Result<(
     Ok(())
 }
 
-
 pub struct DbOps {
     db: Arc<Database>,
 }
@@ -203,6 +200,7 @@ impl DbOps {
     }
 }
 
+
 //Translation History 
 use crate::models::NewTranslationHistory;
 
@@ -236,3 +234,4 @@ pub async fn insert_translation_history(
         None => Err(mongodb::error::Error::custom("No ObjectId found")),
     }
 }
+>>>>>>> testing-th
