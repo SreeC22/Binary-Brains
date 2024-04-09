@@ -160,7 +160,7 @@ pub async fn logout(
         
         Ok(_) => Ok(HttpResponse::Ok().json("Logged out successfully")),
         Err(e) => {
-            eprintln!("Could not insert token into blacklist: {}", e);
+            //eprintln!("Could not insert token into blacklist: {}", e);
             Err(actix_web::error::ErrorInternalServerError("Could not insert token into blacklist"))
         },
     }
@@ -183,7 +183,7 @@ pub async fn register(
         let hashed_password = match hash(password, DEFAULT_COST) {
             Ok(h) => h,
             Err(e) => {
-                eprintln!("Error hashing password: {}", e);
+                //eprintln!("Error hashing password: {}", e);
                 return HttpResponse::InternalServerError().finish();
             },
         };
@@ -203,7 +203,7 @@ pub async fn register(
         match db.insert_one(new_user.clone(), None).await {
             Ok(_) => HttpResponse::Ok().json(json!({"message": "User registered successfully", "user": new_user})),
             Err(e) => {
-                eprintln!("Failed to register user: {}", e);
+                //eprintln!("Failed to register user: {}", e);
                 return HttpResponse::InternalServerError().finish();
             }
         }
@@ -341,7 +341,7 @@ pub async fn submit_feedback(
     match insert_feedback(&db, feedback_data.into_inner()).await {
         Ok(_) => HttpResponse::Ok().json("Feedback submitted successfully"),
         Err(e) => {
-            eprintln!("Failed to insert feedback: {}", e);
+            //eprintln!("Failed to insert feedback: {}", e);
             HttpResponse::InternalServerError().finish()
         },
     }
@@ -382,14 +382,15 @@ pub async fn test_gpt3_endpoint() -> impl Responder {
                     if status.is_success() {
                         HttpResponse::Ok().content_type("application/json").body(body)
                     } else {
-                        eprintln!("GPT-3 API Error: {}", &body);
+                        //eprintln!("GPT-3 API Error: {}", &body);
                         HttpResponse::BadRequest().json("Failed to call GPT-3 API")
                     }
                 },
                 Err(_) => HttpResponse::InternalServerError().json("Failed to read response body"),
             }
         }, 
-        Err(e) => { eprintln!("HTTP Client Error: {}", e); 
+        Err(e) => { 
+            //eprintln!("HTTP Client Error: {}", e); 
         HttpResponse::InternalServerError().json("Internal server error")
     }}
 }
@@ -412,7 +413,7 @@ pub async fn translate_code_endpoint(
     match crate::gpt3::translate_code(&translation_prompt, &api_key).await {
         Ok(translated_code) => HttpResponse::Ok().json(translated_code),
         Err(e) => {
-            eprintln!("Failed to translate code: {}", e);
+            //eprintln!("Failed to translate code: {}", e);
             HttpResponse::InternalServerError().json("Failed to translate code")
         },
     }
@@ -427,18 +428,18 @@ pub async fn change_password_handler(
     form: web::Json<PasswordChangeForm>,
     db: web::Data<mongodb::Database>, 
 ) -> Result<HttpResponse, actix_web::Error> {
-    debug!("Received request to change password");
+    //debug!("Received request to change password");
 
     let claims = decode_jwt(auth.token()).map_err(|_| {
         error!("JWT decoding failed or unauthorized access attempted");
         actix_web::error::ErrorUnauthorized("Unauthorized")
     })?;
     let email = claims.email;
-    debug!("JWT decoded successfully for email: {}", email);
+    //debug!("JWT decoded successfully for email: {}", email);
 
     match change_user_password(&db, &email, &form.current_password, &form.new_password).await {
         Ok(_) => {
-            debug!("Password changed successfully for user: {}", email);
+            //debug!("Password changed successfully for user: {}", email);
             Ok(HttpResponse::Ok().json(json!({"message": "Password changed successfully"})))
         },
         Err(e) => match e {

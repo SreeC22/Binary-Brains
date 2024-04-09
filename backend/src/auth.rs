@@ -35,20 +35,20 @@ pub fn decode_jwt(token: &str) -> Result<Claims, ServiceError> {
         &Validation::default(),
     ) {
         Ok(data) => {
-            info!("JWT decoded successfully for email: {}", data.claims.email);
+            info!("JWT decoded successfully for email");
             Ok(data.claims)
         },
         Err(err) => match *err.kind() {
             ErrorKind::ExpiredSignature => {
-                warn!("Token expired for token: {}", token); 
+                warn!("Token expired for token"); 
                 Err(ServiceError::ExpiredToken)
             },
             ErrorKind::InvalidToken | ErrorKind::InvalidSignature => {
-                warn!("Invalid token encountered: {}", token);
+                warn!("Invalid token encountered");
                 Err(ServiceError::InvalidToken)
             },
             _ => {
-                warn!("JWT decoding error: {:?}", err);
+                warn!("JWT decoding error");
                 Err(ServiceError::JWTError(format!("{:?}", err)))
             },
         },
@@ -116,7 +116,7 @@ pub fn send_reset_email(email: &str, token: &str) -> Result<(), SmtpError> {
     match mailer.send(&email) {
         Ok(_) => Ok(()),
         Err(e) => {
-            eprintln!("Failed to send email: {:?}", e); // Log more detailed error information
+            //eprintln!("Failed to send email: {:?}", e); // Log more detailed error information
             Err(e)
         },
     }
