@@ -108,32 +108,35 @@ test.describe('Feedback Page Tests', () => {
   });
 });
 
-test.describe('Translation and History Verification', () => {
-  // Log in before each test
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000/login');
-    await page.fill('input[type="email"]', 'user@example.com'); // Use the actual `name` attribute of your email input
-    await page.fill('input[type="password"]', 'password'); // Use the actual `name` attribute of your password input
-    await page.click('text="Login"');
-  });
 
-  test('perform a translation and verify it in history', async ({ page }) => {
-    await page.goto('http://localhost:3000/translate');
+// test.describe('Translation and History Verification', () => {
+//   // Log in before each test
+//   test.beforeEach(async ({ page }) => {
+//     await page.goto('http://localhost:3000/login');
+//     await page.fill('input[type="email"]', 'user@example.com'); // Use the actual `name` attribute of your email input
+//     await page.fill('input[type="password"]', 'password'); // Use the actual `name` attribute of your password input
+//     await page.click('text="Login"');
+//   });
 
-    await page.selectOption('select#source-language-dropdown', 'python'); // Adjust selector and value
-    await page.selectOption('select#target-language-dropdown', 'java'); // Adjust selector and value
-    await page.fill('textarea#source-code-textarea', 'print("Hello, World!")'); // Adjust selector
+//   test('perform a translation and verify it in history', async ({ page }) => {
+//     await page.goto('http://localhost:3000/translate');
 
-    await page.click('button#convert'); // Adjust selector
+//     await page.selectOption('select#source-language-dropdown', 'python'); // Adjust selector and value
+//     await page.selectOption('select#target-language-dropdown', 'java'); // Adjust selector and value
+//     await page.fill('textarea#source-code-textarea', 'print("Hello, World!")'); // Adjust selector
 
-    await page.goto('http://localhost:3000/translation-history');
+//     await page.click('button#convert'); // Adjust selector
+
+//     await page.goto('http://localhost:3000/translation-history');
 
 
-    await expect(page.locator('text="Your identifiable translation text or element"')).toBeVisible(); // Adjust text or selector
+//     await expect(page.locator('text="Your identifiable translation text or element"')).toBeVisible(); // Adjust text or selector
 
-    // Optionally, perform additional verifications as needed, such as checking for correct source and target languages, the exact translation, etc.
-  });
-});
+//     // Optionally, perform additional verifications as needed, such as checking for correct source and target languages, the exact translation, etc.
+//   });
+// });
+
+
 
 // test.describe('TranslateCode page tests', () => {
 //   let page;

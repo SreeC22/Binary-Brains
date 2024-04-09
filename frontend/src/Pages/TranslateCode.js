@@ -63,6 +63,15 @@ const TranslateCode = () => {
         setGptStatus(true); // Update the state instead of directly modifying the variable
       } catch (error) {
         console.error("Error calling API:", error);
+        toast({
+
+          title: "API Error",
+          description: "Please check your internet connection or try again later.",
+          status: "error",
+          duration: 10000,
+          isClosable: true,
+          position: "top",
+        });
       }
     };
     callAPI(); // Call the API when the component mounts
@@ -154,17 +163,35 @@ const fetchTranslatedCode = async () => {
     } 
   catch (error) {
     console.error("Error during translation:", error);
-    toast({
-      title: "Translation Error",
-      description: error.message,
-      status: "error",
-      duration: 9000, // Display the error message for 5 seconds
-      isClosable: true,
-      position: "top",
-    });
-    setError(error);
-
-  } 
+    if (error.message === "Rate limit exceeded. Please try again later.") {
+      toast({
+        title: "Rate Limit Exceeded",
+        description: "The rate limit for translation API has been exceeded. Please try again later.",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+        position: "top",
+      });
+    } else if (error.message === "Translation timeout") {
+      toast({
+        title: "Translation Timeout",
+        description: "Translation took longer than 5 minutes. Please try again later.",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+        position: "top",
+      });
+    } else {
+      toast({
+        title: "Translation Error",
+        description: error.message,
+        status: "error",
+        duration: 9000, 
+        isClosable: true,
+        position: "top",
+      });
+    }
+  }
 };
 
 const handleFileChange = (event) => {
