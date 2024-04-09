@@ -119,7 +119,7 @@ pub struct preprocessingCodeInput {
 pub struct TranslationHistory {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,  // ID of the translation history record itself
-    // pub user_id: ObjectId,     // ID of the user who owns this translation history
+    pub email: String, // User identifier
     pub source_code: String,
     pub translated_code: String,
     pub source_language: String,
@@ -129,7 +129,7 @@ pub struct TranslationHistory {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NewTranslationHistory {
-    // pub user_id: ObjectId,     // ID of the user who will own this new translation history
+    pub email: String,
     pub source_code: String,
     pub translated_code: String,
     pub source_language: String,

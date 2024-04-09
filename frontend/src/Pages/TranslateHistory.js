@@ -1,4 +1,6 @@
-import React, { useEffect, useState,useMemo } from 'react';
+import React, { useEffect, useState,useMemo, useContext } from 'react';
+import { useAuth  }from '../Components/AuthContext'; 
+
 import {
   VStack,
   Flex,
@@ -17,7 +19,12 @@ import {
 import { ArrowUpIcon, ArrowDownIcon, ChevronDownIcon } from '@chakra-ui/icons';
 
 
+
 const TranslateHistory = () => {
+  const authContext = useContext(useAuth);
+console.log(authContext);
+
+const { user } = useAuth();
     const [history, setHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -30,7 +37,7 @@ const TranslateHistory = () => {
     useEffect(() => {
       const fetchTranslationHistory = async () => {
         try {
-          const response = await fetch('http://127.0.0.1:8080/get_translation_history');
+          const response = await fetch(`http://127.0.0.1:8080/get_translation_history/${encodeURIComponent(user.email)}`);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
@@ -56,7 +63,7 @@ const TranslateHistory = () => {
         }
       };
       fetchTranslationHistory();
-    }, [filterSourceLanguage, filterTargetLanguage, sortDirection]);
+    }, [user,filterSourceLanguage, filterTargetLanguage, sortDirection]);
     
 
     // Function to format the date

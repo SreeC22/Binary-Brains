@@ -191,6 +191,7 @@ const saveTranslationHistory = async () => {
   }
 
   const requestData = {
+    email: user.email, // Assuming `user` object has an `email` property
     source_code: inputCode,
     translated_code: outputCode,
     source_language: sourceLanguage,
@@ -204,7 +205,7 @@ const saveTranslationHistory = async () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          //user_id: user.id,
+          email: user.email, // Assuming `user` object has an `email` property
           source_code: inputCode,
           translated_code: outputCode,
           source_language: sourceLanguage,

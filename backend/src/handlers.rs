@@ -492,6 +492,8 @@ pub async fn save_translation_history(
         source_language: new_translation_history.source_language,
         target_language: new_translation_history.target_language,
         created_at: bson::DateTime::now(),
+        email: new_translation_history.email, // Make sure to set this field
+
     };
 
     let insert_result: Result<InsertOneResult, mongodb::error::Error> = db.insert_one(translation_history, None).await;
@@ -523,19 +525,19 @@ pub async fn save_translation_history(
     }
 }
 
-
-pub async fn get_translation_history(
-    db: web::Data<Collection<TranslationHistory>>,
+pub async fn get_translation_history_for_user(
+    email: web::Path<String>, // Correctly extract email as a path parameter
+    db: web::Data<mongodb::Collection<TranslationHistory>>,
 ) -> impl Responder {
-    let cursor = db.find(None, None).await;
-    match cursor {
-        Ok(mut cursor) => {
-            let mut history = Vec::new();
-            while let Some(history_record) = cursor.try_next().await.unwrap() {
-                history.push(history_record);
-            }
-            HttpResponse::Ok().json(history) // Return the list of histories
+    let filter = doc! {"email": email.into_inner()}; // Correctly use the `email` value
+    let mut cursor = db.find(filter, None).await.expect("Failed to execute find operation");
+
+        let mut history = Vec::new();
+        while let Ok(Some(record)) = cursor.try_next().await {
+            history.push(record);
         }
-        Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Failed to fetch translation history" })),
+    
+    
+        HttpResponse::Ok().json(history) // Return the user-specific history
     }
-}
+    
