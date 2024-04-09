@@ -30,6 +30,7 @@ use chrono::DateTime as ChronoDateTime;
 use chrono::{Duration, Utc};
 use crate::db::DbOps;
 use std::sync::Arc;
+use futures_util::TryStreamExt;
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
     match decode_jwt(auth.token()) {
@@ -548,9 +549,7 @@ pub async fn preprocess_code_route(
 //Translation History 
 use crate::db::{insert_translation_history, init_translation_history_collection};
 use crate::models::NewTranslationHistory;
-use futures::stream::TryStreamExt;
 use mongodb::results::InsertOneResult;
-
 
 
 pub async fn save_translation_history(

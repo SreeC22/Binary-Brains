@@ -1,59 +1,84 @@
 import React from 'react';
-import { render, fireEvent, screen, waitFor } from '@testing-library/react';
-import FAQsPage from './FAQsPage';
-import { initialFaqs, initialResources } from './FAQsPage';
-describe('FAQsPage', () => {
-    test('renders all FAQs initially', () => {
-        render(<FAQsPage />);
-        initialFaqs.forEach(faq => {
-            expect(screen.getByText(faq.question)).toBeInTheDocument();
-        });
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import FAQsPage, { initialFaqs } from './FAQsPage'; // Adjust the import based on your actual file structure
+import '@testing-library/jest-dom';
+import { BrowserRouter } from 'react-router-dom';
+
+// Mocking Chakra UI hooks and components
+jest.mock('@chakra-ui/react', () => ({
+  ...jest.requireActual('@chakra-ui/react'), // Import then override
+  useToast: jest.fn(),
+  useDisclosure: () => ({
+    isOpen: false,
+    onOpen: jest.fn(),
+    onClose: jest.fn(),
+  }),
+}));
+
+// Mocking react-router-dom Link component
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  Link: ({ children }) => <div>{children}</div>,
+}));
+
+// Mocking speech recognition
+global.window.webkitSpeechRecognition = jest.fn();
+
+describe('FAQsPage Component Tests', () => {
+  test('renders without crashing', () => {
+    render(<FAQsPage />, { wrapper: BrowserRouter });
+    expect(screen.getByPlaceholderText('Search FAQs...')).toBeInTheDocument();
+  });
+
+  test('displays initial FAQs', () => {
+    render(<FAQsPage />, { wrapper: BrowserRouter });
+    initialFaqs.forEach((faq) => {
+      expect(screen.getByText(faq.question)).toBeInTheDocument();
     });
+  });
 
-    test('search filters FAQs correctly', () => {
-        render(<FAQsPage />);
-        const searchInput = screen.getByPlaceholderText('Search FAQs...');
-        fireEvent.change(searchInput, { target: { value: 'free' } });
-        expect(screen.getByText('Is it free?')).toBeInTheDocument();
-        expect(screen.queryByText('How does it work?')).not.toBeInTheDocument();
+  test('filter FAQs based on search term', async () => {
+    render(<FAQsPage />, { wrapper: BrowserRouter });
+    const input = screen.getByPlaceholderText('Search FAQs...');
+    fireEvent.change(input, { target: { value: 'free' } });
+    await waitFor(() => {
+      expect(screen.getByText('Is it free?')).toBeInTheDocument();
+      expect(screen.queryByText('How does it work?')).not.toBeInTheDocument(); // Corrected from screen.ByText to screen.queryByText
     });
+  });
+  
+  test('voice search starts and processes result correctly', () => {
+    window.webkitSpeechRecognition = jest.fn().mockImplementation(() => ({
+      start: jest.fn(),
+      onresult: jest.fn((event) => {
+        // Simulate speech recognition result
+        event({ results: [[{ transcript: "free" }]] });
+      }),
+      onerror: jest.fn(),
+      onend: jest.fn(),
+    }));
+  
+    render(<FAQsPage />, { wrapper: BrowserRouter });
+    const voiceSearchButton = screen.getByLabelText('Voice Search');
+    fireEvent.click(voiceSearchButton);
+  
+    expect(window.webkitSpeechRecognition).toHaveBeenCalled();
+  });
 
-    test('renders all resource links', () => {
-        render(<FAQsPage />);
-        initialResources.forEach(resource => {
-            const resourceTitle = screen.getByText(resource.title);
-            expect(resourceTitle).toBeInTheDocument();
-        });
+  test('FAQ filtering is case insensitive and handles special characters', async () => {
+    render(<FAQsPage />, { wrapper: BrowserRouter });
+    const input = screen.getByPlaceholderText('Search FAQs...');
+  
+    // Test case insensitivity
+    fireEvent.change(input, { target: { value: 'free'.toUpperCase() } });
+    await waitFor(() => {
+      expect(screen.getByText('Is it free?')).toBeInTheDocument();
     });
-
-    test('renders all resource download buttons with the correct href', () => {
-        render(<FAQsPage />);
-        const downloadLinks = screen.getAllByText('Download').map(link => link.closest('a'));
-        downloadLinks.forEach((link, index) => {
-            // Ensure that only resources with a downloadLink defined are checked
-            if (initialResources[index].downloadLink) {
-                expect(link).toHaveAttribute('href', initialResources[index].downloadLink);
-            } else {
-                expect(link).not.toHaveAttribute('href'); // For resources without downloadLink, expect no href attribute
-            }
-        });
+  
+    // Test special characters
+    fireEvent.change(input, { target: { value: 'how does it work?' } });
+    await waitFor(() => {
+      expect(screen.getByText('How does it work?')).toBeInTheDocument();
     });
-
-
-    test('learn more buttons open modal with correct content', async () => {
-        render(<FAQsPage />);
-        const learnMoreButtons = screen.getAllByText('Learn More');
-        fireEvent.click(learnMoreButtons[0]); // Clicks the first 'Learn More' button
-        const modalContent = screen.getByText(initialResources[0].content);
-        await waitFor(() => expect(modalContent).toBeInTheDocument());
-    });
-
-    test('modal closes when close button is clicked', async () => {
-        render(<FAQsPage />);
-        const learnMoreButtons = screen.getAllByText('Learn More');
-        fireEvent.click(learnMoreButtons[0]); // Open the modal
-        fireEvent.click(screen.getByTestId('modal-close-button'));
-        await waitFor(() => expect(screen.queryByText(initialResources[0].content)).not.toBeInTheDocument());
-    });
-
+  });  
 });

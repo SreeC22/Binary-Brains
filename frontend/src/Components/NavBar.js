@@ -16,7 +16,6 @@ import {
 import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { FaMoon, FaSun, FaHistory } from 'react-icons/fa';
-import { ChevronDownIcon } from '@chakra-ui/icons';
 import { useAuth } from './AuthContext';
 import './navbar.css';
 

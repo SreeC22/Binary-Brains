@@ -5,12 +5,11 @@ use crate::auth::hash_password;
 use crate::auth::verify_password;
 use chrono::{Duration, Utc};
 use std::sync::Arc;
-use futures::stream::TryStreamExt;
 use serde::{Serialize, Deserialize};
-use chrono::{DateTime, Utc};
 use mongodb::bson::oid::ObjectId;
 use mongodb::options::FindOptions;
 use actix_web::error::{ErrorUnauthorized, ErrorInternalServerError};
+use crate::errors::ServiceError;
 
 // initializes the mongo client and user collection
 pub async fn init_mongo() -> mongodb::error::Result<Collection<User>> {
@@ -234,4 +233,4 @@ pub async fn insert_translation_history(
         None => Err(mongodb::error::Error::custom("No ObjectId found")),
     }
 }
->>>>>>> testing-th
+
