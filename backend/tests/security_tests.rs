@@ -6,12 +6,6 @@ async fn register() -> impl actix_web::Responder {
     actix_web::HttpResponse::Ok().body("Registered")
 }
 
-async fn rate_limit_test() -> impl actix_web::Responder {
-    actix_web::HttpResponse::TooManyRequests().json(json!({
-        "error": "You have made too many requests. Please try again later."
-    }))
-}
-
 async fn get_user_profile(req: actix_web::HttpRequest) -> impl actix_web::Responder {
     if req.headers().get("Authorization").is_none() {
         return actix_web::HttpResponse::Unauthorized().finish();
@@ -102,7 +96,7 @@ mod tests {
                     .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
                     .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT, header::CONTENT_TYPE])
                     .max_age(3600))
-                // Make sure to replicate your main app's setup here
+
         ).await;
 
         let req = test::TestRequest::get()

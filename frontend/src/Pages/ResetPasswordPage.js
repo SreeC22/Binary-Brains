@@ -14,8 +14,8 @@ const ResetPasswordPage = () => {
     e.preventDefault();
     const url = `${process.env.REACT_APP_BACKEND_URL}/reset-password`;
 
-    console.log("Token:", token); 
-    console.log("New Password:", newPassword); 
+    // console.log("Token:", token); 
+    // console.log("New Password:", newPassword); 
   
     if (!token) {
       console.error("Token is null or undefined.");
