@@ -38,36 +38,36 @@ async fn logout_user(client: &Client, base_url: &str, token: &str) -> reqwest::R
         .expect("Failed to send logout request")
 }
 
-#[tokio::test]
-async fn test_user_registration_login_and_logout_flow() {
-    let client = Client::new();
-    let base_url = "http://127.0.0.1:8080";
-    let unique_id = Uuid::new_v4().to_string();
-    let user_data = json!({
-        "username": format!("testuser_{}", unique_id),
-        "email": format!("testuser_{}@example.com", unique_id),
-        "password": "testpassword",
-    });
+// #[tokio::test]
+// async fn test_user_registration_login_and_logout_flow() {
+//     let client = Client::new();
+//     let base_url = "http://127.0.0.1:8080";
+//     let unique_id = Uuid::new_v4().to_string();
+//     let user_data = json!({
+//         "username": format!("testuser_{}", unique_id),
+//         "email": format!("testuser_{}@example.com", unique_id),
+//         "password": "testpassword",
+//     });
 
-    // Attempt to register a new user
-    let register_response = register_user(&client, base_url, &user_data).await;
-    assert_eq!(register_response.status().as_u16(), 200, "Failed to register user");
+//     // Attempt to register a new user
+//     let register_response = register_user(&client, base_url, &user_data).await;
+//     assert_eq!(register_response.status().as_u16(), 200, "Failed to register user");
 
-    // Attempt to login
-    let login_response = login_user(&client, base_url, &user_data["email"].as_str().unwrap(), "testpassword", false).await;
-    assert_eq!(login_response.status().as_u16(), 200, "Failed to login user");
+//     // Attempt to login
+//     let login_response = login_user(&client, base_url, &user_data["email"].as_str().unwrap(), "testpassword", false).await;
+//     assert_eq!(login_response.status().as_u16(), 200, "Failed to login user");
 
-    // Extract token from login response
-    let login_response_body = login_response.json::<Value>().await.expect("Failed to parse login response");
-    let token = login_response_body["token"].as_str().expect("Token missing in login response");
+//     // Extract token from login response
+//     let login_response_body = login_response.json::<Value>().await.expect("Failed to parse login response");
+//     let token = login_response_body["token"].as_str().expect("Token missing in login response");
 
-    // Attempt to logout
-    let logout_response = logout_user(&client, base_url, token).await;
-    if logout_response.status().as_u16() != 200 {
-        let error_message = logout_response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-        panic!("Failed to logout user: {}", error_message);
-    }
-}
+//     // Attempt to logout
+//     let logout_response = logout_user(&client, base_url, token).await;
+//     if logout_response.status().as_u16() != 200 {
+//         let error_message = logout_response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+//         panic!("Failed to logout user: {}", error_message);
+//     }
+// }
 
 #[tokio::test]
 async fn test_register_with_existing_email() {

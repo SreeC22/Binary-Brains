@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ForgotPassword from './ForgotPassword'; // Adjust the import path as needed
+import ForgotPassword from '../Pages/ForgotPassword'; // Adjust the import path as needed
 import { BrowserRouter } from 'react-router-dom';
 
 // Mocking modules

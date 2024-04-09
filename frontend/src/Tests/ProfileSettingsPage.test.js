@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ProfileSettingsPage from './ProfileSettingsPage'; // Adjust the import path as necessary
+import ProfileSettingsPage from '../Pages/ProfileSettingsPage'; // Adjust the import path as necessary
 import { useAuth } from '../Components/AuthContext'; // Adjust the import path as necessary
 
 // Mock useAuth and useToast

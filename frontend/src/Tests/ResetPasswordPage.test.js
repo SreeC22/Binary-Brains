@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import fetchMock from 'jest-fetch-mock';
-import ResetPasswordPage from './ResetPasswordPage'; 
+import ResetPasswordPage from '../Pages/ResetPasswordPage'; 
 import { BrowserRouter } from 'react-router-dom';
 
 fetchMock.enableMocks();

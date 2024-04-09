@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import HomePage from './HomePage';
+import HomePage from '../Pages/HomePage';
 
 // Mock useNavigate hook
 jest.mock('react-router-dom', () => ({
