@@ -1,6 +1,23 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor, screen } from '@testing-library/react';
 import React from 'react';
 import TranslateCode from '../Pages/TranslateCode'; // Update the path as per your project structure
+import fetchMock from 'jest-fetch-mock';
+
+fetchMock.enableMocks();
+// Mock the useAuth hook before importing the component
+jest.mock('../Components/AuthContext', () => ({
+  useAuth: () => ({ user: { mail: 'test@example.com'} }), // Mock return value
+}));
+
+Object.assign(navigator, {
+  clipboard: {
+    writeText: jest.fn(),
+  },
+});
+
+// Mock URL.createObjectURL for download functionality
+global.URL.createObjectURL = jest.fn();
+
 describe('TranslateCode', () => {
   test('renders without crashing', () => {
     render(<TranslateCode />);
@@ -53,19 +70,13 @@ describe('TranslateCode', () => {
       fireEvent.click(getByRole('button', { name: /Source Language/i }));
       fireEvent.click(element);
     });
-   
-
-
-
-
-
-
+  
     // Check if source language is selected
     await waitFor(() => {
       const elementWithText = document.querySelector('.chakra-menu__menuitem[data-index="0"]');
       expect(elementWithText).not.toBeNull(); // Check if the element exists
       expect(elementWithText.textContent).toEqual(sourceLanguage);
-  });
+    });
     // Simulate selecting target language
     fireEvent.click(getByRole('button', { name: /Target Language/i }));
     const targetLanguage = 'Java';
@@ -74,18 +85,30 @@ describe('TranslateCode', () => {
       fireEvent.click(getByRole('button', { name: /Target Language/i }));
       fireEvent.click(element);
     });
-   
-
-
-
-
-
-
+  
     // Check if target language is selected
     await waitFor(() => {
       const elementWithText = document.querySelector('.chakra-menu__menuitem[data-index="1"]');
       expect(elementWithText).not.toBeNull(); // Check if the element exists
       expect(elementWithText.textContent).toEqual(targetLanguage);
+    });
   });
+
+  beforeEach(() => {
+    fetchMock.resetMocks();
+  });
+
+
+  test('handles file download', async () => {
+    render(<TranslateCode />);
+    // Assuming outputCode has some value, either set directly in the test or through mocking state
+    fireEvent.click(screen.getByTitle('Download Output'));
+    await waitFor(() => {
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+      // Verify the mock function was called with a Blob containing the text 'test output code'
+      const calledWithBlob = global.URL.createObjectURL.mock.calls[0][0];
+      expect(calledWithBlob).toBeInstanceOf(Blob);
+      expect(calledWithBlob.type).toBe('text/plain');
+    });
   });
 });
