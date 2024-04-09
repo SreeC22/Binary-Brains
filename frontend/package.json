@@ -9,7 +9,7 @@
     "@emotion/styled": "^11.11.0",
     "@monaco-editor/react": "^4.6.0",
     "@testing-library/user-event": "^13.5.0",
-    "ace-builds": "^1.32.7",
+    "ace-builds": "^1.32.9",
     "axios": "^1.6.8",
     "canvas-confetti": "^1.9.2",
     "devicon-react-svg": "^0.2.4",
