@@ -67,7 +67,7 @@ const HomePage = () => {
               Welcome to our Code Translation and Conversion Tool. Simplify the process of converting code between different languages and improve your development workflow.
             </Text>
             <Box display="flex" w="full" justifyContent={{ base: "center", md: "flex-end" }} pt="4">
-              <Button bg="black" color="white" border="1px" borderColor="black" mr="2" onClick={() => goToPage('/code-conversion')}>
+              <Button bg="black" color="white" border="1px" borderColor="black" mr="2" onClick={() => goToPage('/translate')}>
                 Get Started
               </Button>
               <Button variant="outline" borderColor="black"
