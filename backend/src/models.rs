@@ -2,6 +2,9 @@
 use mongodb::bson::{doc, oid::ObjectId};
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
+use mongodb::bson::{DateTime};
+use std::fmt::Debug;
+
 
 #[skip_serializing_none]
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -59,15 +62,6 @@ pub struct Feedback {
     pub message: String,
     pub rating: i32,
 }
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Translation {
-    source_code: String,
-    target_lang: String,
-    translated_code: String,
-}
-
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlacklistedToken {
     pub token: String,
@@ -117,6 +111,30 @@ pub struct backendtranslationrequest {
 pub struct preprocessingCodeInput {
     pub code: String,
     pub source_lang: String,
+}
+
+//end of warning 
+
+//Translation History
+#[derive(Serialize, Deserialize,Clone,Debug)]
+pub struct TranslationHistory {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,  // ID of the translation history record itself
+    pub email: String, // User identifier
+    pub source_code: String,
+    pub translated_code: String,
+    pub source_language: String,
+    pub target_language: String,
+    pub created_at: DateTime, // This is bson::DateTime
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NewTranslationHistory {
+    pub email: String,
+    pub source_code: String,
+    pub translated_code: String,
+    pub source_language: String,
+    pub target_language: String,
 }
 
 #[derive(Deserialize)]

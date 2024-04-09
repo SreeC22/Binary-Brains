@@ -15,10 +15,13 @@ pub mod auth;
 pub mod db;
 
 use mongodb::bson::document::Document;
+extern crate serde;
 
-use crate::db::{init_mongo, init_feedback_collection};
-use crate::models::{Feedback, User};
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback,change_password_handler, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route, request_password_reset, reset_password};
+use crate::db::{init_mongo, init_feedback_collection,init_translation_history_collection};
+use crate::models::{Feedback, User,NewTranslationHistory,TranslationHistory};
+use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route,save_translation_history,get_translation_history_for_user,request_password_reset, reset_password};
+
+
 
 async fn index() -> HttpResponse {
     HttpResponse::Ok()
@@ -30,15 +33,15 @@ async fn index() -> HttpResponse {
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
-
     let mongo_uri = env::var("MONGO_URI").expect("MONGO_URI is not set in .env file");
 
     let mongo_client = mongodb::Client::with_uri_str(&mongo_uri).await.expect("Failed to connect to MongoDB");
     let mongo_database = mongo_client.database("my_database");
-
-    let mongo_collection = mongo_database.collection::<Document>("some_collection"); // Adjust accordingly
+    let mongo_database_for_translate_history = mongo_client.database("my_app");
     let feedback_collection = mongo_database.collection::<Feedback>("feedback");
     let user_collection = mongo_database.collection::<User>("users");
+    let translation_history_collection = mongo_database_for_translate_history.collection::<TranslationHistory>("translation_history");
+
 
     let oauth_config = models::OAuthConfig {
         google_client_id: env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID"),
@@ -60,12 +63,13 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(middleware::Logger::default())
-            .app_data(web::Data::new(mongo_collection.clone()))
+            // .app_data(web::Data::new(mongo_collection.clone()))
             .app_data(web::Data::new(oauth_config.clone()))
             .app_data(web::Data::new(feedback_collection.clone()))
             .app_data(web::Data::new(user_collection.clone()))
             .app_data(web::Data::new(mongo_database.clone()))
-
+            .app_data(web::Data::new(translation_history_collection.clone())) 
+            // Routes configuration...
 
             
             .route("/login", web::post().to(login))
@@ -94,6 +98,12 @@ async fn main() -> std::io::Result<()> {
             )
             .service(web::resource("/request-password-reset").route(web::post().to(handlers::request_password_reset)))
             .service(web::resource("/reset-password").route(web::post().to(handlers::reset_password)))
+            //.route("/user/{user_id}/translation_history", web::get().to(handlers::get_translation_history))
+            .route("/save_translation_history", web::post().to(save_translation_history))
+            // .service(handlers::get_translation_history) // Register your GET handler
+            .service(web::resource("/get_translation_history/{email}").to(get_translation_history_for_user))
+
+
             
     })
     .bind("127.0.0.1:8080")?

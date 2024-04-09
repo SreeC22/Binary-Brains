@@ -6,6 +6,10 @@ use crate::models::{BlacklistedToken};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, DecodingKey, Validation, errors::Error as JwtError, errors::ErrorKind};
 use jsonwebtoken::{encode, Header, EncodingKey};
+use actix_web_httpauth::extractors::bearer::BearerAuth;
+use actix_web::{HttpRequest, HttpMessage};
+use actix_web::error::{ErrorUnauthorized, ErrorInternalServerError};
+use actix_web::Error;
 use crate::errors::ServiceError; // Ensure you have a ServiceError type defined appropriately
 use log::{warn, info};
 use derive_more::{Display, Error};
@@ -76,6 +80,19 @@ pub fn generate_jwt(email: &str, remember_me: bool) -> Result<String, JwtError> 
 
     let secret_key = env::var("JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
     encode(&Header::default(), &claims, &EncodingKey::from_secret(secret_key.as_bytes()))
+}
+
+// Utility function to extract JWT token from the Authorization header
+pub fn extract_jwt_from_req(req: &HttpRequest) -> Result<String, Error> {
+    let auth_header = req.headers().get("Authorization")
+        .ok_or_else(|| ErrorUnauthorized("Authorization header missing"))?
+        .to_str().map_err(|_| ErrorUnauthorized("Invalid token"))?;
+    
+    if auth_header.starts_with("Bearer ") {
+        Ok(auth_header[7..].to_string())
+    } else {
+        Err(ErrorUnauthorized("Invalid token format"))
+    }
 }
 
 

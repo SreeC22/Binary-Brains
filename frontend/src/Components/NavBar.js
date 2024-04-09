@@ -14,8 +14,9 @@ import {
   useDisclosure
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
-import { FaMoon, FaSun } from 'react-icons/fa';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { FaMoon, FaSun, FaHistory } from 'react-icons/fa';
+import { ChevronDownIcon } from '@chakra-ui/icons';
 import { useAuth } from './AuthContext';
 import './navbar.css';
 
@@ -37,6 +38,11 @@ const NavBar = () => {
   const bg = useColorModeValue('#fbf2e3', 'gray.700'); // Navbar background color
   const darkerShade = useColorModeValue('#e0ccb0', 'gray.600'); // A darker shade for buttons
   const buttonTextColor = useColorModeValue('black', 'white'); // Button text color
+
+   // Handle navigation to history page
+   const handleNavigateToHistory = () => {
+    navigate('/history');
+  };
 
   return (
     <Flex
@@ -75,6 +81,18 @@ const NavBar = () => {
 
       {/* Right side - Authentication & Theme Toggle */}
       <Box display="flex" alignItems="center">
+
+        {/* History Button (only if logged in) */}
+         {user && (
+          <IconButton
+            icon={<FaHistory />}
+            aria-label="Translation History"
+            variant="ghost"
+            mr="4"
+            onClick={handleNavigateToHistory}
+          />
+        )}
+
         {/* Authentication */}
         {user ? (
           <>
@@ -109,5 +127,3 @@ const NavBar = () => {
 };
 
 export default NavBar;
-
-

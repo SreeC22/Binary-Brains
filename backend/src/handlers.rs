@@ -1,5 +1,5 @@
 use crate::db::{find_or_create_user_by_google_id, find_or_create_user_by_github_id};
-use crate::auth::decode_jwt;
+use crate::auth::{decode_jwt,extract_jwt_from_req};
 use crate::auth::generate_jwt;
 use crate::auth::{hash_password, verify_password};
 use crate::db::{change_user_password, update_user_profile, delete_user, get_user_by_email};
@@ -11,13 +11,16 @@ use mongodb::{Collection, bson::doc};
 use std::collections::HashMap;
 use mongodb::bson;
 use serde_json::json;
-use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery,PasswordChangeForm, UserProfileUpdateForm, LoginRequest,CodeTranslationRequest};
+use crate::models::{User, OAuthConfig, TokenResponse, GitHubUserInfo, UserInfo, OAuthCallbackQuery,PasswordChangeForm, UserProfileUpdateForm, LoginRequest,CodeTranslationRequest,TranslationHistory};
 use serde::Deserialize;
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use crate::backendtranslationlogic;
 use crate::preprocessing::preprocess_code;
 use crate::models::preprocessingCodeInput;
 use crate::models::backendtranslationrequest;
+use mongodb::bson::oid::ObjectId;
+use mongodb::options::FindOptions;
+
 use log::{debug, error};
 use actix_web::{post};
 use crate::models::{RequestPasswordResetForm, ResetPasswordForm};
@@ -28,10 +31,7 @@ use chrono::{Duration, Utc};
 use crate::db::DbOps;
 use std::sync::Arc;
 
-pub async fn get_user_profile(
-    auth: BearerAuth, 
-    db: web::Data<Collection<User>>
-) -> impl Responder {
+pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
     match decode_jwt(auth.token()) {
         Ok(claims) => {
             match get_user_by_email(&db, &claims.email).await {
@@ -543,6 +543,90 @@ pub async fn preprocess_code_route(
     }
 }
 
+//handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH End of warning 
+
+//Translation History 
+use crate::db::{insert_translation_history, init_translation_history_collection};
+use crate::models::NewTranslationHistory;
+use futures::stream::TryStreamExt;
+use mongodb::results::InsertOneResult;
+
+
+
+pub async fn save_translation_history(
+    form: web::Json<NewTranslationHistory>,
+    db: web::Data<Collection<TranslationHistory>>,
+) -> impl Responder {
+    let new_translation_history = form.into_inner();
+    println!("Received translation history: {:?}", new_translation_history);
+
+    println!("1");
+    let db = match init_translation_history_collection().await {
+        Ok(db) => db,
+        Err(e) => {
+            println!("Failed to initialize the database collection: {}", e);
+            return HttpResponse::InternalServerError().json(json!({ "error": "Database initialization error" }));
+        }
+    };
+    println!("2");
+
+    // Create a TranslationHistory instance from NewTranslationHistory
+    let translation_history = TranslationHistory {
+        id: None,
+        source_code: new_translation_history.source_code,
+        translated_code: new_translation_history.translated_code,
+        source_language: new_translation_history.source_language,
+        target_language: new_translation_history.target_language,
+        created_at: bson::DateTime::now(),
+        email: new_translation_history.email, // Make sure to set this field
+
+    };
+
+    let insert_result: Result<InsertOneResult, mongodb::error::Error> = db.insert_one(translation_history, None).await;
+    match insert_result {
+        Ok(result) => {
+            println!("3"); // Successful insertion
+            match result.inserted_id.as_object_id() {
+                Some(object_id) => {
+                    // Fetch the saved item using its ObjectId
+                    match db.find_one(doc! {"_id": object_id}, None).await {
+                        Ok(Some(saved_item)) => {
+                            println!("Successfully fetched the saved item.");
+                            println!("{:?}",saved_item);
+                            HttpResponse::Ok().json(saved_item) // Return the saved item
+                        },
+                        _ => {
+                            println!("Failed to fetch the saved item.");
+                            HttpResponse::InternalServerError().json(json!({ "error": "Failed to fetch saved item" }))
+                        }
+                    }
+                },
+                None => HttpResponse::InternalServerError().json(json!({ "error": "Failed to get ObjectId" })),
+            }
+        },
+        Err(e) => {
+            println!("Error occurred during insert: {}", e);
+            HttpResponse::InternalServerError().json(json!({ "error": e.to_string() }))
+        },
+    }
+}
+
+pub async fn get_translation_history_for_user(
+    email: web::Path<String>, // Correctly extract email as a path parameter
+    db: web::Data<mongodb::Collection<TranslationHistory>>,
+) -> impl Responder {
+    let filter = doc! {"email": email.into_inner()}; // Correctly use the `email` value
+    let mut cursor = db.find(filter, None).await.expect("Failed to execute find operation");
+
+        let mut history = Vec::new();
+        while let Ok(Some(record)) = cursor.try_next().await {
+            history.push(record);
+        }
+    
+    
+        HttpResponse::Ok().json(history) // Return the user-specific history
+    }
+    
 
 
 
