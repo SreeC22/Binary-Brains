@@ -75,8 +75,6 @@ describe('TranslateHistory Component', () => {
   
     });
     
-    
-    
 });
 
 
