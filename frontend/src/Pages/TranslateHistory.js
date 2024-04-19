@@ -14,6 +14,7 @@ import {
   Button,
   useDisclosure,
   Select,
+  useToast,
 } from '@chakra-ui/react';
 import { ArrowUpIcon, ArrowDownIcon, ChevronDownIcon } from '@chakra-ui/icons';
 
@@ -34,6 +35,8 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools'; 
 import 'ace-builds/src-noconflict/ext-beautify';
 
+import { DeleteIcon, CloseIcon } from '@chakra-ui/icons';
+
 
 const TranslateHistory = () => {
   const authContext = useContext(useAuth);
@@ -44,6 +47,7 @@ const TranslateHistory = () => {
   const [filterSourceLanguage, setFilterSourceLanguage] = useState('');
   const [filterTargetLanguage, setFilterTargetLanguage] = useState('');
   const [sortDirection, setSortDirection] = useState('desc'); // 'asc' or 'desc'
+  const toast = useToast();
 
   const languageOptions = ['Python', 'Java', 'CPP', 'Ruby', 'Rust', 'Typescript', 'Csharp', 'Perl', 'Swift', 'Matlab'];
 
@@ -55,6 +59,7 @@ const TranslateHistory = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
+        console.log('Fetched History Data:', data); // Log the entire data
         setHistory(data);
       } catch (error) {
         setError('Failed to load translation history');
@@ -91,6 +96,72 @@ const TranslateHistory = () => {
       return new Date(parseInt(timestamp.$date.$numberLong, 10)).toLocaleString('en-US');
     };
 
+    const deleteHistoryEntry = async (idString) => {
+      if (!idString) {
+        console.error('ID string is undefined');
+        toast({
+          title: "Error",
+          description: "No ID found for the translation history entry.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+    
+      // The ID should be a string representation of the ObjectId, not an object
+      const url = `http://127.0.0.1:8080/delete_translation_history_entry/${encodeURIComponent(idString)}`;
+      
+      try {
+        const response = await fetch(url, {
+          method: 'DELETE',
+        });
+    
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    
+        console.log(`Deleted history entry with ID: ${idString}`);
+        setHistory(prevHistory => prevHistory.filter((item) => item._id.$oid !== idString));
+    
+        toast({
+          title: "Deleted",
+          description: "The translation history entry has been deleted.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      } catch (error) {
+        console.error('Error deleting history entry', error);
+        toast({
+          title: "Error",
+          description: `Failed to delete history entry: ${error.message}`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    };
+    
+    
+    const clearAllHistory = async () => {
+      const url = `http://127.0.0.1:8080/clear_translation_history/${encodeURIComponent(user.email)}`;
+      try {
+        const response = await fetch(url, {
+          method: 'DELETE',
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        console.log('Cleared all history for user:', user.email);
+        // Clear the history from state as well
+        setHistory([]);
+      } catch (error) {
+        console.error('Error clearing history', error);
+        setError(`Failed to clear history: ${error.message}`);
+      }
+    };
+
     //sorted and filtered history
     const sortedAndFilteredHistory = useMemo(() => {
       const result = history
@@ -123,16 +194,17 @@ const TranslateHistory = () => {
   if (isLoading) return <Box>Loading...</Box>;
   if (error) return <Box>Error: {error}</Box>;
 
+
   return (
     <VStack spacing={4} align="stretch">
       <Flex justifyContent="space-between" p={4}>
-        <Select   aria-label="Filter by Source Language" placeholder="Filter by Source Language" onChange={(e) => setFilterSourceLanguage(e.target.value.toLowerCase())}>
+        <Select aria-label="Filter by Source Language" placeholder="Filter by Source Language" onChange={(e) => setFilterSourceLanguage(e.target.value.toLowerCase())}>
           {languageOptions.map((lang) => (
             <option key={lang} value={lang.toLowerCase()}>{lang}</option>
           ))}
         </Select>
   
-        <Select   aria-label="Filter by Target Language" placeholder="Filter by Target Language" onChange={(e) => setFilterTargetLanguage(e.target.value.toLowerCase())}>
+        <Select aria-label="Filter by Target Language" placeholder="Filter by Target Language" onChange={(e) => setFilterTargetLanguage(e.target.value.toLowerCase())}>
           {languageOptions.map((lang) => (
             <option key={lang} value={lang.toLowerCase()}>{lang}</option>
           ))}
@@ -142,6 +214,9 @@ const TranslateHistory = () => {
           icon={sortDirection === 'asc' ? <ArrowUpIcon /> : <ArrowDownIcon />}
           onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
         />
+        <Button colorScheme="red" onClick={clearAllHistory}>
+          Clear
+        </Button>
       </Flex>
   
       {isLoading ? (
@@ -150,43 +225,47 @@ const TranslateHistory = () => {
         <Box>Error: {error}</Box>
       ) : (
         <Box>
-            {sortedAndFilteredHistory.length > 0 ? (
-                sortedAndFilteredHistory.map((item, index) => (
-                    <Box key={index} p={5} shadow="md" borderWidth="1px">
-                        {/* Text components displaying translation details */}
-                        <Flex direction={{ base: "column", md: "row" }} mt={4}>
-                            <Box flex="1">
-                                <Text mb={2}>Source Code: {capitalizeFirstLetter(item.source_language)}</Text>
-                                <AceEditor
-                                    mode={getModeForLanguage(item.source_language)}
-                                    theme="monokai"
-                                    value={item.source_code}
-                                    readOnly
-                                    height="400px"
-                                    width="100%"
-                                />
-                            </Box>
-                            <Box flex="1" ml={{ md: 4 }}>
-                            <Text mb={2}>Translated Code: {capitalizeFirstLetter(item.target_language)}</Text>
-                                <AceEditor
-                                    mode={getModeForLanguage(item.target_language)}
-                                    theme="monokai"
-                                    value={item.translated_code}
-                                    readOnly
-                                    height="400px"
-                                    width="100%"
-                                />
-                            </Box>
-                        </Flex>
-                    </Box>
-                ))
-          ) : (
-            <Box>No translation history found.</Box>
-          )}
-        </Box>
+          {sortedAndFilteredHistory.length > 0 ? sortedAndFilteredHistory.map((item, index) => (
+          <Box key={item._id || index} p={5} shadow="md" borderWidth="1px">
+            <Flex direction={{ base: "column", md: "row" }} mt={4} justifyContent="space-between">
+            <Box flex="1">
+                <Text mb={2}>Source Code: {capitalizeFirstLetter(item.source_language)}</Text>
+                <AceEditor
+                    mode={getModeForLanguage(item.source_language)}
+                    theme="monokai"
+                    value={item.source_code}
+                    readOnly
+                    height="400px"
+                    width="100%"
+                />
+            </Box>
+            <Box flex="1" ml={{ md: 4 }}>
+                <Text mb={2}>Translated Code: {capitalizeFirstLetter(item.target_language)}</Text>
+                <AceEditor
+                    mode={getModeForLanguage(item.target_language)}
+                    theme="monokai"
+                    value={item.translated_code}
+                    readOnly
+                    height="400px"
+                    width="100%"
+                />
+            </Box>
+            <IconButton
+                aria-label="Delete Translation History Entry"
+                icon={<DeleteIcon />}
+                onClick={() => deleteHistoryEntry(item._id)}
+                isRound
+            />
+          </Flex>
+      </Box>
+    )) : (
+      <Box>No translation history found.</Box>
+    )}
+      </Box>
       )}
     </VStack>
   );
+  
   
 };
 

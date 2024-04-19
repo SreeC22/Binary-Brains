@@ -544,7 +544,7 @@ pub async fn preprocess_code_route(
     }
 }
 
-//handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH End of warning 
+//handlers for backend and preprocesssing 
 
 //Translation History 
 use crate::db::{insert_translation_history, init_translation_history_collection};
@@ -625,9 +625,49 @@ pub async fn get_translation_history_for_user(
     
         HttpResponse::Ok().json(history) // Return the user-specific history
     }
+
+// DELETE endpoint to remove a history entry
+pub async fn delete_translation_history(
+    db: web::Data<Collection<TranslationHistory>>,
+    path: web::Path<String>, // assuming path contains the ObjectId as a string
+) -> impl Responder {
+    match ObjectId::parse_str(&path.into_inner()) {
+        Ok(id) => {
+            match db.delete_one(doc! { "_id": id }, None).await {
+                Ok(delete_result) => {
+                    if delete_result.deleted_count == 0 {
+                        HttpResponse::NotFound().finish()
+                    } else {
+                        HttpResponse::Ok().json("Deleted successfully")
+                    }
+                },
+                Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
+            }
+        },
+        Err(_) => HttpResponse::BadRequest().json("Invalid ObjectId format"),
+    }
+}
     
 
-
+pub async fn clear_translation_history(
+        db: web::Data<Collection<TranslationHistory>>,
+        email: web::Path<String>,
+    ) -> impl Responder {
+        let user_email = email.into_inner();
+        let delete_result = db.delete_many(doc! {"email": user_email}, None).await;
+    
+        match delete_result {
+            Ok(delete_result) => {
+                if delete_result.deleted_count > 0 {
+                    HttpResponse::Ok().json(format!("Cleared {} translation history entries.", delete_result.deleted_count))
+                } else {
+                    HttpResponse::NotFound().json("No translation history found for the user")
+                }
+            },
+            Err(e) => HttpResponse::InternalServerError().json(e.to_string()),
+        }
+    }
+    
 
 pub async fn store_reset_token(db: &Database, email: &str, token: &str, expiry: DateTime<Utc>) -> mongodb::error::Result<()> {
     let user_collection = db.collection::<User>("users");
