@@ -95,13 +95,12 @@ const TranslateHistory = () => {
     const formatDate = (timestamp) => {
       return new Date(parseInt(timestamp.$date.$numberLong, 10)).toLocaleString('en-US');
     };
-
-    const deleteHistoryEntry = async (idString) => {
-      if (!idString) {
-        console.error('ID string is undefined');
+    const deleteHistoryEntry = async (created_at) => {
+      if (!created_at || !created_at.$date || !created_at.$date.$numberLong) {
+        console.error('Invalid or missing timestamp:', created_at);
         toast({
           title: "Error",
-          description: "No ID found for the translation history entry.",
+          description: "Invalid or missing timestamp provided for deletion.",
           status: "error",
           duration: 5000,
           isClosable: true,
@@ -109,21 +108,21 @@ const TranslateHistory = () => {
         return;
       }
     
-      // The ID should be a string representation of the ObjectId, not an object
-      const url = `http://127.0.0.1:8080/delete_translation_history_entry/${encodeURIComponent(idString)}`;
-      
+      const timestamp = created_at.$date.$numberLong;
+      const date = new Date(parseInt(timestamp));
+      const formattedTimestamp = date.toISOString();
+    
+      const url = `http://127.0.0.1:8080/delete_translation_history/${encodeURIComponent(formattedTimestamp)}`;
       try {
-        const response = await fetch(url, {
-          method: 'DELETE',
-        });
-    
+        const response = await fetch(url, { method: 'DELETE' });
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-    
-        console.log(`Deleted history entry with ID: ${idString}`);
-        setHistory(prevHistory => prevHistory.filter((item) => item._id.$oid !== idString));
-    
+        console.log(`Deleted history entry with timestamp: ${formattedTimestamp}`);
+        setHistory(prevHistory => prevHistory.filter((item) => {
+          // Need to convert item's created_at to compare correctly
+          return new Date(parseInt(item.created_at.$date.$numberLong)).toISOString() !== formattedTimestamp;
+        }));
         toast({
           title: "Deleted",
           description: "The translation history entry has been deleted.",
@@ -251,11 +250,12 @@ const TranslateHistory = () => {
                 />
             </Box>
             <IconButton
-                aria-label="Delete Translation History Entry"
-                icon={<DeleteIcon />}
-                onClick={() => deleteHistoryEntry(item._id)}
-                isRound
+              aria-label="Delete Translation History Entry"
+              icon={<DeleteIcon />}
+              onClick={() => deleteHistoryEntry(item.created_at)} // Pass the entire created_at structure
+              isRound
             />
+
           </Flex>
       </Box>
     )) : (

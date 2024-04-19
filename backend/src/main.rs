@@ -102,7 +102,7 @@ async fn main() -> std::io::Result<()> {
             .route("/save_translation_history", web::post().to(save_translation_history))
             // .service(handlers::get_translation_history) // Register your GET handler
             .service(web::resource("/get_translation_history/{email}").to(get_translation_history_for_user))
-            .route("/delete_translation_history_entry/{id}", web::delete().to(delete_translation_history))
+            .route("/delete_translation_history/{timestamp}", web::delete().to(delete_translation_history))
             .route("/clear_translation_history/{email}", web::delete().to(clear_translation_history))
 
 

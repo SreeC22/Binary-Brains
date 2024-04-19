@@ -1,5 +1,4 @@
 // TranslateHistory.test.js
-// Ensure you import everything needed, including fireEvent for interactions
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -11,73 +10,238 @@ import { BrowserRouter } from 'react-router-dom';
 fetchMock.enableMocks();
 
 beforeEach(() => {
-  fetch.resetMocks();
-  jest.mock('../Components/AuthContext', () => ({
-    useAuth: () => ({ user: { email: 'test@example.com' } }),
-  }));
+  fetchMock.resetMocks();
 });
+
+const mockTranslationData = [
+  {
+    _id: '507f1f77bcf86cd799439011',
+    email: 'sree@test.com',
+    source_code: "def is_prime(n):\r\n    if n <= 1:\r\n        return False\r\n    # logic omitted for brevity\r\n",
+    translated_code: "\nfunction isPrime(n) {\r\n  if (n <= 1) {\r\n    return false;\r\n  }\r\n  // logic omitted for brevity\r\n}",
+    source_language: 'python',
+    target_language: 'cpp',
+    created_at: '2024-04-19T19:23:53Z',
+  },
+  {
+    _id: '507f1f77bcf86cd799439012',
+    email: 'sree@test.com',
+    source_code: "def is_prime(n):\r\n    if n <= 1:\r\n        return False\r\n    # logic omitted for brevity\r\n",
+    translated_code: "\n#include <iostream>\n#include <vector>\nint main() {\n  // logic omitted for brevity\n  return 0;\n}",
+    source_language: 'python',
+    target_language: 'typescript',
+    created_at: '2024-04-19T19:23:54Z',
+  },
+  // More translations can be added if needed
+];
 
 describe('TranslateHistory Component', () => {
-    // Remove or adjust this test if your component does not show a "Loading..." text
-    it('displays loading state correctly', async () => {
-        fetch.mockResponseOnce(() => new Promise(resolve => setTimeout(() => resolve(JSON.stringify([])), 100)));
-      
-        render(
-          <BrowserRouter>
-            <AuthProvider>
-              <TranslateHistory />
-            </AuthProvider>
-          </BrowserRouter>
-        );
-      
-        // If "Loading..." is not used, adjust or remove this test
-        expect(screen.queryByText(/Loading.../i)).not.toBeInTheDocument();
-    });
+  it('displays loading state correctly', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify(mockTranslationData));
 
-    it('filters data correctly', async () => {
-        fetch.mockResponseOnce(JSON.stringify([]));
-      
-        render(
-          <BrowserRouter>
-            <AuthProvider>
-              <TranslateHistory />
-            </AuthProvider>
-          </BrowserRouter>
-        );
-    });
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <TranslateHistory />
+        </AuthProvider>
+      </BrowserRouter>
+    );
 
-    it('displays an error message on fetch failure', async () => {
-        fetch.mockReject(new Error('API failure'));
+    expect(screen.getByText(/Loading.../i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText(/Loading.../i)).not.toBeInTheDocument());
+  });
 
-        render(
-          <BrowserRouter>
-            <AuthProvider>
-              <TranslateHistory />
-            </AuthProvider>
-          </BrowserRouter>
-        );
+  it('deletes individual translation entry correctly', async () => {
+    fetchMock.mockResponses(
+      [JSON.stringify(mockTranslationData), { status: 200 }],
+      [JSON.stringify({}), { status: 200 }]
+    );
 
-        await waitFor(() => {
-          expect(screen.getByText(/Failed to load translation history/)).toBeInTheDocument();
-        });
-    });
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <TranslateHistory />
+        </AuthProvider>
+      </BrowserRouter>
+    );
 
-    it('sorts data correctly', async () => {
-      // Assuming your fetch setup is correct and the component renders the mock data
-    
-      render(
-        <BrowserRouter>
-          <AuthProvider>
-            <TranslateHistory />
-          </AuthProvider>
-        </BrowserRouter>
-      );
-  
-    });
-    
-    
-    
+    await waitFor(() => expect(screen.getByText(new RegExp(mockTranslationData[0].source_code))).toBeInTheDocument());
+    const deleteButtons = screen.getAllByLabelText(/delete translation history entry/i);
+    fireEvent.click(deleteButtons[0]);
+
+    await waitFor(() => expect(screen.queryByText(new RegExp(mockTranslationData[0].source_code))).not.toBeInTheDocument());
+  });
+
+  it('clears entire translation history correctly', async () => {
+    fetchMock.mockResponses(
+      [JSON.stringify(mockTranslationData), { status: 200 }],
+      [JSON.stringify({}), { status: 200 }]
+    );
+
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <TranslateHistory />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+
+    await waitFor(() => expect(screen.getByText(new RegExp(mockTranslationData[0].source_code))).toBeInTheDocument());
+    fireEvent.click(screen.getByText(/Clear/i));
+
+    await waitFor(() => expect(screen.queryByText(new RegExp(mockTranslationData[0].source_code))).not.toBeInTheDocument());
+  });
+
+  it('displays an error message on fetch failure', async () => {
+    fetchMock.mockReject(new Error('API failure'));
+
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <TranslateHistory />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+
+    await waitFor(() => expect(screen.getByText(/Failed to load translation history/i)).toBeInTheDocument());
+  });
 });
+
+
+
+// // Ensure you import everything needed, including fireEvent for interactions
+// import React from 'react';
+// import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+// import '@testing-library/jest-dom';
+// import fetchMock from 'jest-fetch-mock';
+// import TranslateHistory from '../Pages/TranslateHistory';
+// import { AuthProvider } from '../Components/AuthContext';
+// import { BrowserRouter } from 'react-router-dom';
+
+// fetchMock.enableMocks();
+
+// beforeEach(() => {
+//   fetch.resetMocks();
+//   jest.mock('../Components/AuthContext', () => ({
+//     useAuth: () => ({ user: { email: 'test@example.com' } }),
+//   }));
+// });
+
+// describe('TranslateHistory Component', () => {
+//   it('displays loading state correctly', async () => {
+//     fetchMock.mockResponseOnce(JSON.stringify([])); // Mock an empty response
+  
+//     render(
+//       <BrowserRouter>
+//         <AuthProvider>
+//           <TranslateHistory />
+//         </AuthProvider>
+//       </BrowserRouter>
+//     );
+  
+//     // Check for the "Loading..." text
+//     expect(screen.getByText(/Loading.../i)).toBeInTheDocument();
+  
+//     // Await for the fetch call to resolve and the loading state to disappear
+//     await waitFor(() => expect(screen.queryByText(/Loading.../i)).not.toBeInTheDocument());
+//   });
+  
+
+//     it('filters data correctly', async () => {
+//         fetch.mockResponseOnce(JSON.stringify([]));
+      
+//         render(
+//           <BrowserRouter>
+//             <AuthProvider>
+//               <TranslateHistory />
+//             </AuthProvider>
+//           </BrowserRouter>
+//         );
+//     });
+
+//     it('displays an error message on fetch failure', async () => {
+//         fetch.mockReject(new Error('API failure'));
+
+//         render(
+//           <BrowserRouter>
+//             <AuthProvider>
+//               <TranslateHistory />
+//             </AuthProvider>
+//           </BrowserRouter>
+//         );
+
+//         await waitFor(() => {
+//           expect(screen.getByText(/Failed to load translation history/)).toBeInTheDocument();
+//         });
+//     });
+
+//     it('sorts data correctly', async () => {
+//       // Assuming your fetch setup is correct and the component renders the mock data
+    
+//       render(
+//         <BrowserRouter>
+//           <AuthProvider>
+//             <TranslateHistory />
+//           </AuthProvider>
+//         </BrowserRouter>
+//       );
+  
+//     });
+
+//     it('deletes individual history entry correctly', async () => {
+//       // Mock the initial data load
+//       fetch.mockResponseOnce(JSON.stringify([/* your initial mock data */]));
+    
+//       // Mock the delete response
+//       fetch.mockResponseOnce(JSON.stringify({}), { status: 200 });
+    
+//       render(
+//         <BrowserRouter>
+//           <AuthProvider>
+//             <TranslateHistory />
+//           </AuthProvider>
+//         </BrowserRouter>
+//       );
+    
+//       // Wait for the mock data to be displayed
+//       await waitFor(() => expect(screen.getByText(/* data from initial load */)).toBeInTheDocument());
+    
+//       // Simulate the deletion action (clicking the delete button)
+//       fireEvent.click(screen.getByLabelText(/Delete Translation History Entry/));
+    
+//       // Wait for the data to update
+//       await waitFor(() => expect(screen.queryByText(/* data from initial load */)).not.toBeInTheDocument());
+//     });
+    
+//     it('clears entire history correctly', async () => {
+//       // Mock the initial data load
+//       fetch.mockResponseOnce(JSON.stringify([/* your initial mock data */]));
+    
+//       // Mock the delete response for clearing history
+//       fetch.mockResponseOnce(JSON.stringify({}), { status: 200 });
+    
+//       render(
+//         <BrowserRouter>
+//           <AuthProvider>
+//             <TranslateHistory />
+//           </AuthProvider>
+//         </BrowserRouter>
+//       );
+    
+//       // Wait for the mock data to be displayed
+//       await waitFor(() => expect(screen.getByText(/* data from initial load */)).toBeInTheDocument());
+    
+//       // Simulate the clear action (clicking the clear button)
+//       fireEvent.click(screen.getByText(/Clear/));
+    
+//       // Wait for the data to update
+//       await waitFor(() => expect(screen.queryByText(/No translation history found/)).toBeInTheDocument());
+//     });
+    
+    
+    
+    
+// });
 
 
 

@@ -626,25 +626,34 @@ pub async fn get_translation_history_for_user(
         HttpResponse::Ok().json(history) // Return the user-specific history
     }
 
-// DELETE endpoint to remove a history entry
+use bson::DateTime as BsonDateTime;
+
+/// Deletes translation history entries based on a timestamp.
 pub async fn delete_translation_history(
     db: web::Data<Collection<TranslationHistory>>,
-    path: web::Path<String>, // assuming path contains the ObjectId as a string
+    path: web::Path<String>,
 ) -> impl Responder {
-    match ObjectId::parse_str(&path.into_inner()) {
-        Ok(id) => {
-            match db.delete_one(doc! { "_id": id }, None).await {
-                Ok(delete_result) => {
-                    if delete_result.deleted_count == 0 {
-                        HttpResponse::NotFound().finish()
-                    } else {
-                        HttpResponse::Ok().json("Deleted successfully")
-                    }
-                },
-                Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
+    // Extract and parse the timestamp from the path
+    let timestamp_str = path.into_inner();
+    let timestamp: DateTime<Utc> = match timestamp_str.parse() {
+        Ok(t) => t,
+        Err(_) => return HttpResponse::BadRequest().json("Invalid timestamp format"),
+    };
+
+    // Convert chrono::DateTime<Utc> to bson::DateTime
+    let millis = timestamp.timestamp_millis();
+    let bson_timestamp = BsonDateTime::from_millis(millis);
+
+    // Perform the deletion
+    match db.delete_many(doc! {"created_at": bson_timestamp}, None).await {
+        Ok(delete_result) => {
+            if delete_result.deleted_count == 0 {
+                HttpResponse::NotFound().json("No document found with the specified timestamp")
+            } else {
+                HttpResponse::Ok().json(format!("Deleted {} documents successfully", delete_result.deleted_count))
             }
         },
-        Err(_) => HttpResponse::BadRequest().json("Invalid ObjectId format"),
+        Err(e) => HttpResponse::InternalServerError().json(e.to_string()),
     }
 }
     
