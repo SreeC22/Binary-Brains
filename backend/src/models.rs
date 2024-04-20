@@ -147,3 +147,9 @@ pub struct ResetPasswordForm {
     pub token: String,
     pub new_password: String,
 }
+
+#[derive(Deserialize)]
+pub struct VerifyLoginQuery {
+    pub token: String,
+    pub email: String,
+}

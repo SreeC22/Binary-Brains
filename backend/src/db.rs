@@ -121,7 +121,6 @@ pub async fn change_user_password(
     Ok(())
 }
 
-
 pub async fn update_user_profile(user_id: &str, form: &UserProfileUpdateForm, db: &Database) -> mongodb::error::Result<()> {
     let users_collection = db.collection::<User>("users");
 
@@ -197,6 +196,53 @@ impl DbOps {
         ).await?;
         Ok(())
     }
+
+    // adding 2FA token storage and verification
+    pub async fn store_token(&self, user_id: &str, token: &str, expiry: chrono::DateTime<Utc>) -> mongodb::error::Result<()> {
+        let token_collection = self.db.collection::<User>("users");
+        let expiry_bson = mongodb::bson::DateTime::from_millis(expiry.timestamp_millis());
+        token_collection.update_one( 
+            doc! {"user_id": user_id},
+            doc! {
+                "$set": {
+                    "token": token,
+                    "expiry": expiry_bson
+                }
+            },
+            None
+        ).await?;
+        println!("Token stored successfully!");
+        // token_collection.insert_one(doc, None).await?;
+        Ok(())
+    }
+
+    pub async fn verify_token(&self, token: &str) -> mongodb::error::Result<bool> {
+        let token_collection = self.db.collection::<User>("users");
+        let result = token_collection.find_one(
+            doc! {
+                "token": token,
+                "expires_at": { "$gt":  mongodb::bson::DateTime::now()  }
+            },
+            None
+        ).await?;
+        Ok(result.is_some())
+    }
+
+    pub async fn remove_token(&self, user_id: &str, token: &str) -> mongodb::error::Result<()> {
+        let token_collection = self.db.collection::<User>("users");
+
+        token_collection.delete_one(
+            doc! {
+                "$unset": {
+                    "user_id": user_id,
+                    "token": token
+                }
+            },
+            None
+        ).await?;
+        Ok(())
+    }
+
 }
 
 
@@ -233,4 +279,3 @@ pub async fn insert_translation_history(
         None => Err(mongodb::error::Error::custom("No ObjectId found")),
     }
 }
-

@@ -3,6 +3,7 @@ use crate::auth::{decode_jwt,extract_jwt_from_req};
 use crate::auth::generate_jwt;
 use crate::auth::{hash_password, verify_password, generate_2fa_code, send_2fa_email};
 use crate::db::{change_user_password, update_user_profile, delete_user, get_user_by_email};
+use actix_web::cookie::{SameSite, Cookie};
 use actix_web::{get, web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode, ResponseError};
 use actix_web_httpauth::headers::authorization::Authorization;
 use actix_web::error::{ErrorUnauthorized};
@@ -20,10 +21,11 @@ use crate::models::preprocessingCodeInput;
 use crate::models::backendtranslationrequest;
 use mongodb::bson::oid::ObjectId;
 use mongodb::options::FindOptions;
+use reqwest::header;
 
 use log::{debug, error};
 use actix_web::{post};
-use crate::models::{RequestPasswordResetForm, ResetPasswordForm};
+use crate::models::{RequestPasswordResetForm, ResetPasswordForm, VerifyLoginQuery};
 use crate::auth::{generate_reset_token, send_reset_email};
 use chrono::{DateTime};
 use chrono::DateTime as ChronoDateTime;
@@ -110,7 +112,7 @@ pub async fn login(
                 Ok(verification_result) => {
                     if verification_result {
                         let token_email = generate_2fa_code(); // Generate 2FA code
-                        //println!("2FA code: {}", token_email);
+                        //let temp_session_id = create_temp_session(&existing_user.email, &token_email, &db).await; // Function to create a temporary session
                         if let Err(e) = send_2fa_email(&existing_user.email, &token_email) {                         
                             return HttpResponse::InternalServerError().json(json!({"error": "Failed to send 2FA code"}));
                         }
@@ -136,25 +138,53 @@ pub async fn login(
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
 }
 
-// #[get("/verify-login")]
-// async fn verify_login(
-//     query: web::Query<HashMap<String, String>>,
-//     db: web::Data<Collection<User>>
-// ) -> impl Responder {
-//     if let Some(token) = query.get("token") {
-//         match decode_jwt(token) {
-//             Ok(claims) => {
-//                 // You might want to perform additional checks or set session cookies here if needed
-//                 HttpResponse::TemporaryRedirect()
-//                     .header("Location", "http://localhost:3000")  // Redirect to the root
-//                     .finish()
-//             },
-//             Err(_) => HttpResponse::Unauthorized().finish(),
-//         }
-//     } else {
-//         HttpResponse::BadRequest().json("Missing token in request")
-//     }
-// }
+//#[post("/verify-2fa")]
+pub async fn verify_2fa(
+    db2: web::Data<Collection<User>>,
+    db: web::Data<Database>,
+    form: web::Json<VerifyLoginQuery>,
+) -> impl Responder {
+    let db_ops = DbOps::new(db.into_inner());  // Assuming this setup is correct
+
+    match db_ops.verify_token(&form.token).await {
+        Ok(is_valid) if is_valid => {
+            match get_user_by_email(&db2, &form.email).await {
+                Ok(Some(existing_user)) => {
+                    match generate_jwt(&existing_user.email, true) {
+                        Ok(token) => {
+                            let cookie = Cookie::build("auth_token", token)
+                                .path("/")
+                                .secure(true)
+                                .http_only(true)
+                                .same_site(SameSite::Lax)
+                                .finish();
+
+                            HttpResponse::Found()
+                                .cookie(cookie)
+                                .append_header((header::LOCATION, "http://localhost:3000/"))
+                                .finish()
+                        },
+                        Err(e) => {
+                            HttpResponse::InternalServerError().json(format!("Failed to generate JWT: {}", e))
+                        }
+                    }
+                },
+                Ok(None) => {
+                    HttpResponse::Unauthorized().json("User not found")
+                },
+                Err(_) => {
+                    HttpResponse::InternalServerError().json("Failed to retrieve user details")
+                }
+            }
+        },
+        Ok(_) => {
+            HttpResponse::Unauthorized().json("Token is invalid")
+        },
+        Err(_) => {
+            HttpResponse::InternalServerError().json("Failed to validate 2FA token")
+        },
+    }
+}
 
 use crate::models::BlacklistedToken;
 use mongodb::Database;
@@ -684,6 +714,41 @@ pub async fn update_user_password_and_remove_token(db: &Database, email: &str, n
     ).await?;
     Ok(())
 }
+
+pub async fn store_token(db: &Database, user_id: &str, token: &str, expiry: chrono::DateTime<Utc>) -> mongodb::error::Result<()> {
+    let token_collection = db.collection::<User>("users");
+    //let expiry_bson = mongodb::bson::DateTime::from_millis(expiry.timestamp_millis());
+    token_collection.update_one( 
+        doc! {"user_id": user_id},
+        doc! {
+            "$set": {
+                "token": token,
+                "expiry": mongodb::bson::DateTime::from_millis(expiry.timestamp_millis())
+            }
+        },
+        None
+    ).await?;
+    println!("Token stored successfully!");
+    // token_collection.insert_one(doc, None).await?;
+    Ok(())
+}
+
+pub async fn validate_2fa_token(
+    db: &Database,
+    token: &str,
+) -> mongodb::error::Result<bool> {
+    let users = db.collection::<User>("users");
+    let result = users.find_one(
+        doc! {
+            "2fa_token": token,
+            "2fa_token_expiry": { "$gt": mongodb::bson::DateTime::now()}
+        },
+        None,
+    ).await?;
+
+    Ok(result.is_some())
+}
+
 
 pub async fn request_password_reset(
     data: web::Data<Database>, 

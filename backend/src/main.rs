@@ -18,8 +18,8 @@ use mongodb::bson::document::Document;
 extern crate serde;
 
 use crate::db::{init_mongo, init_feedback_collection,init_translation_history_collection};
-use crate::models::{Feedback, User,NewTranslationHistory,TranslationHistory};
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route,save_translation_history,get_translation_history_for_user,request_password_reset, reset_password};
+use crate::models::{Feedback, User,NewTranslationHistory,TranslationHistory, VerifyLoginQuery};
+use crate::handlers::{login, verify_2fa, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route,save_translation_history,get_translation_history_for_user,request_password_reset, reset_password};
 use crate::handlers::change_password_handler;
 
 
@@ -76,7 +76,7 @@ async fn main() -> std::io::Result<()> {
 
             
             .route("/login", web::post().to(login))
-            //.route("/verify_login", web::post().to(verify_login))
+            .route("/verify-2fa", web::post().to(verify_2fa))
             .route("/register", web::post().to(register))
             .route("/oauth_callback", web::get().to(oauth_callback))
             .route("/github_oauth_callback", web::get().to(github_oauth_callback))
@@ -100,7 +100,7 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/backendtranslationlogic").route(web::post().to(backend_translate_code_handler)),
             )
-            //.service(web::resource("/verify-2fa").route(web::post().to(handlers::)))
+            .service(web::resource("/verify_2fa").route(web::post().to(handlers::verify_2fa)))
             .service(web::resource("/request-password-reset").route(web::post().to(handlers::request_password_reset)))
             .service(web::resource("/reset-password").route(web::post().to(handlers::reset_password)))
             //.route("/user/{user_id}/translation_history", web::get().to(handlers::get_translation_history))

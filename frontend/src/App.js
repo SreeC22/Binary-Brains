@@ -20,7 +20,7 @@ import ResetPasswordPage from './Pages/ResetPasswordPage';
 import Article2 from './Pages/FaqsPage/Article2'; // Import the new component
 import Tutorial1 from './Pages/FaqsPage/Tutorial1';
 import EmailTwoFA from './Pages/EmailTwoFA';
-//import Verify2FA from './Components/Verify2FA';
+import VerifyLogin from './Components/VerifyLogin';
 
 
 
@@ -49,6 +49,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route path="/email-sent" element={<EmailTwoFA />} />
+            <Route path="/verify-login/:token" element={<VerifyLogin />} />
 
             <Route path="/history" element={<TranslationHistoryPage />} />
           </Routes>
