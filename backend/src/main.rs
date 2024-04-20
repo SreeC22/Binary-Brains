@@ -43,6 +43,7 @@ async fn main() -> std::io::Result<()> {
     let translation_history_collection = mongo_database_for_translate_history.collection::<TranslationHistory>("translation_history");
 
 
+
     let oauth_config = models::OAuthConfig {
         google_client_id: env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID"),
         google_client_secret: env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET"),
@@ -69,10 +70,13 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(user_collection.clone()))
             .app_data(web::Data::new(mongo_database.clone()))
             .app_data(web::Data::new(translation_history_collection.clone())) 
+            // .data(user_collection.clone()) // Add user collection to app data
+            //.app_data(web::Data::new(session_collection.clone())) // Add session collection to app data
             // Routes configuration...
 
             
             .route("/login", web::post().to(login))
+            //.route("/verify_login", web::post().to(verify_login))
             .route("/register", web::post().to(register))
             .route("/oauth_callback", web::get().to(oauth_callback))
             .route("/github_oauth_callback", web::get().to(github_oauth_callback))
@@ -96,6 +100,7 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/backendtranslationlogic").route(web::post().to(backend_translate_code_handler)),
             )
+            //.service(web::resource("/verify-2fa").route(web::post().to(handlers::)))
             .service(web::resource("/request-password-reset").route(web::post().to(handlers::request_password_reset)))
             .service(web::resource("/reset-password").route(web::post().to(handlers::reset_password)))
             //.route("/user/{user_id}/translation_history", web::get().to(handlers::get_translation_history))

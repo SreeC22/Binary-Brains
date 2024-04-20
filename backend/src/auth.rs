@@ -19,7 +19,7 @@ use lettre::{transport::smtp::authentication::Credentials, Message, SmtpTranspor
 use lettre_email::EmailBuilder;
 use lettre::{message::{header, Mailbox}};
 
-use rand::{distributions::Alphanumeric, Rng};
+use rand::{distributions::Alphanumeric, distributions::Uniform, Rng};
 // hashes a password using bcrypt
 pub fn hash_password(password: &str) -> Result<String, bcrypt::BcryptError> {
     hash(password, DEFAULT_COST)
@@ -95,8 +95,6 @@ pub fn extract_jwt_from_req(req: &HttpRequest) -> Result<String, Error> {
     }
 }
 
-
-
 pub fn generate_reset_token() -> String {
     rand::thread_rng()
         .sample_iter(&Alphanumeric)
@@ -134,6 +132,45 @@ pub fn send_reset_email(email: &str, token: &str) -> Result<(), SmtpError> {
         Ok(_) => Ok(()),
         Err(e) => {
             //eprintln!("Failed to send email: {:?}", e); // Log more detailed error information
+            Err(e)
+        },
+    }
+}
+
+pub fn generate_2fa_code() -> String {
+    let code = rand::thread_rng()
+        .gen_range(100000..1000000);
+        code.to_string()
+}
+
+pub fn send_2fa_email(email: &str, token: &str) -> Result<(), SmtpError> {
+    let email_body = format!(
+        "Please click on the link to verify your login: {}/verify-login/{}",
+        env::var("FRONTEND_URL").unwrap_or_else(|_| "FRONTEND_URL".to_string()),
+        token
+    );
+
+    let email = Message::builder()
+        .from("noreply@yourdomain.com".parse().unwrap())
+        .to(email.parse().unwrap())
+        .subject("Login Verification Link")
+        .body(email_body)
+        .unwrap();
+
+    let creds = Credentials::new(
+        env::var("SMTP_USERNAME").expect("SMTP_USERNAME must be set"),
+        env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set"),
+    );
+
+    let mailer = SmtpTransport::relay("smtp.mailgun.org")
+        .unwrap()
+        .credentials(creds)
+        .build();
+
+    match mailer.send(&email) {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            //eprintln!("Failed to send 2FA email: {:?}", e); // Log more detailed error information
             Err(e)
         },
     }

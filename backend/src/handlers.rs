@@ -1,7 +1,7 @@
 use crate::db::{find_or_create_user_by_google_id, find_or_create_user_by_github_id};
 use crate::auth::{decode_jwt,extract_jwt_from_req};
 use crate::auth::generate_jwt;
-use crate::auth::{hash_password, verify_password};
+use crate::auth::{hash_password, verify_password, generate_2fa_code, send_2fa_email};
 use crate::db::{change_user_password, update_user_profile, delete_user, get_user_by_email};
 use actix_web::{get, web, HttpResponse, Responder, error::ErrorInternalServerError,  http::StatusCode, ResponseError};
 use actix_web_httpauth::headers::authorization::Authorization;
@@ -109,14 +109,13 @@ pub async fn login(
             match verify(&login_request.password, db_password) {
                 Ok(verification_result) => {
                     if verification_result {
-                        let token = generate_jwt(&existing_user.email, login_request.remember_me).unwrap(); // Handle errors properly
+                        let token_email = generate_2fa_code(); // Generate 2FA code
+                        //println!("2FA code: {}", token_email);
+                        if let Err(e) = send_2fa_email(&existing_user.email, &token_email) {                         
+                            return HttpResponse::InternalServerError().json(json!({"error": "Failed to send 2FA code"}));
+                        }
                         return HttpResponse::Ok().json(json!({
-                            "message": "Login successful",
-                            "token": token,
-                            "user": {
-                                "email": existing_user.email,
-                                "username": existing_user.username
-                            }
+                            "message": "Please click on the link in your email to complete login."
                         }));
                     } else {
                         // Password does not match
@@ -133,10 +132,29 @@ pub async fn login(
             return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
         }
     }
-
     // User not found
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
 }
+
+// #[get("/verify-login")]
+// async fn verify_login(
+//     query: web::Query<HashMap<String, String>>,
+//     db: web::Data<Collection<User>>
+// ) -> impl Responder {
+//     if let Some(token) = query.get("token") {
+//         match decode_jwt(token) {
+//             Ok(claims) => {
+//                 // You might want to perform additional checks or set session cookies here if needed
+//                 HttpResponse::TemporaryRedirect()
+//                     .header("Location", "http://localhost:3000")  // Redirect to the root
+//                     .finish()
+//             },
+//             Err(_) => HttpResponse::Unauthorized().finish(),
+//         }
+//     } else {
+//         HttpResponse::BadRequest().json("Missing token in request")
+//     }
+// }
 
 use crate::models::BlacklistedToken;
 use mongodb::Database;
@@ -166,8 +184,6 @@ pub async fn logout(
         },
     }
 }
-
-
 
 // register user
 pub async fn register(
@@ -710,7 +726,3 @@ pub async fn reset_password(
         Err(actix_web::error::ErrorNotFound("Invalid or expired reset token."))
     }
 }
-
-
-
-

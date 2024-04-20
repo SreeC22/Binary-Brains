@@ -76,20 +76,8 @@ const LoginPage = () => {
       const data = await response.json();
   
       if (response.ok) {
-        if (remember_me) {
-          localStorage.setItem('token', data.token);
-        } else {
-          sessionStorage.setItem('token', data.token);
-        }
-        setUser(data.user);
-        toast({
-          title: "Login successful.",
-          description: "You have successfully logged in.",
-          status: "success",
-          duration: 5000,
-          isClosable: true,
-        });
-        navigate('/');
+        sessionStorage.setItem('token', data.token); // Temporarily store the token
+        navigate('/email-sent'); // Redirect to email confirmation page
       } else if (response.status === 409) {
         toast({
           title: "Account exists.",
