@@ -102,6 +102,7 @@ pub async fn github_oauth_callback(
 
 
 // login user
+// login user
 pub async fn login(
     credentials: web::Json<LoginRequest>,
     db: web::Data<Collection<User>>,
@@ -118,14 +119,17 @@ pub async fn login(
             send_2fa_email(&user.email, &token).unwrap(); // Handle errors properly in production
             store_2fa_token(&db, &user.email, &token).await.unwrap(); // Handle errors properly in production
 
+            // Include a flag to indicate that 2FA is required
             return Ok(HttpResponse::Ok().json(json!({
-                "message": "2FA token sent to your email."
+                "message": "2FA token sent to your email.",
+                "requires2FA": true  // This flag tells the front-end to redirect to 2FA page
             })));
         }
     }
 
     Ok(HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"})))
 }
+
 
 
 use crate::models::BlacklistedToken;

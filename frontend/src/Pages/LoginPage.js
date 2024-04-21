@@ -6,15 +6,17 @@ import { Link as ChakraLink } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Components/AuthContext';
+import { useLocation } from 'react-router-dom';
 
 const LoginPage = () => {
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [isLogin, setIsLogin] = useState(true);
-  const [is2FA, setIs2FA] = useState(false); // New state to manage 2FA visibility
-  const [token2FA, setToken2FA] = useState(''); // State to hold 2FA token input
+  const [is2FA, setIs2FA] = useState('');
+  const [token2FA, setToken2FA] = useState('');
   const navigate = useNavigate();
   const { setUser } = useAuth();
   const [remember_me, setRememberMe] = useState(false);
@@ -26,60 +28,53 @@ const LoginPage = () => {
   const isPasswordValid = password => password.length >= 8;
   const doesPasswordMatch = () => isLogin || (password === confirmPassword);
   const isFormValid = () => isEmailValid(email) && isPasswordValid(password) && doesPasswordMatch();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (is2FA) {
-      handle2FASubmit();
-      return;
-    }
+    setIsSubmitting(true); // Disable the button and show loading indicator
+  
     const url = `${process.env.REACT_APP_BACKEND_URL}${isLogin ? '/login' : '/register'}`;
     const payload = {
-      email,
-      password,
-      ...(isLogin ? {} : { username: name }),
-      remember_me,
+        email,
+        password,
+        ...(isLogin ? {} : { username: name }),
+        remember_me,
     };
-
+  
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (data.requires2FA) { // Check if 2FA is required
-          setIs2FA(true);
-          toast({
-            title: "2FA Required",
-            description: "Please enter the 2FA token sent to your email.",
-            status: "info",
-            duration: 9000,
-            isClosable: true,
-          });
-        } else {
-          completeLogin(data);
-        }
-      } else {
-        toast({
-          title: "Authentication failed.",
-          description: data.message || "Please check your credentials.",
-          status: "error",
-          duration: 9000,
-          isClosable: true,
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
         });
+  
+        const data = await response.json();
+        console.log("Login response data:", data); // Debugging output
+        
+        if (response.ok) {
+          if (data.requires2FA) {
+              console.log("Redirecting to 2FA page"); // Debugging output
+              navigate('/two-factor-auth', { state: { email } });
+          } else {
+              console.log("Completing login without 2FA"); // Debugging output
+              completeLogin(data);
+          }
+      } else {
+          throw new Error(data.message || "Authentication failed.");
       }
+        
     } catch (error) {
-      toast({
-        title: "An error occurred.",
-        description: "Unable to login, please try again later.",
-        status: "error",
-        duration: 9000,
-        isClosable: true,
-      });
+        console.error("Login error:", error); // Debugging output
+        toast({
+            title: "Authentication Error",
+            description: error.message,
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+        });
+    } finally {
+        setIsSubmitting(false); // Re-enable the button
     }
   };
 
@@ -95,6 +90,7 @@ const LoginPage = () => {
       const data = await response.json();
 
       if (response.ok) {
+        setIs2FA(false); // Exit 2FA flow after success
         completeLogin(data);
       } else {
         toast({
@@ -130,10 +126,10 @@ const LoginPage = () => {
       duration: 5000,
       isClosable: true,
     });
-    navigate('/');
+    navigate('/'); // Navigate to homepage or dashboard as needed
   };
 
-  // Additional UI for entering 2FA token
+  // Conditional rendering for 2FA input
   if (is2FA) {
     return (
       <VStack as="form" onSubmit={handle2FASubmit} spacing={4} p={8} rounded="lg" bg={bgVStack}>
@@ -150,7 +146,6 @@ const LoginPage = () => {
     );
   }
 
-  // Regular login/register form
   return (
     <Box display="flex" flexDirection="column" alignItems="center" w="full" p={8} bg={bgBox}>
       <VStack spacing={4} w="full" maxW="md" as="form" onSubmit={handleSubmit} boxShadow="xl" p="6" rounded="lg" bg={bgVStack}>
@@ -169,7 +164,7 @@ const LoginPage = () => {
         <FormControl id="password" isRequired isInvalid={!isPasswordValid(password) && password.length > 0}>
           <FormLabel>Password</FormLabel>
           <Input
-            data-testid="passwordInput" // Add this line for test ID
+            data-testid="passwordInput"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -181,20 +176,19 @@ const LoginPage = () => {
           <ChakraLink color="teal.500" onClick={() => navigate('/forgot-password')}>
             Forgot password?
           </ChakraLink>
-
         )}
         {!isLogin && (
           <FormControl isRequired isInvalid={!doesPasswordMatch() && confirmPassword.length > 0}>
-            <FormLabel>Confirm Password</FormLabel>
-            <Input
-              data-testid="confirmPasswordInput" // Add this line for test ID
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
-            />
-            {!doesPasswordMatch() && confirmPassword.length > 0 && <FormErrorMessage>Passwords must match.</FormErrorMessage>}
-          </FormControl>
+          <FormLabel>Confirm Password</FormLabel> {/* Missing closing tag here */}
+          <Input
+            data-testid="confirmPasswordInput" // Add this line for test ID
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm your password"
+          />
+          {!doesPasswordMatch() && confirmPassword.length > 0 && <FormErrorMessage>Passwords must match.</FormErrorMessage>}
+        </FormControl>
         )}
         <FormControl display="flex" alignItems="center">
           <FormLabel htmlFor="remember-me" mb="0">
