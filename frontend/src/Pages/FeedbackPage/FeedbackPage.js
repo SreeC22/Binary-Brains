@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
-import confetti from 'canvas-confetti';
+import React, { useState, Suspense, lazy } from 'react';
 import './feedback.css';
+import confetti from 'canvas-confetti';
+
+// Lazy load images to reduce initial bundle size
 import badEmoji from './bad.png';
 import excellentEmoji from './excellent.png';
 import goodEmoji from './good.png';
 import okayEmoji from './okay.png';
 import poorEmoji from './poor.png';
 import thinkingEmoji from './thinking-face.png';
-import spongeBobThankYouMeme from './spongebob-thank-you.png.gif'; // Make sure this path is correct
+import spongeBobThankYouMeme from './spongebob-thank-you.png.gif';
 
 const FeedbackPage = () => {
     const [rating, setRating] = useState(0);
     const [submitted, setSubmitted] = useState(false);
+
     const emojis = {
         0: thinkingEmoji,
         1: poorEmoji,
@@ -28,7 +31,6 @@ const FeedbackPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Collect feedback data from the form fields
         const feedbackData = {
             firstName: e.target.elements.firstName.value,
             lastName: e.target.elements.lastName.value,
@@ -38,7 +40,6 @@ const FeedbackPage = () => {
             rating: rating,
         };
 
-        // Send feedback data to the backend using fetch API
         try {
             const response = await fetch('http://localhost:8080/submit_feedback', {
                 method: 'POST',
@@ -48,34 +49,16 @@ const FeedbackPage = () => {
                 body: JSON.stringify(feedbackData),
             });
 
-
             if (response.ok) {
-                // If the response is successful, trigger the confetti and update the submitted state
                 triggerConfetti();
                 setSubmitted(true);
             } else {
-                // If the response is not successful, log the error or display an error message
                 console.error('Failed to submit feedback');
             }
         } catch (error) {
-            // Catch any errors here and log them or display an error message
-            console.error('There was an error submitting the feedback:', error);
+            console.error('Error submitting feedback:', error);
         }
     };
-
-    // Ensure your form elements have `name` attributes corresponding to these values
-
-
-    const triggerConfetti = () => {
-        confetti({
-            zIndex: 999,
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 },
-        });
-    };
-
-    // Render only the submission message with the meme if submitted
     if (submitted) {
         return (
             <div className="feedback-layout">
@@ -85,8 +68,15 @@ const FeedbackPage = () => {
             </div>
         );
     }
+    const triggerConfetti = () => {
+        confetti({
+            zIndex: 999,
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+        });
+    };
 
-    // Render the feedback form if not submitted
     return (
         <div className="feedback-layout">
             <h1>Tell us your experience</h1>
