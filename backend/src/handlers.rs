@@ -20,7 +20,8 @@ use crate::models::preprocessingCodeInput;
 use crate::models::backendtranslationrequest;
 use mongodb::bson::oid::ObjectId;
 use mongodb::options::FindOptions;
-
+use crate::auth::{generate_2fa_token, send_2fa_email};
+use crate::db::store_2fa_token;
 use log::{debug, error};
 use actix_web::{post};
 use crate::models::{RequestPasswordResetForm, ResetPasswordForm};
@@ -31,6 +32,10 @@ use chrono::{Duration, Utc};
 use crate::db::DbOps;
 use std::sync::Arc;
 use futures_util::TryStreamExt;
+use crate::models::Verify2FARequest;
+use rand::{distributions::Alphanumeric, Rng};
+use mongodb::{error::Result as MongoResult};
+use mongodb::bson::{Bson};
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
     match decode_jwt(auth.token()) {
@@ -100,43 +105,28 @@ pub async fn github_oauth_callback(
 pub async fn login(
     credentials: web::Json<LoginRequest>,
     db: web::Data<Collection<User>>,
-) -> impl Responder {
+) -> Result<impl Responder, actix_web::Error> {
     let login_request = credentials.into_inner();
 
-    if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
-        if let Some(db_password) = &existing_user.password {
-            // Correctly handle verification result
-            match verify(&login_request.password, db_password) {
-                Ok(verification_result) => {
-                    if verification_result {
-                        let token = generate_jwt(&existing_user.email, login_request.remember_me).unwrap(); // Handle errors properly
-                        return HttpResponse::Ok().json(json!({
-                            "message": "Login successful",
-                            "token": token,
-                            "user": {
-                                "email": existing_user.email,
-                                "username": existing_user.username
-                            }
-                        }));
-                    } else {
-                        // Password does not match
-                        return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
-                    }
-                },
-                Err(_) => {
-                    // Verification failed due to an error
-                    return HttpResponse::InternalServerError().json(json!({"error": "An error occurred during login"}));
-                }
+    if let Ok(Some(user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
+        if let Some(db_password) = &user.password {
+            if verify_password(&login_request.password, db_password).is_err() {
+                return Ok(HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"})));
             }
-        } else {
-            // No password set for user (unusual case)
-            return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
+            // Generate and send 2FA token
+            let token = generate_2fa_token();
+            send_2fa_email(&user.email, &token).unwrap(); // Handle errors properly in production
+            store_2fa_token(&db, &user.email, &token).await.unwrap(); // Handle errors properly in production
+
+            return Ok(HttpResponse::Ok().json(json!({
+                "message": "2FA token sent to your email."
+            })));
         }
     }
 
-    // User not found
-    HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
+    Ok(HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"})))
 }
+
 
 use crate::models::BlacklistedToken;
 use mongodb::Database;
@@ -169,26 +159,33 @@ pub async fn logout(
 
 
 
-// register user
 pub async fn register(
     credentials: web::Json<User>, 
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
     let user_info = credentials.into_inner();
 
+    // Check if user already exists
     if let Ok(Some(_)) = db.find_one(doc! {"email": &user_info.email}, None).await {
         return HttpResponse::Conflict().json(json!({"message": "User already exists"}));
     }
 
+    // Generate token and expiration
+    let token: String = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(30)
+        .map(char::from)
+        .collect();
+    let expiration_time = Utc::now() + Duration::minutes(10); // Token expires in 10 minutes
+
+    // Hash password
     if let Some(password) = &user_info.password {
         let hashed_password = match hash(password, DEFAULT_COST) {
             Ok(h) => h,
-            Err(e) => {
-                //eprintln!("Error hashing password: {}", e);
-                return HttpResponse::InternalServerError().finish();
-            },
+            Err(_) => return HttpResponse::InternalServerError().finish(),
         };
 
+        // Prepare new user data
         let new_user = User {
             id: None,
             username: user_info.username,
@@ -198,21 +195,19 @@ pub async fn register(
             github_id: None,
             reset_token: None,
             reset_token_expiry: None,
-
+            two_fa_expiration: Some(bson::DateTime::from_millis(expiration_time.timestamp_millis())),
+            two_fa_token: Some(token),
         };
 
+        // Insert new user
         match db.insert_one(new_user.clone(), None).await {
             Ok(_) => HttpResponse::Ok().json(json!({"message": "User registered successfully", "user": new_user})),
-            Err(e) => {
-                //eprintln!("Failed to register user: {}", e);
-                return HttpResponse::InternalServerError().finish();
-            }
+            Err(_) => HttpResponse::InternalServerError().finish(),
         }
     } else {
-        return HttpResponse::BadRequest().json(json!({"message": "Password is required"}));
+        HttpResponse::BadRequest().json(json!({"message": "Password is required"}))
     }
 }
-
 
 // exchange google code for token
 async fn exchange_code_for_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::error::Error> {
@@ -712,5 +707,26 @@ pub async fn reset_password(
 }
 
 
+pub async fn verify_2fa_token(db: &Collection<User>, email: &str, token: &str) -> MongoResult<bool> {
+    let user = db.find_one(
+        doc! {
+            "email": email,
+            "two_fa_token": token,
+            "two_fa_expiration": { "$gte": Bson::DateTime(bson::DateTime::now()) }
+        },
+        None
+    ).await?;
 
-
+    Ok(user.is_some())
+}
+pub async fn verify_2fa(
+    data: web::Json<Verify2FARequest>,
+    db: web::Data<Collection<User>>,
+) -> impl Responder {
+    // Correctly use the `await` on the async function call
+    match verify_2fa_token(&db, &data.email, &data.token).await {
+        Ok(true) => HttpResponse::Ok().json(json!({"message": "Login successful"})),
+        Ok(false) => HttpResponse::Unauthorized().json(json!({"message": "Invalid 2FA token"})),
+        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Database error"})),
+    }
+}

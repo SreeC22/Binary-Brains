@@ -17,7 +17,9 @@ pub struct User {
     pub google_id: Option<String>,
     pub github_id: Option<String>,
     pub reset_token: Option<String>,
-    pub reset_token_expiry: Option<mongodb::bson::DateTime>,
+    pub reset_token_expiry: Option<bson::DateTime>,
+    pub two_fa_expiration: Option<bson::DateTime>,
+    pub two_fa_token: Option<String>,
 }
 #[skip_serializing_none]
 #[derive(Clone, Deserialize, Serialize)]
@@ -146,4 +148,9 @@ pub struct RequestPasswordResetForm {
 pub struct ResetPasswordForm {
     pub token: String,
     pub new_password: String,
+}
+#[derive(Deserialize)]
+pub struct Verify2FARequest {
+    pub email: String,
+    pub token: String,
 }

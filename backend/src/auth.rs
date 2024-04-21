@@ -18,7 +18,6 @@ use serde::{Serialize, Deserialize};
 use lettre::{transport::smtp::authentication::Credentials, Message, SmtpTransport, Transport,transport::smtp::Error as SmtpError};
 use lettre_email::EmailBuilder;
 use lettre::{message::{header, Mailbox}};
-
 use rand::{distributions::Alphanumeric, Rng};
 // hashes a password using bcrypt
 pub fn hash_password(password: &str) -> Result<String, bcrypt::BcryptError> {
@@ -138,3 +137,42 @@ pub fn send_reset_email(email: &str, token: &str) -> Result<(), SmtpError> {
         },
     }
 }
+
+
+// Generate a 2FA token
+pub fn generate_2fa_token() -> String {
+    rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(6) // Typically a 6 digit code
+        .map(char::from)
+        .collect()
+}
+
+// Send 2FA email
+pub fn send_2fa_email(email: &str, token: &str) -> Result<(), SmtpError> {
+    let email_body = format!(
+        "Your login verification code is: {}",
+        token
+    );
+
+    let email = Message::builder()
+        .from("noreply@yourdomain.com".parse().unwrap())
+        .to(email.parse().unwrap())
+        .subject("Your Verification Code")
+        .body(email_body)
+        .unwrap();
+
+    let creds = Credentials::new(
+        env::var("SMTP_USERNAME").expect("SMTP_USERNAME must be set"),
+        env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set"),
+    );
+
+    let mailer = SmtpTransport::relay("smtp.mailgun.org")?
+        .credentials(creds)
+        .build();
+
+    mailer.send(&email)?;
+
+    Ok(())
+}
+
