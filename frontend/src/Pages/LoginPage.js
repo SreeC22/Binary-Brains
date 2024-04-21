@@ -79,55 +79,67 @@ const LoginPage = () => {
   };
 
   const handle2FASubmit = async () => {
+    const login = (userData, token, remember_me) => {
+      if (remember_me) {
+          localStorage.setItem('token', token);
+      } else {
+          sessionStorage.setItem('token', token);
+      }
+      setUser(userData);
+      navigate('/');
+  };
     const url = `${process.env.REACT_APP_BACKEND_URL}/verify-2fa`;
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token: token2FA }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setIs2FA(false); // Exit 2FA flow after success
-        completeLogin(data);
-      } else {
-        toast({
-          title: "2FA Verification Failed",
-          description: data.message || "Invalid 2FA token.",
-          status: "error",
-          duration: 9000,
-          isClosable: true,
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, token: token2FA }),
         });
-      }
-    } catch (error) {
-      toast({
-        title: "Network Error",
-        description: "Unable to verify 2FA, please try again later.",
-        status: "error",
-        duration: 9000,
-        isClosable: true,
-      });
-    }
-  };
 
-  const completeLogin = (data) => {
-    if (remember_me) {
-      localStorage.setItem('token', data.token);
-    } else {
-      sessionStorage.setItem('token', data.token);
+        const data = await response.json();
+
+        if (response.ok) {
+            // Assuming 'data' includes the user object and token
+            login(data.user, data.token, remember_me);  // Pass user data, token, and remember_me status
+        } else {
+            toast({
+                title: "2FA Verification Failed",
+                description: data.message || "Invalid 2FA token.",
+                status: "error",
+                duration: 9000,
+                isClosable: true,
+            });
+        }
+    } catch (error) {
+        toast({
+            title: "Network Error",
+            description: "Unable to verify 2FA, please try again later.",
+            status: "error",
+            duration: 9000,
+            isClosable: true,
+        });
     }
-    setUser(data.user);
-    toast({
+};
+
+
+
+const completeLogin = (data) => {
+  if (remember_me) {
+      localStorage.setItem('token', data.token);  // Assuming backend sends a token
+  } else {
+      sessionStorage.setItem('token', data.token);  // Use sessionStorage for session-only persistence
+  }
+  setUser(data.user);  // Update user state/context to reflect logged in user
+  toast({
       title: "Login successful.",
       description: "You have successfully logged in.",
       status: "success",
       duration: 5000,
       isClosable: true,
-    });
-    navigate('/'); // Navigate to homepage or dashboard as needed
-  };
+  });
+  navigate('/');  // Navigate to homepage or dashboard as needed
+};
+
 
   // Conditional rendering for 2FA input
   if (is2FA) {

@@ -96,6 +96,9 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/backendtranslationlogic").route(web::post().to(backend_translate_code_handler)),
             )
+            .service(
+                web::resource("/api/user/profile").route(web::get().to(get_user_profile)),
+            )
             .service(web::resource("/request-password-reset").route(web::post().to(handlers::request_password_reset)))
             .service(web::resource("/reset-password").route(web::post().to(handlers::reset_password)))
             //.route("/user/{user_id}/translation_history", web::get().to(handlers::get_translation_history))

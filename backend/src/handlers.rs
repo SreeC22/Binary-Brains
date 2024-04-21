@@ -36,13 +36,20 @@ use crate::models::Verify2FARequest;
 use rand::{distributions::Alphanumeric, Rng};
 use mongodb::{error::Result as MongoResult};
 use mongodb::bson::{Bson};
+use jsonwebtoken::{encode, EncodingKey, Header};
+use serde::{Serialize};
 
-pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
+pub async fn get_user_profile(auth: BearerAuth, db: web::Data<mongodb::Collection<User>>) -> impl Responder {
+    println!("Received token: {}", auth.token()); // Debug print
     match decode_jwt(auth.token()) {
         Ok(claims) => {
+            println!("JWT claims decoded successfully: {:?}", claims); // Debug print
             match get_user_by_email(&db, &claims.email).await {
                 Ok(Some(user)) => HttpResponse::Ok().json(user),
-                Ok(None) => HttpResponse::NotFound().json("User not found"),
+                Ok(None) => {
+                    println!("User not found for email: {}", &claims.email); // Debug print
+                    HttpResponse::NotFound().json("User not found")
+                },
                 Err(e) => {
                     error!("Database error: {:?}", e);
                     HttpResponse::InternalServerError().finish()
@@ -55,6 +62,7 @@ pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb:
         },
     }
 }
+
 // google oauth callback
 pub async fn oauth_callback(
     query: web::Query<OAuthCallbackQuery>, 
@@ -106,29 +114,34 @@ pub async fn github_oauth_callback(
 pub async fn login(
     credentials: web::Json<LoginRequest>,
     db: web::Data<Collection<User>>,
-) -> Result<impl Responder, actix_web::Error> {
+) -> impl Responder {
     let login_request = credentials.into_inner();
 
     if let Ok(Some(user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
         if let Some(db_password) = &user.password {
-            if verify_password(&login_request.password, db_password).is_err() {
-                return Ok(HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"})));
-            }
-            // Generate and send 2FA token
-            let token = generate_2fa_token();
-            send_2fa_email(&user.email, &token).unwrap(); // Handle errors properly in production
-            store_2fa_token(&db, &user.email, &token).await.unwrap(); // Handle errors properly in production
+            if verify_password(&login_request.password, db_password).unwrap_or(false) { // assuming verify_password returns a Result<bool, Error>
+                // Generate a 2FA token and store it temporarily or send it to the user
+                let token_2fa = generate_2fa_token();
+                send_2fa_email(&user.email, &token_2fa).unwrap();  // In production, handle errors properly
+                
+                // Store the 2FA token in a secure, temporary place (e.g., a short-lived cache or the database)
+                store_2fa_token(&db, &user.email, &token_2fa).await.unwrap(); // Handle errors properly
 
-            // Include a flag to indicate that 2FA is required
-            return Ok(HttpResponse::Ok().json(json!({
-                "message": "2FA token sent to your email.",
-                "requires2FA": true  // This flag tells the front-end to redirect to 2FA page
-            })));
+                // Return a response indicating that 2FA is required
+                return HttpResponse::Ok().json(json!({
+                    "message": "2FA token sent to your email.",
+                    "requires2FA": true,
+                    "email": user.email  // Optionally include email to simplify the next step for the frontend
+                }));
+            } else {
+                return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
+            }
         }
     }
-
-    Ok(HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"})))
+    HttpResponse::Unauthorized().json(json!({"message": "User not found or invalid credentials"}))
 }
+
+
 
 
 
@@ -723,13 +736,33 @@ pub async fn verify_2fa_token(db: &Collection<User>, email: &str, token: &str) -
 
     Ok(user.is_some())
 }
+
+
+
+use crate::models::Claims;
+
 pub async fn verify_2fa(
     data: web::Json<Verify2FARequest>,
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
-    // Correctly use the `await` on the async function call
     match verify_2fa_token(&db, &data.email, &data.token).await {
-        Ok(true) => HttpResponse::Ok().json(json!({"message": "Login successful"})),
+        Ok(true) => {
+            let secret_key = std::env::var("JWT_SECRET_KEY").unwrap_or_else(|_| "fallback_secret".to_string());
+            let expiration = Utc::now() + chrono::Duration::hours(24);
+
+            let claims = Claims {
+                email: data.email.clone(),
+                exp: expiration.timestamp() as i64,
+            };
+
+            match encode(&Header::default(), &claims, &EncodingKey::from_secret(secret_key.as_bytes())) {
+                Ok(token) => HttpResponse::Ok().json(json!({
+                    "message": "Login successful",
+                    "token": token
+                })),
+                Err(_) => HttpResponse::InternalServerError().json(json!({"error": "JWT encoding failed"})),
+            }
+        },
         Ok(false) => HttpResponse::Unauthorized().json(json!({"message": "Invalid 2FA token"})),
         Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Database error"})),
     }

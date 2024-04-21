@@ -16,9 +16,10 @@ export const AuthProvider = ({ children }) => {
         } else {
             sessionStorage.setItem('token', token);
         }
-        setUser(userData);
-        navigate('/');
+        setUser(userData);  // This should trigger re-render and update the app state
+        navigate('/');  // Ensure this navigation happens last
     };
+    
 
     const logout = () => {
         localStorage.removeItem('token');
@@ -29,25 +30,34 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUserData = async () => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (token) {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-                if (response.ok) {
-                    const userData = await response.json();
-                    setUser(userData);
-                } else {
-                    logout();
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
+        if (!token) {
+            console.log("No token found, user is likely not logged in.");
+            return;
+        }
+    
+        try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/profile`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            
+            
+    
+            if (response.ok) {
+                const userData = await response.json();
+                setUser(userData);
+            } else {
+                console.error(`Failed to fetch user data: ${response.status}`);
                 logout();
             }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            logout();
         }
     };
+    
+    
     const updateProfile = async ({ email, username }) => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         if (!token) {
@@ -143,7 +153,7 @@ export const AuthProvider = ({ children }) => {
     
     useEffect(() => {
         fetchUserData();
-    }, []);
+    }, [fetchUserData]); 
 
 
     const value = {
