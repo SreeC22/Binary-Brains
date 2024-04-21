@@ -32,7 +32,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true); // Disable the button and show loading indicator
+    setIsSubmitting(true);
   
     const url = `${process.env.REACT_APP_BACKEND_URL}${isLogin ? '/login' : '/register'}`;
     const payload = {
@@ -50,14 +50,14 @@ const LoginPage = () => {
         });
   
         const data = await response.json();
-        console.log("Login response data:", data); // Debugging output
+        console.log("Login response data:", data); 
         
         if (response.ok) {
           if (data.requires2FA) {
-              console.log("Redirecting to 2FA page"); // Debugging output
+              console.log("Redirecting to 2FA page");
               navigate('/two-factor-auth', { state: { email } });
           } else {
-              console.log("Completing login without 2FA"); // Debugging output
+              console.log("Completing login without 2FA");
               completeLogin(data);
           }
       } else {
@@ -65,7 +65,7 @@ const LoginPage = () => {
       }
         
     } catch (error) {
-        console.error("Login error:", error); // Debugging output
+        console.error("Login error:", error);
         toast({
             title: "Authentication Error",
             description: error.message,
@@ -74,7 +74,7 @@ const LoginPage = () => {
             isClosable: true,
         });
     } finally {
-        setIsSubmitting(false); // Re-enable the button
+        setIsSubmitting(false);
     }
   };
 
@@ -99,8 +99,7 @@ const LoginPage = () => {
         const data = await response.json();
 
         if (response.ok) {
-            // Assuming 'data' includes the user object and token
-            login(data.user, data.token, remember_me);  // Pass user data, token, and remember_me status
+            login(data.user, data.token, remember_me); 
         } else {
             toast({
                 title: "2FA Verification Failed",
@@ -125,11 +124,11 @@ const LoginPage = () => {
 
 const completeLogin = (data) => {
   if (remember_me) {
-      localStorage.setItem('token', data.token);  // Assuming backend sends a token
+      localStorage.setItem('token', data.token);  
   } else {
-      sessionStorage.setItem('token', data.token);  // Use sessionStorage for session-only persistence
+      sessionStorage.setItem('token', data.token); 
   }
-  setUser(data.user);  // Update user state/context to reflect logged in user
+  setUser(data.user); 
   toast({
       title: "Login successful.",
       description: "You have successfully logged in.",
@@ -137,11 +136,11 @@ const completeLogin = (data) => {
       duration: 5000,
       isClosable: true,
   });
-  navigate('/');  // Navigate to homepage or dashboard as needed
+  navigate('/'); 
 };
 
 
-  // Conditional rendering for 2FA input
+
   if (is2FA) {
     return (
       <VStack as="form" onSubmit={handle2FASubmit} spacing={4} p={8} rounded="lg" bg={bgVStack}>
@@ -193,7 +192,7 @@ const completeLogin = (data) => {
           <FormControl isRequired isInvalid={!doesPasswordMatch() && confirmPassword.length > 0}>
           <FormLabel>Confirm Password</FormLabel> {/* Missing closing tag here */}
           <Input
-            data-testid="confirmPasswordInput" // Add this line for test ID
+            data-testid="confirmPasswordInput"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}

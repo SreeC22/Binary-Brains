@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { Box, Button, FormControl, FormLabel, Input, useToast } from '@chakra-ui/react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../Components/AuthContext';  // Import your useAuth hook properly
-
+import { useAuth } from '../Components/AuthContext';  
 const TwoFactorAuthPage = () => {
   const [token, setToken] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const { email, remember_me } = location.state || { email: '', remember_me: false };
-  const { login } = useAuth();  // Destructure login method from useAuth
+  const { login } = useAuth(); 
   const toast = useToast();
 
   const handle2FASubmit = async () => {
@@ -23,8 +22,8 @@ const TwoFactorAuthPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        login(data.user, data.token, remember_me);  // Pass the user, token, and remember_me flag to login function
-        navigate('/');  // Navigate to the homepage or dashboard
+        login(data.user, data.token, remember_me); 
+        navigate('/');  
       } else {
         toast({
           title: "2FA Verification Failed",

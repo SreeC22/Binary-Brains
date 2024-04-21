@@ -56,7 +56,6 @@ pub struct Claims {
 }
 use actix_web::{HttpResponse, error::ResponseError};
 
-// Your existing JWT generation function
 pub fn generate_jwt(email: &str, remember_me: bool) -> Result<String, actix_web::Error> {
     let secret_key = env::var("JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
     let expiration = if remember_me {
@@ -80,8 +79,6 @@ pub fn generate_jwt(email: &str, remember_me: bool) -> Result<String, actix_web:
 }
 
 
-
-// Utility function to extract JWT token from the Authorization header
 pub fn extract_jwt_from_req(req: &HttpRequest) -> Result<String, Error> {
     let auth_header = req.headers().get("Authorization")
         .ok_or_else(|| ErrorUnauthorized("Authorization header missing"))?
@@ -100,7 +97,7 @@ pub fn generate_reset_token() -> String {
     rand::thread_rng()
         .sample_iter(&Alphanumeric)
         .take(30)
-        .map(char::from) // Convert u8 to char
+        .map(char::from) 
         .collect()
 }
 

@@ -63,13 +63,11 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(middleware::Logger::default())
-            // .app_data(web::Data::new(mongo_collection.clone()))
             .app_data(web::Data::new(oauth_config.clone()))
             .app_data(web::Data::new(feedback_collection.clone()))
             .app_data(web::Data::new(user_collection.clone()))
             .app_data(web::Data::new(mongo_database.clone()))
             .app_data(web::Data::new(translation_history_collection.clone())) 
-            // Routes configuration...
 
             
             .route("/login", web::post().to(login))

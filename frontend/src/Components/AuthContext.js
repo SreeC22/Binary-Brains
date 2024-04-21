@@ -8,16 +8,15 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const navigate = useNavigate(); // Use the useNavigate hook
-
+    const navigate = useNavigate();
     const login = (userData, token, remember_me) => {
         if (remember_me) {
             localStorage.setItem('token', token);
         } else {
             sessionStorage.setItem('token', token);
         }
-        setUser(userData);  // This should trigger re-render and update the app state
-        navigate('/');  // Ensure this navigation happens last
+        setUser(userData);  
+        navigate('/'); 
     };
     
 
@@ -87,7 +86,7 @@ export const AuthProvider = ({ children }) => {
 
     const changePassword = async (currentPassword, newPassword) => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token'); // Retrieve the token directly
-        console.log("Token for password change: ", token); // Debug log
+        console.log("Token for password change: ", token); 
     
         if (!token) {
             console.error("Token not found");
@@ -99,7 +98,7 @@ export const AuthProvider = ({ children }) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // Use the directly retrieved token
+                    'Authorization': `Bearer ${token}`, 
                 },
                 body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
             });
