@@ -1,25 +1,21 @@
 // Import React and any necessary hooks or components
 import React from 'react';
-import logo from './images/logo.jpg';
 import bbimage from './images/Code Translation.png';
-import Layout4 from './images/layout4plcholder.webp';
-import homepageimage from './images/Homepage.jpg'
-import image6 from './images/image 6.png';
-import image1 from './images/layou240.png';
-import image2 from './images/image 7.png';
-import image3 from './images/image 10.png';
+import homepageimage from './images/Homepage.jpg';
 import Page2 from './images/Layout18.jpg';
 import faqs from './images/faqs.jpg';
+import image3 from './images/image 10.png';
+import image6 from './images/image 6.png';
+import image1 from './images/layou240.png';
+import Layout4 from './images/layout4plcholder.webp';
+import logo from './images/logo.jpg';
+import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
 
-import { Box, Text, Button, VStack, Image, HStack, ListItem, ListIcon, List, Grid, Divider, GridItem, useColorModeValue, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon, layout } from '@chakra-ui/react';
-import { Flex, Icon, Heading } from '@chakra-ui/react';
-import { ChevronRightIcon } from '@chakra-ui/icons'
-import { CheckCircleIcon } from '@chakra-ui/icons';
-import { ChevronDownIcon } from '@chakra-ui/icons';
-import { Navigate, useNavigate } from 'react-router-dom';
-import logos1 from './images/logos1.png'
-import logos2 from './images/logos2.png'
-import { Link } from 'react-router-dom';
+import { CheckCircleIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Button, Divider, Flex, Grid, GridItem, HStack, Heading, Image, List, ListIcon, ListItem, Text, VStack } from '@chakra-ui/react';
+import { Link, useNavigate } from 'react-router-dom';
+import logos1 from './images/logos1.png';
+import logos2 from './images/logos2.png';
 
 
 const HomePage = () => {
@@ -45,6 +41,7 @@ const HomePage = () => {
           bgImage={`url(${homepageimage})`}
           bgSize="cover"
           bgPos="center"
+          loading="lazy"
         >
           <VStack
             alignItems={{ base: "center", md: "flex-start" }}
@@ -90,7 +87,7 @@ const HomePage = () => {
           gap={{ base: "40px", md: "80px" }}
           bgImage={`url(${Page2})`}
           bgSize="contain"
-
+          loading="lazy"
         >
           <Box
             display="flex"
@@ -155,6 +152,7 @@ const HomePage = () => {
           bgImage="url('/path/to/images/Layout4image.jpg')"
           bgSize="cover"
           borderRadius="8px"
+          loading="lazy"
         >
           <Flex alignItems="center" gap={{ base: "20px", md: "69px" }} w="full">
             <Image
@@ -222,6 +220,7 @@ const HomePage = () => {
           bgPos="center"
           bgRepeat="no-repeat"
           bg="lightgray"
+          loading="lazy"
         >
           <Box
             display="flex"
