@@ -104,9 +104,13 @@ pub fn generate_reset_token() -> String {
 }
 
 pub fn send_reset_email(email: &str, token: &str) -> Result<(), SmtpError> {
+    let frontend_url = env::var("FRONTEND_URL").unwrap_or_else(|_| {
+        eprintln!("Warning: FRONTEND_URL not set, defaulting to localhost.");
+        "http://localhost:3000".to_string()
+    });
     let email_body = format!(
         "Please click on the link to reset your password: {}/reset-password/{}",
-        env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:3000".to_string()),
+        frontend_url,
         token
     );
 
