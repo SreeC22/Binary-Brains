@@ -45,6 +45,7 @@
 .feedback-emoji {
     width: 100px;
     margin: 20px 0;
+    align-items: center;
 }
 
 .star-rating {
