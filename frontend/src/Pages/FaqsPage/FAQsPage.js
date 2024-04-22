@@ -1,34 +1,55 @@
 import {
-  Accordion, AccordionButton, AccordionIcon, AccordionItem,AccordionPanel,Box,Button, Flex,Heading,IconButton,Input,List, ListItem,Modal,ModalBody, ModalCloseButton,ModalContent,ModalFooter,ModalHeader,ModalOverlay,SimpleGrid,Text,VStack,useDisclosure,useToast
+  Box,
+  Button,
+  Flex,
+  Heading,
+  IconButton,
+  Input,
+  List,
+  ListItem,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  SimpleGrid,
+  Text,
+  VStack,
+  useDisclosure,
+  useToast,
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
-import { MdKeyboardVoice } from 'react-icons/md';
 import { Link } from 'react-router-dom';
-export { initialFaqs, initialResources };
+import React, { useState, useMemo, useCallback } from 'react';
+import { MdKeyboardVoice } from 'react-icons/md';
 
-
+// FAQ data and initial resources
 const initialFaqs = [
-  { question: "How does it work?", answer: "Here is how it works: Write your code..." },
-  { question: "Is it free?", answer: "Yes, our service is completely free." },
-  { question: "Is it secure?", answer: "Security is our top priority." },
-  { question: "Can I trust the translations?", answer: "Our translations are highly accurate." },
-  { question: "How can I provide feedback?", answer: "Good or Bad, customer feedback is important to us." },
+  { question: 'How does it work?', answer: 'Here is how it works: Write your code...' },
+  { question: 'Is it free?', answer: 'Yes, our service is completely free.' },
+  { question: 'Is it secure?', answer: 'Security is our top priority.' },
+  { question: 'Can I trust the translations?', answer: 'Our translations are highly accurate.' },
+  { question: 'How can I provide feedback?', answer: 'Good or Bad, customer feedback is important to us.' },
 ];
 
 const initialResources = [
-
   {
-    title: "Tutorial 1",
-    description: "Learn how to get started",
-    link: "/tutorial-1",
-    downloadLink: "meme.png"
+    title: 'Tutorial 1',
+    description: 'Learn how to get started',
+    link: '/tutorial-1',
+    downloadLink: 'meme.png',
   },
   {
-    title: "Article 2",
-    description: "Best practices in code translation",
-    link: "/article-2" 
+    title: 'Article 2',
+    description: 'Best practices in code translation',
+    link: '/article-2',
   },
-  //{ title: "Video 3", description: "Understanding code conversion", content: "Here's some information about Video 3." },
 ];
 
 const FAQsPage = () => {
@@ -37,7 +58,15 @@ const FAQsPage = () => {
   const [isListening, setIsListening] = useState(false);
   const toast = useToast();
 
-  const startListening = () => {
+  const filteredFaqs = useMemo(
+    () =>
+      searchTerm.length === 0
+        ? faqs
+        : faqs.filter((faq) => faq.question.toLowerCase().includes(searchTerm.toLowerCase())),
+    [searchTerm, faqs]
+  );
+
+  const startListening = useCallback(() => {
     if ('webkitSpeechRecognition' in window) {
       const recognition = new window.webkitSpeechRecognition();
       recognition.lang = 'en-US';
@@ -52,8 +81,8 @@ const FAQsPage = () => {
 
       recognition.onerror = (event) => {
         toast({
-          title: "Error occurred in recognition: " + event.error,
-          status: "error",
+          title: 'Error in recognition: ' + event.error,
+          status: 'error',
           duration: 5000,
           isClosable: true,
         });
@@ -65,32 +94,25 @@ const FAQsPage = () => {
       };
     } else {
       toast({
-        title: "Browser does not support speech recognition.",
-        description: "Try Chrome or Firefox.",
-        status: "warning",
+        title: 'Browser does not support speech recognition.',
+        description: 'Try Chrome or Firefox.',
+        status: 'warning',
         duration: 5000,
         isClosable: true,
       });
     }
-  };
-
-  const filteredFaqs = searchTerm.length === 0 ? faqs : faqs.filter(faq =>
-    faq.question.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  }, [toast]);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [modalContent, setModalContent] = useState("");
+  const [modalContent, setModalContent] = useState('');
 
-  const openModal = (content) => {
-    setModalContent(content);
-    onOpen();
-  };
-
-  const handleLearnMore = (content) => {
-    setModalContent(content);
-    onOpen();
-  };
-
+  const openModal = useCallback(
+    (content) => {
+      setModalContent(content);
+      onOpen();
+    },
+    [onOpen]
+  );
 
   return (
     <Box w="100%" height="100%" p={5}>
@@ -139,7 +161,6 @@ const FAQsPage = () => {
           <Box borderWidth="1px" borderRadius="lg" overflow="hidden">
             <Heading size="md" mb={3}>Getting Started with Code Conversion</Heading>
             <List spacing={2}>
-              {/* Iterate over user guides steps */}
               <ListItem>Navigate to the Code Conversion page on our platform.</ListItem>
               <ListItem>Choose the source language of your code and the desired target language for conversion.</ListItem>
               <ListItem>Input the code you wish to convert into the designated text area or upload a code file.</ListItem>
@@ -148,7 +169,6 @@ const FAQsPage = () => {
               <ListItem>Use the 'Copy' or 'Download' options to save the converted code.</ListItem>
             </List>
           </Box>
-          {/* Additional user guides can be similarly structured */}
         </Box>
 
         {/* Helpful Resources Section */}
@@ -172,24 +192,22 @@ const FAQsPage = () => {
           </SimpleGrid>
         </Box>
 
-        {/* Modal for displaying resource content */}
-
+        {/* Modal */}
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
           <ModalContent>
             <ModalHeader>Resource Information</ModalHeader>
-            <ModalCloseButton data-testid="modal-close-button" />
+            <ModalCloseButton />
             <ModalBody>
               <Text>{modalContent}</Text>
             </ModalBody>
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={onClose}>
+              <Button colorScheme="blue" onClick={onClose}>
                 Close
               </Button>
             </ModalFooter>
           </ModalContent>
         </Modal>
-
       </VStack>
     </Box>
   );

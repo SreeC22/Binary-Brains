@@ -7,6 +7,7 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
+    "@fullpage/react-fullpage": "^0.1.42",
     "@monaco-editor/react": "^4.6.0",
     "@testing-library/user-event": "^13.5.0",
     "ace-builds": "^1.32.9",
@@ -27,6 +28,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.50.1",
     "react-icons": "^5.0.1",
+    "react-lazy-load-image-component": "^1.6.0",
     "react-lazyload": "^3.2.1",
     "react-monaco-editor": "^0.55.0",
     "react-router-dom": "^6.22.2",
@@ -113,5 +115,4 @@
     "webpack-dev-server": "^4.15.2",
     "whatwg-fetch": "^3.6.20"
   }
-  
 }

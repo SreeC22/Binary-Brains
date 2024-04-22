@@ -74,6 +74,7 @@ const NavBar = () => {
             <MenuItem as={RouterLink} to="/documentation">Documentation</MenuItem>
             <MenuItem as={RouterLink} to="/faqs">FAQ's</MenuItem>
             <MenuItem as={RouterLink} to="/contactus">Contact Us</MenuItem>
+           
           </MenuList>
         </Menu>
       </Box>

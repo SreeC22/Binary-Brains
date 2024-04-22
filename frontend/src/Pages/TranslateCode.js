@@ -1,4 +1,7 @@
+import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, ChakraProvider, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Icon, IconButton, Menu, MenuButton, MenuItem, MenuList, Slide, Text, VStack, useColorMode, useColorModeValue, useToast } from "@chakra-ui/react";
 import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
+import 'ace-builds/src-noconflict/ext-beautify';
+import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/mode-c_cpp';
 import 'ace-builds/src-noconflict/mode-csharp';
 import 'ace-builds/src-noconflict/mode-java';
@@ -11,20 +14,14 @@ import 'ace-builds/src-noconflict/mode-swift';
 import 'ace-builds/src-noconflict/mode-typescript';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
-import { BiSolidDownArrowAlt } from "react-icons/bi";
-import React, { useState, useEffect, useRef } from "react";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button as CustomButton, Center, ChakraProvider, CloseButton, Flex, FormLabel, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList, Slide,Icon, Text, useColorMode, useColorModeValue, VStack } from "@chakra-ui/react";
-import 'ace-builds/src-noconflict/ext-language_tools'; 
-import 'ace-builds/src-noconflict/ext-beautify';
-import { useAuth } from '../Components/AuthContext'; 
-import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
-import { useToast } from "@chakra-ui/react";
-import AceEditor from 'react-ace';
 import { motion } from "framer-motion"; // Import motion from Framer Motion
-import { FaCode, FaCog, FaCube, FaPaste,FaTimes,FaUpload, FaSearchPlus, FaSearchMinus, FaDownload } from 'react-icons/fa';
-import axios from 'axios';
+import React, { useEffect, useRef, useState } from "react";
+import AceEditor from 'react-ace';
+import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
+import { FaCode, FaCog, FaCube, FaDownload, FaPaste, FaSearchMinus, FaSearchPlus, FaTimes, FaUpload } from 'react-icons/fa';
 import { SiConvertio } from "react-icons/si";
+import { useAuth } from '../Components/AuthContext';
 
 const languages = [
   { label: "Python", value: "python", icon: <PythonOriginal /> },
@@ -257,14 +254,7 @@ const saveTranslationHistory = async () => {
 const handleConvert = async () => {
   setOutputCode(""); // Reset output code
   setError(""); // Clear any existing errors
-    toast({
-      title: "Translation Queued",
-      description: "Your translation is being processed. Please wait...",
-      status: "info",
-      duration: 5000, // Setting duration to null to make it persist until user interaction
-      isClosable: true,
-      position: "top",
-    });
+    
     if (!sourceLanguage || !targetLanguage) {
       setError("Both source and target languages are required");
       return;
@@ -278,7 +268,6 @@ const handleConvert = async () => {
       return;
     }
     const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
-
       try {
         const preprocessedCodeResponse = await fetch(`${apiUrl}/preprocess_code`, {
         method: 'POST',
