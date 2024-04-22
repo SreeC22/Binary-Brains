@@ -43,7 +43,7 @@ const TranslateHistory = () => {
   const toast = useToast();
 
   const languageOptions = ['Python', 'Java', 'CPP', 'Ruby', 'Rust', 'Typescript', 'Csharp', 'Perl', 'Swift', 'Matlab'];
-  const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
+  const apiUrl = process.env.REACT_APP_BACKEND_URL; // Default to localhost if not set
 
   useEffect(() => {
     const fetchTranslationHistory = async () => {
