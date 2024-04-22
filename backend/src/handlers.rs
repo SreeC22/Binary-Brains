@@ -311,41 +311,78 @@ use crate::db::insert_feedback;
 
 pub mod feedback {
     use super::*;
-    use futures_util::stream::TryStreamExt;
-    use actix_web::{web, HttpResponse, Responder};
-    use mongodb::{Collection};
+use futures_util::stream::TryStreamExt;
+use actix_web::{web, HttpResponse, Responder};
+use mongodb::{
+    bson::{doc, Bson},
+    Collection,
+};
+use serde_json::json;
 
-    #[get("/feedback")]
-    pub async fn get_feedback(db: web::Data<Collection<Feedback>>) -> impl Responder {
-        // Query feedback data from MongoDB collection
-        let mut cursor = db.find(None, None)
-            .await
-            .expect("Failed to execute find operation");
+#[get("/feedback")]
+pub async fn get_feedback(db: web::Data<Collection<Feedback>>) -> impl Responder {
+    // Query individual feedback data from MongoDB collection
+    let cursor = db.find(None, None).await;
+    let mut feedback_entries = Vec::new();
 
-        // Initialize a vector to hold feedback data
-        let mut feedback_data = vec![];
-
-        // Iterate over the cursor to fetch feedback data
-        while let Some(result) = TryStreamExt::try_next(&mut cursor).await.expect("Failed to iterate cursor") {
-            // Access fields directly from Feedback struct
-            let phoneNumber = result.phoneNumber;
-            let rating = result.rating;
-            let email = result.email;
-            let firstName = result.firstName;
-            let lastName = result.lastName;
-            let message = result.message;
-
-            // Format feedback data as desired (example: concatenating fields)
-            let formatted_feedback = format!("Name: {} {}, Email: {}, Phone Number: {}, Rating: {},  Message: {}", firstName, lastName, email, phoneNumber, rating, message);
-            feedback_data.push(formatted_feedback);
-        }
-
-        // Format feedback data as a string
-        let feedback_list = feedback_data.join("\n");
-
-        // Return the response with formatted feedback data
-        HttpResponse::Ok().body(feedback_list)
+    // Collect feedback entries without _id field
+    match cursor {
+        Ok(mut cursor) => {
+            while let Some(feedback) = cursor.try_next().await.unwrap_or(None) {
+                let feedback_data = json!({
+                    "firstName": feedback.firstName,
+                    "lastName": feedback.lastName,
+                    "email": feedback.email,
+                    "phoneNumber": feedback.phoneNumber,
+                    "message": feedback.message,
+                    "rating": feedback.rating,
+                });
+                feedback_entries.push(feedback_data);
+            }
+        },
+        Err(_) => return HttpResponse::InternalServerError().json("Failed to fetch feedback"),
     }
+
+    // Perform aggregation to calculate average rating and total number of feedback entries
+    let agg_pipeline = vec![
+        doc! {
+            "$group": {
+                "_id": null,
+                "averageRating": { "$avg": "$rating" },
+                "totalFeedback": { "$sum": 1 },
+            }
+        },
+        // You can add other aggregation stages here if needed.
+    ];
+
+    // Run the aggregation pipeline
+    let agg_cursor = db.aggregate(agg_pipeline, None).await;
+    let agg_results = match agg_cursor {
+        Ok(mut cursor) => cursor.try_next().await.unwrap_or(None),
+        Err(_) => return HttpResponse::InternalServerError().json("Failed to aggregate feedback"),
+    };
+
+    let (average_rating, total_feedback) = if let Some(agg_result) = agg_results {
+        (
+            agg_result.get_f64("averageRating").unwrap_or(0.0),
+            agg_result.get_i32("totalFeedback").unwrap_or(0) as i64, // Cast as i64 if necessary
+        )
+    } else {
+        (0.0, 0)
+    };
+
+    // Prepare the final JSON response
+    let response = json!({
+        "feedbackEntries": feedback_entries,
+        "aggregatedData": {
+            "averageRating": average_rating,
+            "totalFeedback": total_feedback,
+        }
+    });
+
+    HttpResponse::Ok().json(response)
+}
+    
 }
 
 pub async fn submit_feedback(
@@ -557,7 +594,7 @@ pub async fn preprocess_code_route(
     }
 }
 
-//handlers for backend and preprocesssing - Jesica PLEASE DO NOT TOUCH End of warning 
+//handlers for backend and preprocesssing 
 
 //Translation History 
 use crate::db::{insert_translation_history, init_translation_history_collection};
@@ -638,9 +675,58 @@ pub async fn get_translation_history_for_user(
     
         HttpResponse::Ok().json(history) // Return the user-specific history
     }
+
+use bson::DateTime as BsonDateTime;
+
+/// Deletes translation history entries based on a timestamp.
+pub async fn delete_translation_history(
+    db: web::Data<Collection<TranslationHistory>>,
+    path: web::Path<String>,
+) -> impl Responder {
+    // Extract and parse the timestamp from the path
+    let timestamp_str = path.into_inner();
+    let timestamp: DateTime<Utc> = match timestamp_str.parse() {
+        Ok(t) => t,
+        Err(_) => return HttpResponse::BadRequest().json("Invalid timestamp format"),
+    };
+
+    // Convert chrono::DateTime<Utc> to bson::DateTime
+    let millis = timestamp.timestamp_millis();
+    let bson_timestamp = BsonDateTime::from_millis(millis);
+
+    // Perform the deletion
+    match db.delete_many(doc! {"created_at": bson_timestamp}, None).await {
+        Ok(delete_result) => {
+            if delete_result.deleted_count == 0 {
+                HttpResponse::NotFound().json("No document found with the specified timestamp")
+            } else {
+                HttpResponse::Ok().json(format!("Deleted {} documents successfully", delete_result.deleted_count))
+            }
+        },
+        Err(e) => HttpResponse::InternalServerError().json(e.to_string()),
+    }
+}
     
 
-
+pub async fn clear_translation_history(
+        db: web::Data<Collection<TranslationHistory>>,
+        email: web::Path<String>,
+    ) -> impl Responder {
+        let user_email = email.into_inner();
+        let delete_result = db.delete_many(doc! {"email": user_email}, None).await;
+    
+        match delete_result {
+            Ok(delete_result) => {
+                if delete_result.deleted_count > 0 {
+                    HttpResponse::Ok().json(format!("Cleared {} translation history entries.", delete_result.deleted_count))
+                } else {
+                    HttpResponse::NotFound().json("No translation history found for the user")
+                }
+            },
+            Err(e) => HttpResponse::InternalServerError().json(e.to_string()),
+        }
+    }
+    
 
 pub async fn store_reset_token(db: &Database, email: &str, token: &str, expiry: DateTime<Utc>) -> mongodb::error::Result<()> {
     let user_collection = db.collection::<User>("users");

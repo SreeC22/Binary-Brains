@@ -64,6 +64,7 @@ pub struct Feedback {
     pub message: String,
     pub rating: i32,
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlacklistedToken {
     pub token: String,
@@ -120,6 +121,7 @@ pub struct preprocessingCodeInput {
 //Translation History
 #[derive(Serialize, Deserialize,Clone,Debug)]
 pub struct TranslationHistory {
+    
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,  // ID of the translation history record itself
     pub email: String, // User identifier

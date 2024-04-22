@@ -1,4 +1,3 @@
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, ChakraProvider, CloseButton, Button as CustomButton, Flex, FormLabel, HStack, Icon, IconButton, Menu, MenuButton, MenuItem, MenuList, Slide, Text, VStack, useColorMode, useColorModeValue, useToast } from "@chakra-ui/react";
 import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
 import 'ace-builds/src-noconflict/ext-beautify';
 import 'ace-builds/src-noconflict/ext-language_tools';
@@ -15,6 +14,10 @@ import 'ace-builds/src-noconflict/mode-typescript';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
+
+import {useMediaQuery, Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button as CustomButton, Center, ChakraProvider, CloseButton, Flex, FormLabel, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList, Slide,Icon, Text, useColorMode, useColorModeValue, VStack } from "@chakra-ui/react";
+import { useToast } from "@chakra-ui/react";
+
 import { motion } from "framer-motion"; // Import motion from Framer Motion
 import React, { useEffect, useRef, useState } from "react";
 import AceEditor from 'react-ace';
@@ -46,6 +49,7 @@ const TranslateCode = () => {
     element.click();
     document.body.removeChild(element); // Clean up
   };
+
   const [gptStatus, setGptStatus] = useState(false);
   const aceEditorRef = useRef(null);
   useEffect(() => {
@@ -75,14 +79,16 @@ const TranslateCode = () => {
     };
     callAPI(); // Call the API when the component mounts
   }, []);
+
   const toast = useToast();
   const { colorMode } = useColorMode();
-  const backgroundColor = colorMode === "light" ? "#fbf2e3" : "#2D3748";
-  const textColor = colorMode === "light" ? "black" : "black";
+  const backgroundColor = useColorModeValue("#fbf2e3", "#2D3748");
+  const textColor = useColorModeValue("black", "white");
   const [inputCode, setInputCode] = useState(`To use this tool, take the following steps -
     1. Select the programming language from the dropdown above
     2. Describe the code you want to generate here in this box
-    3. Click Convert`);
+    3. Click Convert`
+  );
   const [targetLanguage, setTargetLanguage] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState("");
   const [outputCode, setOutputCode] = useState("");
@@ -95,39 +101,40 @@ const TranslateCode = () => {
   const fileInputRef = useRef(null);
   useEffect(() => {
     console.log("Selected source language:", sourceLanguage);
-}, [sourceLanguage]);
-useEffect(() => {
-  // Trim to check for whitespace-only strings too
-  if (outputCode.trim() !== "") {
-    saveTranslationHistory();
-  }
-}, [outputCode]); // Dependency on outputCode ensures this runs when outputCode updates
-const handleZoomIn = () => {
-  setFontSize(prevFontSize => prevFontSize + 2);
-};
-const handleZoomOut = () => {
-  setFontSize(prevFontSize => Math.max(prevFontSize - 2, 8));
-};
-
-const handleCopyOutputCode = () => {
-  navigator.clipboard.writeText(outputCode).then(() => {
-    toast({
-      title: "Copied.",
-      description: "Code copied to clipboard successfully.",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
-  }).catch((err) => {
-    setError('Error in copying text: ', err);
-  });
-};
-
-const handleClose = () => {
-    setError(""); // Clear the error message
+  }, [sourceLanguage]);
+  useEffect(() => {
+    // Trim to check for whitespace-only strings too
+    if (outputCode.trim() !== "") {
+      saveTranslationHistory();
+    }
+  }, [outputCode]); // Dependency on outputCode ensures this runs when outputCode updates
+  const handleZoomIn = () => {
+    setFontSize(prevFontSize => prevFontSize + 2);
+  };
+  const handleZoomOut = () => {
+    setFontSize(prevFontSize => Math.max(prevFontSize - 2, 8));
   };
 
-const fetchTranslatedCode = async () => {
+
+  const handleCopyOutputCode = () => {
+    navigator.clipboard.writeText(outputCode).then(() => {
+        toast({
+        title: "Copied.",
+        description: "Code copied to clipboard successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    }).catch((err) => {
+      setError('Error in copying text: ', err);
+    });
+  };
+
+  const handleClose = () => {
+      setError(""); // Clear the error message
+    };
+
+  const fetchTranslatedCode = async () => {
   const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
 
     try {
@@ -195,18 +202,18 @@ const fetchTranslatedCode = async () => {
   }
 };
 
-const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => setInputCode(e.target.result);
-      reader.readAsText(file);
-    }
-};
+  const handleFileChange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => setInputCode(e.target.result);
+        reader.readAsText(file);
+      }
+  };
 
-const handleUploadClick = () => {
-    fileInputRef.current.click();
-};
+  const handleUploadClick = () => {
+      fileInputRef.current.click();
+  };
 
 const saveTranslationHistory = async () => {
   // Ensure there's translated content to save
@@ -254,7 +261,14 @@ const saveTranslationHistory = async () => {
 const handleConvert = async () => {
   setOutputCode(""); // Reset output code
   setError(""); // Clear any existing errors
-    
+    toast({
+      title: "Translation Queued",
+      description: "Your translation is being processed. Please wait...",
+      status: "info",
+      duration: 5000, // Setting duration to null to make it persist until user interaction
+      isClosable: true,
+      position: "top",
+    });
     if (!sourceLanguage || !targetLanguage) {
       setError("Both source and target languages are required");
       return;
@@ -268,6 +282,7 @@ const handleConvert = async () => {
       return;
     }
     const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
+
       try {
         const preprocessedCodeResponse = await fetch(`${apiUrl}/preprocess_code`, {
         method: 'POST',
@@ -300,59 +315,59 @@ const handleConvert = async () => {
     }
 };
   
-const handleCopy = () => {
-    navigator.clipboard.writeText(inputCode).then(() => {
-      toast({
-        title: "Copied.",
-        description: "Code copied to clipboard successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-    }).catch((err) => {
-      setError('Error in copying text: ', err);
-    });
-    navigator.clipboard.writeText(outputCode).then(() => {
-      toast({
-        title: "Copied.",
-        description: "Code copied to clipboard successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-    }).catch((err) => {
-      setError('Error in copying text: ', err);
-    });
-};
-
-const HeadingSteps = () => (
     
-    <Box paddingY={4} ml="auto" style={{ backgroundColor }}>
-      <HStack spacing={16} justify="center" marginTop={16} marginBottom={16} style={{ backgroundColor }}> {/* Increased spacing */}
-        <VStack align="left" spacing={2} >
-          <FaCube size={40} color={"black"} />
-          <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Step-by-Step Code Translation Process</Text>
-          <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
-        </VStack>
-        <VStack align="left" spacing={2}>
-          <FaCube size={40} color={"black"} />
-          <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Submit Your Code</Text>
-          <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Easily submit your code and select the desired language.</Text> {/* Removed space */}
-        </VStack>
-        <VStack align="left" spacing={2}>
-          <FaCube size={40} color={"black"} />
-          <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Translation Output</Text>
-          <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">View the translated code with enhanced readability features.</Text> {/* Removed space */}
-        </VStack>
-      </HStack>
-    </Box>
-  );
+  const handleCopy = () => {
+      navigator.clipboard.writeText(inputCode).then(() => {
+        toast({
+          title: "Copied.",
+          description: "Code copied to clipboard successfully.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      }).catch((err) => {
+        setError('Error in copying text: ', err);
+      });
+      navigator.clipboard.writeText(outputCode).then(() => {
+        toast({
+          title: "Copied.",
+          description: "Code copied to clipboard successfully.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      }).catch((err) => {
+        setError('Error in copying text: ', err);
+      });
+  };
+
+  const HeadingSteps = () => (
+      <Box paddingY={4} style={{ backgroundColor }}>
+        <HStack spacing={16} justify="center" >
+          <VStack align="left" spacing={2} >
+            <FaCube size={40} color={"black"} />
+            <Text fontSize="32" fontWeight="bold" fontFamily="Gelasio">Step-by-Step Code Translation Process</Text>
+            <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
+          </VStack>
+          <VStack align="left" spacing={2}>
+            <FaCube size={40} color={"black"} />
+            <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Submit Your Code</Text>
+            <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Easily submit your code and select the desired language.</Text> {/* Removed space */}
+          </VStack>
+          <VStack align="left" spacing={2}>
+            <FaCube size={40} color={"black"} />
+            <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Translation Output</Text>
+            <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">View the translated code with enhanced readability features.</Text> {/* Removed space */}
+          </VStack>
+        </HStack>
+      </Box>
+    );
+
   return (
     <>
-
    <ChakraProvider>
    <HeadingSteps />
-   <VStack spacing={4} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}> 
+   <VStack spacing={6} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}> 
          <Flex
          justifyContent="center"              
                 >
@@ -379,6 +394,7 @@ const HeadingSteps = () => (
              </Text>
            </Box>
        </Flex>
+       {/*Source Language*/}
      <Flex justifyContent="space-between">
        <Box position="relative">
        <Menu>
@@ -412,6 +428,7 @@ const HeadingSteps = () => (
            </MenuList>
        </Menu>
        </Box>
+       {/*Target Language*/}
 
        <Box position="relative">
          <Menu>
@@ -444,6 +461,7 @@ const HeadingSteps = () => (
 
        </Box>
      </Flex>
+    {/*Input Code Language*/}
      <Box display="flex" justifyContent="space-between">
             <Box width="48%" p="30px">
               <FormLabel htmlFor="inputCode" display="flex" alignItems="center">
@@ -543,7 +561,7 @@ const HeadingSteps = () => (
                    />
              </div>
            </Box>
-
+          {/*Output Code Language Editor */}
            <Box width="48%" p="30px">
              <FormLabel htmlFor="outputCode" display="flex" alignItems="center">
                Converted Code
@@ -578,37 +596,33 @@ const HeadingSteps = () => (
            cursor="pointer"
            color="white"
          />
-                 <IconButton
-                   title="Clear"
-                   icon={<FaTimes />}
-                   onClick={() => setOutputCode('')}
-                   position="absolute"
-                   top="60px"
-                   right="8px"
-                   zIndex="999"
-                   backgroundColor="transparent"
-                   border="none"
-                   cursor="pointer"
-                   color="white"
-                 />
-                
-               
-                 <AceEditor
-                   id="outputCode"
-                   mode={targetLanguage ? (targetLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === targetLanguage)?.value || "text") : "text"}
-                   theme="monokai"
-                   width="100%"
-                   height="500px"
-                   value= {outputCode}
-                   readOnly={true}
-                   useWorker={false}
-                 />
-             </div>
-           </Box>
-         </Box>
-
-
-     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, pointerEvents: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <IconButton
+            title="Clear"
+            icon={<FaTimes />}
+            onClick={() => setOutputCode('')}
+            position="absolute"
+            top="60px"
+            right="8px"
+            zIndex="999"
+            backgroundColor="transparent"
+            border="none"
+            cursor="pointer"
+            color="white"
+          />
+          <AceEditor
+           id="outputCode"
+           mode={targetLanguage ? (targetLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === targetLanguage)?.value || "text") : "text"}
+           theme="monokai"
+           width="100%"
+           height="500px"
+           value= {outputCode}
+           readOnly={true}
+           useWorker={false}
+           />
+        </div>
+      </Box>
+    </Box>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, pointerEvents: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
        <Slide in={Boolean(error)} direction="bottom">
          {error && (
            <Alert
@@ -669,22 +683,58 @@ const HeadingSteps = () => (
          &nbsp;&nbsp;&nbsp;2. Describe the code you want to generate here in this box<br />
          &nbsp;&nbsp;&nbsp;3. Click convert
        </Text>
+       
 
-       <Box>
-         <Text fontSize="21" textAlign="center" >Try our Code Generators in other languages:</Text>
-         <Flex justifyContent="center" flexWrap="wrap">
-           {languages.map(lang => (
-             <motion.div key={lang.value} whileHover={{ scale: 1.25 }}>
-               <Box bg="white" p={4} borderRadius="md" textAlign="center" mr={4} width="100px" height="80px">
-                 <VStack spacing={0}>
-                   {React.cloneElement(lang.icon, { size: 42 })}
-                   <Text fontSize="16" fontFamily="Roboto" color={textColor}> {lang.label}</Text>
-                 </VStack>
-               </Box>
-             </motion.div>
-           ))}
-         </Flex>
-       </Box>
+
+        <Box>
+          <Text
+            fontSize="2xl"
+            textAlign="center"
+            mb={6}
+            color={textColor} // Set the text color based on the theme
+          >
+            Try our Code Generators in other languages:
+          </Text>
+          <Flex
+            justifyContent="center"
+            flexWrap="wrap"
+            mx="auto"
+            gap={6}
+          >
+            {languages.map((lang) => (
+              <Box
+                key={lang.value}
+                bg={'white'} // Set background color based on the theme
+                p={4}
+                borderRadius="lg"
+                boxShadow="sm"
+                textAlign="center"
+                mb={6}
+                width="330px"
+                height="130px"
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="center"
+                _hover={{ transform: 'translateY(-5px)', boxShadow: 'lg' }}
+                transition="transform 0.2s, box-shadow 0.2s"
+                cursor="pointer"
+                marginRight={lang.value !== languages[languages.length - 1].value ? "1.5rem" : "0"}
+              >
+                {React.cloneElement(lang.icon, { size: "50px", color: textColor })} 
+                <Text
+                  fontSize="xl"
+                  fontWeight="semibold"
+                  ml={4}
+                  color={'black'} // Set the text color based on the theme
+                >
+                  Convert from {lang.label}
+                </Text>
+              </Box>
+            ))}
+          </Flex>
+        </Box>
+
        <Box mt="auto" py={4} fontFamily="Roboto" textAlign="center" borderTop="1px solid" borderTopColor="gray.300">
          © 2024 Binary Brains. All rights reserved.
        </Box>

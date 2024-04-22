@@ -224,8 +224,8 @@ pub async fn insert_translation_history(
     new_translation_history: NewTranslationHistory,
 ) -> MongoResult<ObjectId> {
     let translation_history = TranslationHistory {
-        id: None,
-        email: new_translation_history.email, // Make sure to capture and pass the user's email
+        id: None, // MongoDB will assign an ObjectId automatically.
+        email: new_translation_history.email,
         source_code: new_translation_history.source_code,
         translated_code: new_translation_history.translated_code,
         source_language: new_translation_history.source_language,
@@ -237,9 +237,10 @@ pub async fn insert_translation_history(
 
     match insert_result.inserted_id.as_object_id() {
         Some(object_id) => Ok(object_id),
-        None => Err(mongodb::error::Error::custom("No ObjectId found")),
+        None => Err(mongodb::error::Error::custom("Failed to retrieve ObjectId from insertion result"))
     }
 }
+
 
 //store token in db with 10 min expiry
 pub async fn store_2fa_token(db: &Collection<User>, email: &str, token: &str) -> MongoResult<()> {
@@ -254,3 +255,4 @@ pub async fn store_2fa_token(db: &Collection<User>, email: &str, token: &str) ->
     ).await?;
     Ok(())
 }
+

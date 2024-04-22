@@ -1,8 +1,9 @@
-import React, { useState, Suspense, lazy } from 'react';
-import './feedback.css';
+import React, { useState, useEffect } from 'react';
+import { Box, Button, FormControl, FormLabel, Input, Textarea, Image, Text, useToast, Icon, Stat, StatLabel, StatNumber } from '@chakra-ui/react';
+import { StarIcon } from '@chakra-ui/icons';
 import confetti from 'canvas-confetti';
 
-// Lazy load images to reduce initial bundle size
+// Emoji imports
 import badEmoji from './bad.png';
 import excellentEmoji from './excellent.png';
 import goodEmoji from './good.png';
@@ -14,31 +15,17 @@ import spongeBobThankYouMeme from './spongebob-thank-you.png.gif';
 const FeedbackPage = () => {
     const [rating, setRating] = useState(0);
     const [submitted, setSubmitted] = useState(false);
+    const [aggregatedData, setAggregatedData] = useState({ averageRating: 0, totalFeedback: 0 });
+    const toast = useToast();
+    const emojis = [thinkingEmoji, poorEmoji, badEmoji, okayEmoji, goodEmoji, excellentEmoji];
 
-    const emojis = {
-        0: thinkingEmoji,
-        1: poorEmoji,
-        2: badEmoji,
-        3: okayEmoji,
-        4: goodEmoji,
-        5: excellentEmoji,
+    const handleRating = (index) => {
+        setRating(index);
     };
 
-    const handleRating = (ratingValue) => {
-        setRating(ratingValue);
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const feedbackData = {
-            firstName: e.target.elements.firstName.value,
-            lastName: e.target.elements.lastName.value,
-            email: e.target.elements.email.value,
-            phoneNumber: e.target.elements.phoneNumber.value,
-            message: e.target.elements.message.value,
-            rating: rating,
-        };
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        const feedbackData = new FormData(event.currentTarget);
 
         try {
             const response = await fetch('http://localhost:8080/submit_feedback', {
@@ -46,28 +33,46 @@ const FeedbackPage = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(feedbackData),
+                body: JSON.stringify({
+                    firstName: feedbackData.get('firstName'),
+                    lastName: feedbackData.get('lastName'),
+                    email: feedbackData.get('email'),
+                    phoneNumber: feedbackData.get('phoneNumber'),
+                    message: feedbackData.get('message'),
+                    rating: rating,
+                }),
             });
 
             if (response.ok) {
                 triggerConfetti();
                 setSubmitted(true);
+                toast({
+                    title: "Feedback Submitted",
+                    description: "Thank you for your feedback!",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                });
             } else {
-                console.error('Failed to submit feedback');
+                toast({
+                    title: "Submission Failed",
+                    description: "Please try again later.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
             }
         } catch (error) {
-            console.error('Error submitting feedback:', error);
+            toast({
+                title: "Error",
+                description: "An error occurred while submitting your feedback.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
         }
     };
-    if (submitted) {
-        return (
-            <div className="feedback-layout">
-                <div className="submission-message">
-                    <img src={spongeBobThankYouMeme} alt="Thank You" />
-                </div>
-            </div>
-        );
-    }
+
     const triggerConfetti = () => {
         confetti({
             zIndex: 999,
@@ -77,29 +82,70 @@ const FeedbackPage = () => {
         });
     };
 
+    if (submitted) {
+        return (
+            <Box textAlign="center" p={10}>
+                <Image src={spongeBobThankYouMeme} alt="Thank You" mx="auto" />
+            </Box>
+        );
+    }
+
     return (
-        <div className="feedback-layout">
-            <h1>Tell us your experience</h1>
-            <p>We value your feedback. Please share your experience with us.</p>
-            <img src={emojis[rating]} alt="Feedback Emoji" className="feedback-emoji" />
-            <div className="star-rating">
-                {[...Array(5)].map((star, index) => (
-                    <span key={index} onClick={() => handleRating(index + 1)} className={`star ${rating > index ? 'filled' : ''}`}>
-                        &#9733;
-                    </span>
+        <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            p={5}
+            boxShadow="md"
+            border="1px"
+            borderColor="gray.200"
+            borderRadius="md"
+            bg="#fbf2e3"
+            w="100%"
+            minH="100vh"
+            gap={3}
+        >
+            <Text fontSize="2xl">Tell us your experience</Text>
+            <Text>We value your feedback. Please share your experience with us.</Text>
+            <Image src={emojis[rating]} w="100px" my={5} />
+            <Box display="flex" gap={2}>
+                {[...Array(5)].map((_, index) => (
+                    <StarIcon
+                        key={index}
+                        onClick={() => handleRating(index + 1)}
+                        color={rating > index ? 'yellow.400' : 'gray.300'}
+                        w={6}
+                        h={6}
+                        cursor="pointer"
+                        _hover={{ transform: "scale(1.1)" }}
+                    />
                 ))}
-            </div>
-            <form className="contact-form" onSubmit={handleSubmit}>
-                <input type="text" name="firstName" placeholder="First Name" />
-                <input type="text" name="lastName" placeholder="Last Name" />
-                <input type="email" name="email" placeholder="Email" />
-                <input type="tel" name="phoneNumber" placeholder="Phone Number" />
-                <textarea name="message" placeholder="Your Message"></textarea>
-                <button type="submit">Send Feedback</button>
-            </form>
-
-        </div>
-
+            </Box>
+            <Box as="form" onSubmit={handleSubmit} w="full" maxW="400px" display="flex" flexDirection="column" gap={3}>
+                <FormControl isRequired>
+                    <FormLabel>First Name</FormLabel>
+                    <Input name="firstName" placeholder="First Name" required bg="white" />
+                </FormControl>
+                <FormControl isRequired>
+                    <FormLabel>Last Name</FormLabel>
+                    <Input name="lastName" placeholder="Last Name" required bg="white"/>
+                </FormControl>
+                <FormControl isRequired>
+                    <FormLabel>Email</FormLabel>
+                    <Input name="email" type="email" placeholder="Email" required bg="white"/>
+                </FormControl>
+                <FormControl isRequired>
+                    <FormLabel>Phone Number</FormLabel>
+                    <Input name="phoneNumber" type="tel" placeholder="Phone Number" required bg="white"/>
+                </FormControl>
+                <FormControl isRequired>
+                    <FormLabel>Your Message</FormLabel>
+                    <Textarea name="message" placeholder="Your Message" required bg="white" />
+                </FormControl>
+                <Button type="submit" colorScheme="blue">Send Feedback</Button>
+            </Box>
+        </Box>
     );
 };
 

@@ -4,11 +4,22 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
+const ADMIN_EMAILS = [
+    'sc354@njit.edu',
+    'dp788@njit.edu',
+    'jkr27@njit.edu',
+    'va332@njit.edu'
+  ];
+
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const navigate = useNavigate();
+
+    const navigate = useNavigate(); // Use the useNavigate hook
+    const isAdmin = () => user && ADMIN_EMAILS.includes(user.email);
+
+
     const login = (userData, token, remember_me) => {
         if (remember_me) {
             localStorage.setItem('token', token);
@@ -163,6 +174,7 @@ export const AuthProvider = ({ children }) => {
         updateProfile, 
         changePassword,  // Ensure this is included
         deleteAccount,
+        isAdmin, // Make isAdmin available to other components
     };
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

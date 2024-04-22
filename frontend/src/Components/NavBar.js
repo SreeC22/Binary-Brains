@@ -21,10 +21,11 @@ import './navbar.css';
 
 const NavBar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
-  const { user, logout } = useAuth(); // Destructure logout function from useAuth
+  const { user, logout,isAdmin  } = useAuth(); // Destructure logout function from useAuth
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState('');
+
 
   const handleLogout = () => {
     logout(); // Invoke the logout function
@@ -102,7 +103,12 @@ const NavBar = () => {
             </MenuButton>
               <MenuList>
                 <MenuItem as={RouterLink} to="/profile-settings">Profile Settings</MenuItem>
+                {/* Feedback Summary link, visible only to admins */}
+                {isAdmin() && (
+                  <MenuItem as={RouterLink} to="/feedback-summary" style={{ color: 'inherit' }}>Feedback Summary</MenuItem>
+                )}
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                
               </MenuList>
             </Menu>
           </>

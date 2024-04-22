@@ -5,6 +5,7 @@ import './App.css';
 import NavBar from './Components/NavBar';
 import HomePage from './Pages/HomePage';
 import FeedbackPage from './Pages/FeedbackPage/FeedbackPage';
+import FeedbackSummary from './Pages/FeedbackPage/FeedbackSummary';
 import LoginPage from './Pages/LoginPage';
 import DocumentationPage from './Pages/DocumentationPage';
 import FAQsPage from './Pages/FaqsPage/FAQsPage';
@@ -26,6 +27,8 @@ import TwoFactorAuthPage from './Pages/TwoFactorAuthPage'; // Ensure this import
 
 
 function App() {
+
+  
   return (
     <ColorModeProvider>
 
@@ -36,6 +39,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
+            <Route path="/feedback-summary" element={<FeedbackSummary />} />
             <Route path="/documentation" element={<DocumentationPage />} />
             <Route path="/faqs" element={<FAQsPage />} />
             <Route path="/tutorial-1" element={<Tutorial1/>} />
