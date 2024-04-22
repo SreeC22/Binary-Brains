@@ -8,17 +8,17 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const navigate = useNavigate(); // Use the useNavigate hook
-
+    const navigate = useNavigate();
     const login = (userData, token, remember_me) => {
         if (remember_me) {
             localStorage.setItem('token', token);
         } else {
             sessionStorage.setItem('token', token);
         }
-        setUser(userData);
-        navigate('/');
+        setUser(userData);  
+        navigate('/'); 
     };
+    
 
     const logout = () => {
         localStorage.removeItem('token');
@@ -29,25 +29,34 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUserData = async () => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (token) {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-                if (response.ok) {
-                    const userData = await response.json();
-                    setUser(userData);
-                } else {
-                    logout();
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
+        if (!token) {
+            console.log("No token found, user is likely not logged in.");
+            return;
+        }
+    
+        try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/user/profile`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            
+            
+    
+            if (response.ok) {
+                const userData = await response.json();
+                setUser(userData);
+            } else {
+                console.error(`Failed to fetch user data: ${response.status}`);
                 logout();
             }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            logout();
         }
     };
+    
+    
     const updateProfile = async ({ email, username }) => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         if (!token) {
@@ -77,7 +86,7 @@ export const AuthProvider = ({ children }) => {
 
     const changePassword = async (currentPassword, newPassword) => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token'); // Retrieve the token directly
-        console.log("Token for password change: ", token); // Debug log
+        console.log("Token for password change: ", token); 
     
         if (!token) {
             console.error("Token not found");
@@ -89,7 +98,7 @@ export const AuthProvider = ({ children }) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // Use the directly retrieved token
+                    'Authorization': `Bearer ${token}`, 
                 },
                 body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
             });
@@ -143,7 +152,7 @@ export const AuthProvider = ({ children }) => {
     
     useEffect(() => {
         fetchUserData();
-    }, []);
+    }, [fetchUserData]); 
 
 
     const value = {

@@ -51,7 +51,9 @@ const TranslateCode = () => {
   useEffect(() => {
     const callAPI = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8080/api/test_gpt3');
+        const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
+
+        const response = await fetch(`${apiUrl}/api/test_gpt3`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -126,8 +128,10 @@ const handleClose = () => {
   };
 
 const fetchTranslatedCode = async () => {
+  const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
+
     try {
-      const response = await fetch('http://127.0.0.1:8080/backendtranslationlogic', {
+      const response = await fetch(`${apiUrl}/backendtranslationlogic`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,6 +214,7 @@ const saveTranslationHistory = async () => {
     console.error("No user logged in or outputCode is empty.");
     return;
   }
+  const apiUrl = process.env.REACT_APP_BACKEND_URL;
 
   const requestData = {
     email: user.email, // Assuming `user` object has an `email` property
@@ -222,7 +227,7 @@ const saveTranslationHistory = async () => {
   console.log("Sending request with data:", requestData);
   
     try {
-      const response = await fetch('http://localhost:8080/save_translation_history', {
+      const response = await fetch(`${apiUrl}/save_translation_history`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -262,16 +267,9 @@ const handleConvert = async () => {
       setError("Input code is required");
       return;
     }
-    toast({
-      title: "Translation Queued",
-      description: "Your translation is being processed. Please wait...",
-      status: "info",
-      duration: 5000, // Setting duration to null to make it persist until user interaction
-      isClosable: true,
-      position: "top",
-    });
+    const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
       try {
-      const preprocessedCodeResponse = await fetch('http://127.0.0.1:8080/preprocess_code', {
+        const preprocessedCodeResponse = await fetch(`${apiUrl}/preprocess_code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

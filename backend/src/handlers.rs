@@ -20,7 +20,8 @@ use crate::models::preprocessingCodeInput;
 use crate::models::backendtranslationrequest;
 use mongodb::bson::oid::ObjectId;
 use mongodb::options::FindOptions;
-
+use crate::auth::{generate_2fa_token, send_2fa_email};
+use crate::db::store_2fa_token;
 use log::{debug, error};
 use actix_web::{post};
 use crate::models::{RequestPasswordResetForm, ResetPasswordForm};
@@ -31,13 +32,24 @@ use chrono::{Duration, Utc};
 use crate::db::DbOps;
 use std::sync::Arc;
 use futures_util::TryStreamExt;
+use crate::models::Verify2FARequest;
+use rand::{distributions::Alphanumeric, Rng};
+use mongodb::{error::Result as MongoResult};
+use mongodb::bson::{Bson};
+use jsonwebtoken::{encode, EncodingKey, Header};
+use serde::{Serialize};
 
-pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb::Collection<User>>>) -> impl Responder {
+pub async fn get_user_profile(auth: BearerAuth, db: web::Data<mongodb::Collection<User>>) -> impl Responder {
+    println!("Received token: {}", auth.token()); // Debug print
     match decode_jwt(auth.token()) {
         Ok(claims) => {
+            println!("JWT claims decoded successfully: {:?}", claims); // Debug print
             match get_user_by_email(&db, &claims.email).await {
                 Ok(Some(user)) => HttpResponse::Ok().json(user),
-                Ok(None) => HttpResponse::NotFound().json("User not found"),
+                Ok(None) => {
+                    println!("User not found for email: {}", &claims.email); // Debug print
+                    HttpResponse::NotFound().json("User not found")
+                },
                 Err(e) => {
                     error!("Database error: {:?}", e);
                     HttpResponse::InternalServerError().finish()
@@ -50,6 +62,7 @@ pub async fn get_user_profile(auth: BearerAuth, db: web::Data<web::Data<mongodb:
         },
     }
 }
+
 // google oauth callback
 pub async fn oauth_callback(
     query: web::Query<OAuthCallbackQuery>, 
@@ -96,53 +109,50 @@ pub async fn github_oauth_callback(
 }
 
 
-// login user
+//login async with JSON credentials and mongodb collection
 pub async fn login(
     credentials: web::Json<LoginRequest>,
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
+    //extracting whatever is coming from json payload
     let login_request = credentials.into_inner();
 
-    if let Ok(Some(existing_user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
-        if let Some(db_password) = &existing_user.password {
-            // Correctly handle verification result
-            match verify(&login_request.password, db_password) {
-                Ok(verification_result) => {
-                    if verification_result {
-                        let token = generate_jwt(&existing_user.email, login_request.remember_me).unwrap(); // Handle errors properly
-                        return HttpResponse::Ok().json(json!({
-                            "message": "Login successful",
-                            "token": token,
-                            "user": {
-                                "email": existing_user.email,
-                                "username": existing_user.username
-                            }
-                        }));
-                    } else {
-                        // Password does not match
-                        return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
-                    }
-                },
-                Err(_) => {
-                    // Verification failed due to an error
-                    return HttpResponse::InternalServerError().json(json!({"error": "An error occurred during login"}));
-                }
+    //find the user in the db based on json email payload
+    if let Ok(Some(user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
+        if let Some(db_password) = &user.password {
+            //check password
+            if verify_password(&login_request.password, db_password).unwrap_or(false) { // assuming verify_password returns a Result<bool, Error>
+                //generate 2fa token
+                let token_2fa = generate_2fa_token();
+                //send email to user
+                send_2fa_email(&user.email, &token_2fa).unwrap(); 
+                
+                //store 2fa securely
+                store_2fa_token(&db, &user.email, &token_2fa).await.unwrap(); 
+
+                //return a response that 2fa is required
+                return HttpResponse::Ok().json(json!({
+                    "message": "2FA token sent to your email.",
+                    "requires2FA": true,
+                    "email": user.email  //incliding email to simplify frontend logic
+                }));
+            } else {
+                return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
             }
-        } else {
-            // No password set for user (unusual case)
-            return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
         }
     }
-
-    // User not found
-    HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
+    HttpResponse::Unauthorized().json(json!({"message": "User not found or invalid credentials"}))
 }
+
+
+
+
 
 use crate::models::BlacklistedToken;
 use mongodb::Database;
 use mongodb::bson::Document;
 pub async fn logout(
-    db: web::Data<Collection<Document>>, // This is already a collection
+    db: web::Data<Collection<Document>>, 
     auth: BearerAuth,
 ) -> Result<HttpResponse, actix_web::Error> {
     let token = auth.token();
@@ -156,12 +166,10 @@ pub async fn logout(
         "expiry": (Utc::now() + Duration::weeks(2)).timestamp(),
     };
 
-    // Directly use `db` to insert the document
     match db.insert_one(blacklisted_token_doc, None).await {
         
         Ok(_) => Ok(HttpResponse::Ok().json("Logged out successfully")),
         Err(e) => {
-            //eprintln!("Could not insert token into blacklist: {}", e);
             Err(actix_web::error::ErrorInternalServerError("Could not insert token into blacklist"))
         },
     }
@@ -169,26 +177,33 @@ pub async fn logout(
 
 
 
-// register user
 pub async fn register(
     credentials: web::Json<User>, 
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
     let user_info = credentials.into_inner();
 
+    // Check if user already exists
     if let Ok(Some(_)) = db.find_one(doc! {"email": &user_info.email}, None).await {
         return HttpResponse::Conflict().json(json!({"message": "User already exists"}));
     }
 
+    // Generate token and expiration
+    let token: String = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(30)
+        .map(char::from)
+        .collect();
+    let expiration_time = Utc::now() + Duration::minutes(10); // Token expires in 10 minutes
+
+    // Hash password
     if let Some(password) = &user_info.password {
         let hashed_password = match hash(password, DEFAULT_COST) {
             Ok(h) => h,
-            Err(e) => {
-                //eprintln!("Error hashing password: {}", e);
-                return HttpResponse::InternalServerError().finish();
-            },
+            Err(_) => return HttpResponse::InternalServerError().finish(),
         };
 
+        // Prepare new user data
         let new_user = User {
             id: None,
             username: user_info.username,
@@ -198,21 +213,19 @@ pub async fn register(
             github_id: None,
             reset_token: None,
             reset_token_expiry: None,
-
+            two_fa_expiration: Some(bson::DateTime::from_millis(expiration_time.timestamp_millis())),
+            two_fa_token: Some(token),
         };
 
+        // Insert new user
         match db.insert_one(new_user.clone(), None).await {
             Ok(_) => HttpResponse::Ok().json(json!({"message": "User registered successfully", "user": new_user})),
-            Err(e) => {
-                //eprintln!("Failed to register user: {}", e);
-                return HttpResponse::InternalServerError().finish();
-            }
+            Err(_) => HttpResponse::InternalServerError().finish(),
         }
     } else {
-        return HttpResponse::BadRequest().json(json!({"message": "Password is required"}));
+        HttpResponse::BadRequest().json(json!({"message": "Password is required"}))
     }
 }
-
 
 // exchange google code for token
 async fn exchange_code_for_token(code: &str, oauth_config: &OAuthConfig) -> Result<TokenResponse, actix_web::error::Error> {
@@ -711,6 +724,50 @@ pub async fn reset_password(
     }
 }
 
+//async verify the 2fa token against whats in db
+pub async fn verify_2fa_token(db: &Collection<User>, email: &str, token: &str) -> MongoResult<bool> {
+    let user = db.find_one(
+        doc! {
+            "email": email,
+            "two_fa_token": token,
+            "two_fa_expiration": { "$gte": Bson::DateTime(bson::DateTime::now()) }
+        },
+        None
+    ).await?;
+//return true if everything above matched
+    Ok(user.is_some())
+}
 
 
 
+use crate::models::Claims;
+
+//async f to verifu 2fa token and issue a JWT if that went successfull
+pub async fn verify_2fa(
+    data: web::Json<Verify2FARequest>,
+    db: web::Data<Collection<User>>,
+) -> impl Responder {
+    match verify_2fa_token(&db, &data.email, &data.token).await {
+        Ok(true) => {
+            //retrieve jwt secret key
+            let secret_key = std::env::var("JWT_SECRET_KEY").unwrap_or_else(|_| "fallback_secret".to_string());
+            //24 hr expriration
+            let expiration = Utc::now() + chrono::Duration::hours(24);
+
+            let claims = Claims {
+                email: data.email.clone(),
+                exp: expiration.timestamp() as i64,
+            };
+            //encode jtw using secret key
+            match encode(&Header::default(), &claims, &EncodingKey::from_secret(secret_key.as_bytes())) {
+                Ok(token) => HttpResponse::Ok().json(json!({
+                    "message": "Login successful",
+                    "token": token
+                })),
+                Err(_) => HttpResponse::InternalServerError().json(json!({"error": "JWT encoding failed"})),
+            }
+        },
+        Ok(false) => HttpResponse::Unauthorized().json(json!({"message": "Invalid 2FA token"})),
+        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Database error"})),
+    }
+}

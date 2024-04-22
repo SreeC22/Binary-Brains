@@ -20,6 +20,7 @@ import ResetPasswordPage from './Pages/ResetPasswordPage';
 
 import Article2 from './Pages/FaqsPage/Article2'; // Import the new component
 import Tutorial1 from './Pages/FaqsPage/Tutorial1';
+import TwoFactorAuthPage from './Pages/TwoFactorAuthPage'; // Ensure this import path is correct
 
 
 
@@ -47,8 +48,7 @@ function App() {
             <Route path="/reset-request" element={<RequestReset />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-          
-
+            <Route path="/two-factor-auth" element={<TwoFactorAuthPage />} />
             <Route path="/history" element={<TranslationHistoryPage />} />
           </Routes>
         </AuthProvider>
