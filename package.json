@@ -65,14 +65,13 @@
     ]
   },
   "scripts": {
-    "preinstall": "npm install --legacy-peer-deps",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "cross-env REACT_APP_BACKEND_URL=http://localhost:3000 jest",
     "eject": "react-scripts eject",
-    "jest-preview": "jest-preview"
-  }
-  ,
+    "jest-preview": "jest-preview",
+    "heroku-postbuild": "npm run build"
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
