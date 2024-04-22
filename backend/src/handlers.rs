@@ -109,29 +109,32 @@ pub async fn github_oauth_callback(
 }
 
 
-// login user
-// login user
+//login async with JSON credentials and mongodb collection
 pub async fn login(
     credentials: web::Json<LoginRequest>,
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
+    //extracting whatever is coming from json payload
     let login_request = credentials.into_inner();
 
+    //find the user in the db based on json email payload
     if let Ok(Some(user)) = db.find_one(doc! {"email": &login_request.email}, None).await {
         if let Some(db_password) = &user.password {
+            //check password
             if verify_password(&login_request.password, db_password).unwrap_or(false) { // assuming verify_password returns a Result<bool, Error>
-                // Generate a 2FA token and store it temporarily or send it to the user
+                //generate 2fa token
                 let token_2fa = generate_2fa_token();
-                send_2fa_email(&user.email, &token_2fa).unwrap();  // In production, handle errors properly
+                //send email to user
+                send_2fa_email(&user.email, &token_2fa).unwrap(); 
                 
-                // Store the 2FA token in a secure, temporary place (e.g., a short-lived cache or the database)
-                store_2fa_token(&db, &user.email, &token_2fa).await.unwrap(); // Handle errors properly
+                //store 2fa securely
+                store_2fa_token(&db, &user.email, &token_2fa).await.unwrap(); 
 
-                // Return a response indicating that 2FA is required
+                //return a response that 2fa is required
                 return HttpResponse::Ok().json(json!({
                     "message": "2FA token sent to your email.",
                     "requires2FA": true,
-                    "email": user.email  // Optionally include email to simplify the next step for the frontend
+                    "email": user.email  //incliding email to simplify frontend logic
                 }));
             } else {
                 return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
@@ -149,7 +152,7 @@ use crate::models::BlacklistedToken;
 use mongodb::Database;
 use mongodb::bson::Document;
 pub async fn logout(
-    db: web::Data<Collection<Document>>, // This is already a collection
+    db: web::Data<Collection<Document>>, 
     auth: BearerAuth,
 ) -> Result<HttpResponse, actix_web::Error> {
     let token = auth.token();
@@ -163,12 +166,10 @@ pub async fn logout(
         "expiry": (Utc::now() + Duration::weeks(2)).timestamp(),
     };
 
-    // Directly use `db` to insert the document
     match db.insert_one(blacklisted_token_doc, None).await {
         
         Ok(_) => Ok(HttpResponse::Ok().json("Logged out successfully")),
         Err(e) => {
-            //eprintln!("Could not insert token into blacklist: {}", e);
             Err(actix_web::error::ErrorInternalServerError("Could not insert token into blacklist"))
         },
     }
@@ -723,7 +724,7 @@ pub async fn reset_password(
     }
 }
 
-
+//async verify the 2fa token against whats in db
 pub async fn verify_2fa_token(db: &Collection<User>, email: &str, token: &str) -> MongoResult<bool> {
     let user = db.find_one(
         doc! {
@@ -733,7 +734,7 @@ pub async fn verify_2fa_token(db: &Collection<User>, email: &str, token: &str) -
         },
         None
     ).await?;
-
+//return true if everything above matched
     Ok(user.is_some())
 }
 
@@ -741,20 +742,23 @@ pub async fn verify_2fa_token(db: &Collection<User>, email: &str, token: &str) -
 
 use crate::models::Claims;
 
+//async f to verifu 2fa token and issue a JWT if that went successfull
 pub async fn verify_2fa(
     data: web::Json<Verify2FARequest>,
     db: web::Data<Collection<User>>,
 ) -> impl Responder {
     match verify_2fa_token(&db, &data.email, &data.token).await {
         Ok(true) => {
+            //retrieve jwt secret key
             let secret_key = std::env::var("JWT_SECRET_KEY").unwrap_or_else(|_| "fallback_secret".to_string());
+            //24 hr expriration
             let expiration = Utc::now() + chrono::Duration::hours(24);
 
             let claims = Claims {
                 email: data.email.clone(),
                 exp: expiration.timestamp() as i64,
             };
-
+            //encode jtw using secret key
             match encode(&Header::default(), &claims, &EncodingKey::from_secret(secret_key.as_bytes())) {
                 Ok(token) => HttpResponse::Ok().json(json!({
                     "message": "Login successful",

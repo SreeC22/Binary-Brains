@@ -241,8 +241,7 @@ pub async fn insert_translation_history(
     }
 }
 
-
-// Store 2FA token in the database
+//store token in db with 10 min expiry
 pub async fn store_2fa_token(db: &Collection<User>, email: &str, token: &str) -> MongoResult<()> {
     let expiration = Utc::now() + Duration::minutes(10); // Token expires in 10 minutes
     db.update_one(
@@ -254,18 +253,4 @@ pub async fn store_2fa_token(db: &Collection<User>, email: &str, token: &str) ->
         None
     ).await?;
     Ok(())
-}
-
-// Verify 2FA token
-pub async fn verify_2fa_token(db: &Collection<User>, email: &str, token: &str) -> MongoResult<bool> {
-    let user = db.find_one(
-        doc! {
-            "email": email,
-            "two_fa_token": token,
-            "two_fa_expiration": { "$gte": Bson::DateTime(bson::DateTime::from_millis(Utc::now().timestamp_millis())) }
-        },
-        None
-    ).await?;
-
-    Ok(user.is_some())
 }
