@@ -1,80 +1,84 @@
 // Import React and any necessary hooks or components
 import React from 'react';
+import logo from './images/logo.jpg';
 import bbimage from './images/Code Translation.png';
-import homepageimage from './images/Homepage.jpg';
-import Page2 from './images/Layout18.jpg';
-import faqs from './images/faqs.jpg';
-import image3 from './images/image 10.png';
+import Layout4 from './images/layout4plcholder.webp';
+import homepageimage from './images/Homepage.jpg'
 import image6 from './images/image 6.png';
 import image1 from './images/layou240.png';
-import Layout4 from './images/layout4plcholder.webp';
-import logo from './images/logo.jpg';
-import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
+import image2 from './images/image 7.png';
+import image3 from './images/image 10.png';
+import Page2 from './images/Layout18.jpg';
+import faqs from './images/faqs.jpg';
 
-import { CheckCircleIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Button, Divider, Flex, Grid, GridItem, HStack, Heading, Image, List, ListIcon, ListItem, Text, VStack } from '@chakra-ui/react';
-import { Link, useNavigate } from 'react-router-dom';
-import logos1 from './images/logos1.png';
-import logos2 from './images/logos2.png';
-
+import { Box, Text, createIcon,Button, VStack, Image, HStack, ListItem, ListIcon, useBreakpointValue,useMediaQuery, List, Grid, Divider, GridItem, useColorModeValue, Accordion, AccordionItem, AccordionButton, AccordionPanel,Container,AccordionIcon, layout } from '@chakra-ui/react';
+import { Flex, Icon, Heading } from '@chakra-ui/react';
+import { ChevronRightIcon } from '@chakra-ui/icons'
+import { CheckCircleIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon } from '@chakra-ui/icons';
+import { Navigate, useNavigate } from 'react-router-dom';
+import logos1 from './images/logos1.png'
+import logos2 from './images/logos2.png'
+import { Link } from 'react-router-dom';
 
 const HomePage = () => {
   let navigate = useNavigate();
   const goToPage = (path) => {
     navigate(path);
   };
+ 
+  // const buttonSize = useBreakpointValue({ base: 'sm', md: 'md' });
+
   return (
-    <>
+    <> 
       <Box className='HOMEPAGE'
         w="full"
         h="100vh"
         minH="100vh"
         overflow="auto"
       >
-        <Box className='Transform Your Code with Ease'
-          display="flex"
-          w={{ base: "100%" }}
-          h={{ base: "auto", lg: "900px" }}
-          px={{ base: "4", md: "16", lg: "64px" }}
-          alignItems="center"
-          flexShrink={0}
-          bgImage={`url(${homepageimage})`}
-          bgSize="cover"
-          bgPos="center"
-          loading="lazy"
+         <Box
+      display="flex"
+      w={{ base: "100%" }}
+      h={{ base: "auto", lg: "900px" }}
+      px={{ base: "4", md: "16", lg: "64px" }}
+      alignItems="center"
+      flexShrink={0}
+      bgImage={`url(${homepageimage})`}
+      bgSize="cover"
+      bgPos="center"
+    >
+      <VStack
+        alignItems={{ base: "center", md: "flex-start" }}
+        spacing={6}
+        w={{ base: "100%", md: "560px" }}
+        textAlign={{ base: "center", md: "right" }}
+      >
+        <Text
+          fontSize={{ base: "3xl", md: "4xl", lg: "65px" }}
+          fontWeight="400"
+          lineHeight="120%"
         >
-          <VStack
-            alignItems={{ base: "center", md: "flex-start" }}
-            spacing={6}
-            w={{ base: "100%", md: "560px" }}
-            textAlign={{ base: "center", md: "right" }}
-          >
-            <Text
-              fontSize={{ base: "3xl", md: "4xl", lg: "65px" }}
-              fontWeight="400"
-              lineHeight="120%"
-            >
-              Transform Your Code with Ease and Efficiency
-            </Text>
-            <Text
-              fontSize={{ base: "md", lg: "18px" }}
-              fontWeight="400"
-              lineHeight="150%"
-            >
-              Welcome to our Code Translation and Conversion Tool. Simplify the process of converting code between different languages and improve your development workflow.
-            </Text>
-            <Box display="flex" w="full" justifyContent={{ base: "center", md: "flex-end" }} pt="4">
-              <Button bg="black" color="white" border="1px" borderColor="black" mr="2" onClick={() => goToPage('/translate')}>
-                Get Started
-              </Button>
-              <Button variant="outline" borderColor="black"
-                onClick={() => goToPage('/documentation')}
-              >
-                Learn More
-              </Button>
-            </Box>
-          </VStack>
+          Transform Your Code with Ease and Efficiency
+        </Text>
+        <Text
+          fontSize={{ base: "md", lg: "18px" }}
+          fontWeight="400"
+          lineHeight="150%"
+        >
+          Welcome to our Code Translation and Conversion Tool. Simplify the process of converting code between different languages and improve your development workflow.
+        </Text>
+        <Box display="flex" w="full" justifyContent={{ base: "center", md: "flex-end" }} pt="4">
+          <Button bg="black" color="white" border="1px" borderColor="black" mr="2" onClick={() => goToPage('/login')}>
+            Get Started
+          </Button>
+          <Button variant="outline" borderColor="black"  onClick={() => goToPage('/documentation')}>
+            Learn More
+          </Button>
         </Box>
+      </VStack>
+    </Box>
+      
         <Divider orientation="horizontal" borderColor="black" borderWidth="1px" width="full" />
 
 
@@ -87,7 +91,7 @@ const HomePage = () => {
           gap={{ base: "40px", md: "80px" }}
           bgImage={`url(${Page2})`}
           bgSize="contain"
-          loading="lazy"
+
         >
           <Box
             display="flex"
@@ -152,7 +156,6 @@ const HomePage = () => {
           bgImage="url('/path/to/images/Layout4image.jpg')"
           bgSize="cover"
           borderRadius="8px"
-          loading="lazy"
         >
           <Flex alignItems="center" gap={{ base: "20px", md: "69px" }} w="full">
             <Image
@@ -220,7 +223,6 @@ const HomePage = () => {
           bgPos="center"
           bgRepeat="no-repeat"
           bg="lightgray"
-          loading="lazy"
         >
           <Box
             display="flex"
