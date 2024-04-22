@@ -298,41 +298,78 @@ use crate::db::insert_feedback;
 
 pub mod feedback {
     use super::*;
-    use futures_util::stream::TryStreamExt;
-    use actix_web::{web, HttpResponse, Responder};
-    use mongodb::{Collection};
+use futures_util::stream::TryStreamExt;
+use actix_web::{web, HttpResponse, Responder};
+use mongodb::{
+    bson::{doc, Bson},
+    Collection,
+};
+use serde_json::json;
 
-    #[get("/feedback")]
-    pub async fn get_feedback(db: web::Data<Collection<Feedback>>) -> impl Responder {
-        // Query feedback data from MongoDB collection
-        let mut cursor = db.find(None, None)
-            .await
-            .expect("Failed to execute find operation");
+#[get("/feedback")]
+pub async fn get_feedback(db: web::Data<Collection<Feedback>>) -> impl Responder {
+    // Query individual feedback data from MongoDB collection
+    let cursor = db.find(None, None).await;
+    let mut feedback_entries = Vec::new();
 
-        // Initialize a vector to hold feedback data
-        let mut feedback_data = vec![];
-
-        // Iterate over the cursor to fetch feedback data
-        while let Some(result) = TryStreamExt::try_next(&mut cursor).await.expect("Failed to iterate cursor") {
-            // Access fields directly from Feedback struct
-            let phoneNumber = result.phoneNumber;
-            let rating = result.rating;
-            let email = result.email;
-            let firstName = result.firstName;
-            let lastName = result.lastName;
-            let message = result.message;
-
-            // Format feedback data as desired (example: concatenating fields)
-            let formatted_feedback = format!("Name: {} {}, Email: {}, Phone Number: {}, Rating: {},  Message: {}", firstName, lastName, email, phoneNumber, rating, message);
-            feedback_data.push(formatted_feedback);
-        }
-
-        // Format feedback data as a string
-        let feedback_list = feedback_data.join("\n");
-
-        // Return the response with formatted feedback data
-        HttpResponse::Ok().body(feedback_list)
+    // Collect feedback entries without _id field
+    match cursor {
+        Ok(mut cursor) => {
+            while let Some(feedback) = cursor.try_next().await.unwrap_or(None) {
+                let feedback_data = json!({
+                    "firstName": feedback.firstName,
+                    "lastName": feedback.lastName,
+                    "email": feedback.email,
+                    "phoneNumber": feedback.phoneNumber,
+                    "message": feedback.message,
+                    "rating": feedback.rating,
+                });
+                feedback_entries.push(feedback_data);
+            }
+        },
+        Err(_) => return HttpResponse::InternalServerError().json("Failed to fetch feedback"),
     }
+
+    // Perform aggregation to calculate average rating and total number of feedback entries
+    let agg_pipeline = vec![
+        doc! {
+            "$group": {
+                "_id": null,
+                "averageRating": { "$avg": "$rating" },
+                "totalFeedback": { "$sum": 1 },
+            }
+        },
+        // You can add other aggregation stages here if needed.
+    ];
+
+    // Run the aggregation pipeline
+    let agg_cursor = db.aggregate(agg_pipeline, None).await;
+    let agg_results = match agg_cursor {
+        Ok(mut cursor) => cursor.try_next().await.unwrap_or(None),
+        Err(_) => return HttpResponse::InternalServerError().json("Failed to aggregate feedback"),
+    };
+
+    let (average_rating, total_feedback) = if let Some(agg_result) = agg_results {
+        (
+            agg_result.get_f64("averageRating").unwrap_or(0.0),
+            agg_result.get_i32("totalFeedback").unwrap_or(0) as i64, // Cast as i64 if necessary
+        )
+    } else {
+        (0.0, 0)
+    };
+
+    // Prepare the final JSON response
+    let response = json!({
+        "feedbackEntries": feedback_entries,
+        "aggregatedData": {
+            "averageRating": average_rating,
+            "totalFeedback": total_feedback,
+        }
+    });
+
+    HttpResponse::Ok().json(response)
+}
+    
 }
 
 pub async fn submit_feedback(

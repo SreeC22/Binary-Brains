@@ -62,6 +62,7 @@ pub struct Feedback {
     pub message: String,
     pub rating: i32,
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlacklistedToken {
     pub token: String,

@@ -12,6 +12,8 @@ const AboutUsPage = () => {
   const bg = useColorModeValue('white', 'gray.700');
     const color = useColorModeValue('gray.600', 'gray.400');
     const headingColor = useColorModeValue('gray.800', 'gray.200');
+    const textHoverColor = useColorModeValue('gray.700', 'white');
+
 
     const teamMembers = [
         {
@@ -50,53 +52,62 @@ const AboutUsPage = () => {
             linkedinUrl: "https://www.linkedin.com/in/erantha-arachchi-b851481b7/"
         }
     ];
-
     return (
-      <>
+        <>
           <Box
-              display="flex" flexDirection="column" alignItems="center" w="full" p={{ base: "6", md: "8", lg: "28" }} gap={{ base: "6", md: "8", lg: "20" }} bg={useColorModeValue('gray.100', 'gray.900')}
+            display="flex" flexDirection="column" alignItems="center" w="full"
+            p={{ base: "6", md: "8", lg: "15" }}
+            gap={{ base: "6", md: "8", lg: "15" }}
+            bg={useColorModeValue('gray.100', 'gray.900')}
           >
-              <Text fontSize="5xl" fontWeight="bold" mb="4" textAlign="center">
-                  Meet Our Team
-              </Text>
+            <Text fontSize="5xl" fontWeight="bold" mb="4" textAlign="center">
+              Meet Our Team
+            </Text>
 
-              <Text textAlign="center" mb="8">
-                  We're a cocktail of creativity and code – a kaleidoscope of coders, designers, and dreamers.
-              </Text>
-
-              <SimpleGrid columns={[1, 2, 3]} spacing="40px" w="full">
-                  {teamMembers.map(member => (
-                      <Box key={member.name} p="4" shadow="md" borderWidth="1px" borderRadius="lg" textAlign="center" bg={bg}>
-                          <Image
-                              borderRadius="full"
-                              boxSize="150px"
-                              src={member.imageUrl}
-                              alt={`Picture of ${member.name}`}
-                              mx="auto"
-                              my="4"
-                              sx={{
-                                  filter: 'grayscale(100%)',
-                                  transition: 'filter 0.3s',
-                                  _hover: {
-                                      filter: 'grayscale(0%)'
-                                  }
-                              }}
-                          />
-                          <Text fontWeight="bold" fontSize="xl" my="2">{member.name}</Text>
-                          <Text fontSize="lg" color={color}>{member.role}</Text>
-                          <Text fontSize="md" px="6" my="4" color={headingColor}>
-                              {member.description}
-                          </Text>
-                          <Link href={member.linkedinUrl} isExternal>
-                              <Text color="blue.500">Connect on LinkedIn</Text>
-                          </Link>
-                      </Box>
-                  ))}
-              </SimpleGrid>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing="40px" w="80%">
+              {teamMembers.map(member => (
+                <Box
+                  key={member.name}
+                  shadow="md"
+                  borderWidth="1px"
+                  borderRadius="lg"
+                  textAlign="center"
+                  bg={bg}
+                  overflow="hidden" // Makes sure the image does not bleed outside the border radius
+                >
+                  <Image
+                    src={member.imageUrl}
+                    alt={`Picture of ${member.name}`}
+                    w="full" 
+                    h="auto" 
+                    sx={{
+                      filter: 'grayscale(100%)',
+                      transition: 'all 0.3s',
+                      _hover: {
+                        filter: 'grayscale(0%)',
+                        transform: 'scale(1.05)'
+                      }
+                    }}
+                  />
+                  <Box p="4">
+                    <Text fontWeight="bold" fontSize="xl" my="2">{member.name}</Text>
+                    <Text fontSize="lg" color="gray.500">{member.role}</Text>
+                    <Text fontSize="md" my="4" color="gray.600">
+                      {member.description}
+                    </Text>
+                    <Link href={member.linkedinUrl} isExternal>
+                      <Text color="blue.500">Connect on LinkedIn</Text>
+                    </Link>
+                  </Box>
+                </Box>
+              ))}
+            </SimpleGrid>
+            {/* Footer */}
+            <Box as="footer" py={4} fontFamily="Roboto" textAlign="center" borderTop="1px solid" borderTopColor="gray.300">
+                © 2024 Binary Brains. All rights reserved.
+            </Box>
           </Box>
-      </>
-  );
-
-};
-
+        </>
+      );
+    };
 export default AboutUsPage;
