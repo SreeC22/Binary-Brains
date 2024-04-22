@@ -11,9 +11,9 @@ const ProfileSettingsPage = () => {
   const toast = useToast();
 
   useEffect(() => {
-    setEmail(user?.email || '');
-    setUsername(user?.username || ''); // This will set username based on the current user object
-  }, [user]);
+    if (!username) setUsername(user?.username || '');
+    if (!email) setEmail(user?.email || '');
+}, []);
 
   const greetingText = `Hello ${username}`; 
   const handleSubmitUpdate = async (e) => {

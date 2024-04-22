@@ -102,7 +102,7 @@ const TranslateHistory = () => {
       const date = new Date(parseInt(timestamp));
       const formattedTimestamp = date.toISOString();
     
-      const url = `http://127.0.0.1:8080/delete_translation_history/${encodeURIComponent(formattedTimestamp)}`;
+      const url = `${apiUrl}/delete_translation_history/${encodeURIComponent(formattedTimestamp)}`;
       try {
         const response = await fetch(url, { method: 'DELETE' });
         if (!response.ok) {
@@ -134,7 +134,8 @@ const TranslateHistory = () => {
     
     
     const clearAllHistory = async () => {
-      const url = `http://127.0.0.1:8080/clear_translation_history/${encodeURIComponent(user.email)}`;
+      const url = `${apiUrl}clear_translation_history/${encodeURIComponent(user.email)}`;
+
       try {
         const response = await fetch(url, {
           method: 'DELETE',
