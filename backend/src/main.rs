@@ -19,7 +19,7 @@ extern crate serde;
 
 use crate::db::{init_mongo, init_feedback_collection,init_translation_history_collection};
 use crate::models::{Feedback, User,NewTranslationHistory,TranslationHistory};
-use crate::handlers::{login, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route,save_translation_history,get_translation_history_for_user,request_password_reset, reset_password};
+use crate::handlers::{login, verify_2fa, register, oauth_callback, github_oauth_callback, logout, get_user_profile, submit_feedback, delete_account_handler, update_user_profile_handler, test_gpt3_endpoint,translate_code_endpoint,backend_translate_code_handler,preprocess_code_route,save_translation_history,get_translation_history_for_user,request_password_reset, reset_password};
 use crate::handlers::change_password_handler;
 
 
@@ -98,8 +98,9 @@ async fn main() -> std::io::Result<()> {
             )
             .service(web::resource("/request-password-reset").route(web::post().to(handlers::request_password_reset)))
             .service(web::resource("/reset-password").route(web::post().to(handlers::reset_password)))
+            .service(web::resource("/verify_2fa").route(web::post().to(handlers::verify_2fa)))
             //.route("/user/{user_id}/translation_history", web::get().to(handlers::get_translation_history))
-            .route("/save_translation_history", web::post().to(save_translation_history))
+            .route("/save_translation_history", web::post().to(save_translation_history))            
             // .service(handlers::get_translation_history) // Register your GET handler
             .service(web::resource("/get_translation_history/{email}").to(get_translation_history_for_user))
 

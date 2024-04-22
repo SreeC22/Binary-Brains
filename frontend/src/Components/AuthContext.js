@@ -140,10 +140,30 @@ export const AuthProvider = ({ children }) => {
             alert("An error occurred while trying to delete the account. Please try again.");
         }
     };
+
+    const verify2FA = async (code) => {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/verify_2fa`, {
+                token,
+                code
+            });
+            if (response.data.success) {
+                setUser(response.data.user); // Update user context if 2FA is successful
+                navigate('/'); // Navigate to the dashboard
+            } else {
+                throw new Error('2FA verification failed');
+            }
+        } catch (error) {
+            console.error("2FA Error:", error);
+            alert("Failed to verify 2FA.");
+        }
+    };
+    
     
     useEffect(() => {
         fetchUserData();
-    }, []);
+    }, [fetchUserData]);
 
 
     const value = {
@@ -154,6 +174,7 @@ export const AuthProvider = ({ children }) => {
         updateProfile, 
         changePassword,  // Ensure this is included
         deleteAccount,
+        verify2FA
     };
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

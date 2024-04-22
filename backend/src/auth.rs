@@ -138,3 +138,36 @@ pub fn send_reset_email(email: &str, token: &str) -> Result<(), SmtpError> {
         },
     }
 }
+
+pub fn send_2fa_email(email: &str, token: &str) -> Result<(), SmtpError> {
+    let email_body = format!(
+        "Please click on the link to verify your login: {}/verify-login/{}",
+        env::var("FRONTEND_URL").unwrap_or_else(|_| "FRONTEND_URL".to_string()),
+        token
+    );
+
+    let email = Message::builder()
+        .from("noreply@yourdomain.com".parse().unwrap())
+        .to(email.parse().unwrap())
+        .subject("Login Verification Link")
+        .body(email_body)
+        .unwrap();
+
+    let creds = Credentials::new(
+        env::var("SMTP_USERNAME").expect("SMTP_USERNAME must be set"),
+        env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set"),
+    );
+
+    let mailer = SmtpTransport::relay("smtp.mailgun.org")
+        .unwrap()
+        .credentials(creds)
+        .build();
+
+    match mailer.send(&email) {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            //eprintln!("Failed to send 2FA email: {:?}", e); // Log more detailed error information
+            Err(e)
+        },
+    }
+}

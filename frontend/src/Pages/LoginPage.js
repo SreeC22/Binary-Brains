@@ -74,30 +74,22 @@ const LoginPage = () => {
       });
   
       const data = await response.json();
-  
+    
       if (response.ok) {
-        if (remember_me) {
-          localStorage.setItem('token', data.token);
+        if (data.message === "Please click on the link in your email to complete login.") {
+          // Store the remember_me status to local storage to persist state across pages
+          localStorage.getItem('email', email)
+          localStorage.setItem('remember_me', remember_me);
+          navigate('/email-sent');  // Redirect user to an email sent confirmation page
         } else {
-          sessionStorage.setItem('token', data.token);
+          toast({
+            title: "Unexpected response",
+            description: "Please try again.",
+            status: "error",
+            duration: 9000,
+            isClosable: true,
+          });
         }
-        setUser(data.user);
-        toast({
-          title: "Login successful.",
-          description: "You have successfully logged in.",
-          status: "success",
-          duration: 5000,
-          isClosable: true,
-        });
-        navigate('/');
-      } else if (response.status === 409) {
-        toast({
-          title: "Account exists.",
-          description: "An account with this email already exists. Please login.",
-          status: "warning",
-          duration: 9000,
-          isClosable: true,
-        });
       } else {
         toast({
           title: "Authentication failed.",
@@ -117,56 +109,94 @@ const LoginPage = () => {
       });
     }
   };
+
+  // const handleSubmitAfterVerification = async (token) => {
+  //   const email = localStorage.getItem('email') || '';  // Retrieve the email
+  //   const remember_me = localStorage.getItem('remember_me') === 'true';  // Retrieve the remember_me status
+  //   const url = `${process.env.REACT_APP_BACKEND_URL}/verify_2fa`;
+  
+  //   try {
+  //     const response = await fetch(url, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ token, remember_me }),
+  //     });
+  
+  //     const data = await response.json();
+  
+  //     if (response.ok) {
+  //       if (remember_me) {
+  //         localStorage.setItem('token', data.token);
+  //       } else {
+  //         sessionStorage.setItem('token', data.token);
+  //       }
+  //       setUser(data.user);
+  //       navigate('/');  // Redirect to the homepage or dashboard
+  //     } else {
+  //       toast({
+  //         title: "Verification failed.",
+  //         description: data.message || "Please verify your email.",
+  //         status: "error",
+  //         duration: 9000,
+  //         isClosable: true,
+  //       });
+  //     }
+  //   } catch (error) {
+  //     toast({
+  //       title: "An error occurred.",
+  //       description: "Unable to verify, please try again later.",
+  //       status: "error",
+  //       duration: 9000,
+  //       isClosable: true,
+  //     });
+  //   }
+  // };
   
   return (
     <Box display="flex" flexDirection="column" alignItems="center" w="full" p={8} bg={useColorModeValue('gray.100', 'gray.700')}>
       <VStack spacing={4} w="full" maxW="md" as="form" onSubmit={handleSubmit} boxShadow="xl" p="6" rounded="lg" bg={useColorModeValue('white', 'gray.800')}>
         <Text fontSize="2xl" fontWeight="bold">{isLogin ? 'Login' : 'Register'}</Text>
-        {!isLogin && (
-          <FormControl id="name" isRequired>
-            <FormLabel>Name</FormLabel>
-            <Input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-          </FormControl>
-        )}
+          {!isLogin && (
+            <FormControl id="name" isRequired>
+              <FormLabel>Name</FormLabel>
+              <Input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+            </FormControl>
+          )}
         <FormControl id="email" isRequired isInvalid={!isEmailValid(email) && email.length > 0}>
           <FormLabel>Email</FormLabel>
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           {!isEmailValid(email) && email.length > 0 && <FormErrorMessage>Email is invalid.</FormErrorMessage>}
         </FormControl>
         <FormControl id="password" isRequired isInvalid={!isPasswordValid(password) && password.length > 0}>
-        <FormLabel>Password</FormLabel>
-        <Text align="center" mt="4">
-
-</Text>
-<Input
-  data-testid="passwordInput" // Add this line for test ID
-  type="password"
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  placeholder="Your password"
-/>
-{!isPasswordValid(password) && password.length > 0 && <FormErrorMessage>Password must be at least 8 characters.</FormErrorMessage>}
-</FormControl>
-{isLogin && (
-    <ChakraLink color="teal.500" onClick={() => navigate('/forgot-password')}>
-      Forgot password?
-    </ChakraLink>
-  )}
-{!isLogin && (
-  <FormControl isRequired isInvalid={!doesPasswordMatch() && confirmPassword.length > 0}> {/* Make sure to check confirmPassword.length to avoid invalid error before user types */}
-    <FormLabel>Confirm Password</FormLabel>
-    <Input
-      data-testid="confirmPasswordInput" // Add this line for test ID
-      type="password"
-      value={confirmPassword}
-      onChange={(e) => setConfirmPassword(e.target.value)}
-      placeholder="Confirm your password"
-    />
-    {!doesPasswordMatch() && confirmPassword.length > 0 && <FormErrorMessage>Passwords must match.</FormErrorMessage>} {/* Updated condition */}
-  </FormControl>
-)}
-
-
+          <FormLabel>Password</FormLabel>
+          <Text align="center" mt="4"></Text>
+            <Input
+              data-testid="passwordInput" // Add this line for test ID
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Your password"
+            />
+            {!isPasswordValid(password) && password.length > 0 && <FormErrorMessage>Password must be at least 8 characters.</FormErrorMessage>}
+        </FormControl>
+        {isLogin && (
+            <ChakraLink color="teal.500" onClick={() => navigate('/forgot-password')}>
+              Forgot password?
+            </ChakraLink>
+          )}
+        {!isLogin && (
+          <FormControl isRequired isInvalid={!doesPasswordMatch() && confirmPassword.length > 0}> {/* Make sure to check confirmPassword.length to avoid invalid error before user types */}
+            <FormLabel>Confirm Password</FormLabel>
+              <Input
+                data-testid="confirmPasswordInput" // Add this line for test ID
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+              />
+              {!doesPasswordMatch() && confirmPassword.length > 0 && <FormErrorMessage>Passwords must match.</FormErrorMessage>} {/* Updated condition */}
+            </FormControl>
+        )}
         <FormControl display="flex" alignItems="center">
           <FormLabel htmlFor="remember-me" mb="0">
             Remember Me
@@ -176,13 +206,14 @@ const LoginPage = () => {
         <Button type="submit" colorScheme="teal" w="full" isDisabled={!isFormValid()}>{isLogin ? 'Login' : 'Register'}</Button>
         <Button mt="4" w="full" variant="outline" onClick={() => setIsLogin(!isLogin)}>{isLogin ? 'Register' : 'Login'}</Button>
       </VStack>
+
       <Divider my="6" />
       <VStack spacing="4">
         <Text>Or login with</Text>
-        <HStack spacing="4">
-          <Button onClick={handleGoogleLogin} colorScheme="red">Google</Button>
-          <Button onClick={handleGitHubLogin} colorScheme="blue">GitHub</Button>
-        </HStack>
+          <HStack spacing="4">
+            <Button onClick={handleGoogleLogin} colorScheme="red">Google</Button>
+            <Button onClick={handleGitHubLogin} colorScheme="blue">GitHub</Button>
+          </HStack>
       </VStack>
       {isLogin && (
         <Link color="teal.500" mt="4" onClick={() => setIsLogin(false)}>Not registered? Create account now</Link>

@@ -24,7 +24,7 @@ use mongodb::options::FindOptions;
 use log::{debug, error};
 use actix_web::{post};
 use crate::models::{RequestPasswordResetForm, ResetPasswordForm};
-use crate::auth::{generate_reset_token, send_reset_email};
+use crate::auth::{generate_reset_token, send_reset_email, send_2fa_email};
 use chrono::{DateTime};
 use chrono::DateTime as ChronoDateTime;
 use chrono::{Duration, Utc};
@@ -110,14 +110,22 @@ pub async fn login(
                 Ok(verification_result) => {
                     if verification_result {
                         let token = generate_jwt(&existing_user.email, login_request.remember_me).unwrap(); // Handle errors properly
+                        if let Err(e) = send_2fa_email(&existing_user.email, &token) {                         
+                            return HttpResponse::InternalServerError().json(json!({"error": "Failed to send 2FA code"}));
+                        }
+                        println!("Token: {}", token);
+                        //println!("Email sent!!");
                         return HttpResponse::Ok().json(json!({
-                            "message": "Login successful",
-                            "token": token,
-                            "user": {
-                                "email": existing_user.email,
-                                "username": existing_user.username
-                            }
-                        }));
+                            "message": "Please click on the link in your email to complete login."                            
+                        }));            
+                        // return HttpResponse::Ok().json(json!({
+                        //     "message": "Login successful",
+                        //     "token": token,
+                        //     "user": {
+                        //         "email": existing_user.email,
+                        //         "username": existing_user.username
+                        //     }
+                        // }));
                     } else {
                         // Password does not match
                         return HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials"}));
@@ -137,6 +145,32 @@ pub async fn login(
     // User not found
     HttpResponse::Unauthorized().json(json!({"message": "Invalid credentials or user not found"}))
 }
+
+use actix_web::{HttpRequest};
+pub async fn verify_2fa(req: HttpRequest) -> impl Responder {
+    let token_header = req.headers().get("Authorization").unwrap().to_str().unwrap();
+    let token = token_header.trim_start_matches("Bearer ");
+    println!("Token here : {}", token);
+
+    match decode_jwt(&token) {        
+        Ok(claims) => {
+            println!("2FA verification successful for: {}", claims.email);
+            HttpResponse::Ok().json(json!({"message": "2FA verification successful", "email": claims.email}))
+        },
+        Err(e) => match e {
+            ServiceError::ExpiredToken => {
+                HttpResponse::Unauthorized().json(json!({"message": "Token expired"}))
+            },
+            ServiceError::InvalidToken => {
+                HttpResponse::Unauthorized().json(json!({"message": "Invalid token"}))
+            },
+            _ => {
+                HttpResponse::InternalServerError().json(json!({"message": "An error occurred during token verification"}))
+            },
+        },
+    }
+}
+
 
 use crate::models::BlacklistedToken;
 use mongodb::Database;
