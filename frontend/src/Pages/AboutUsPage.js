@@ -24,6 +24,13 @@ const AboutUsPage = () => {
             linkedinUrl: "https://www.linkedin.com/in/sreekaree/"
         },
         {
+            name: "Dave Petroviki",
+            role: "Rust Expert",
+            description: "In the digital dojo, Dave is the ninja coder, silently slicing through bugs and deploying features with stealthy precision.",
+            imageUrl: DaveImage,
+            linkedinUrl: "https://www.linkedin.com/in/dpetrovikj/"
+        },
+        {
             name: "Jesica Rana",
             role: "Front-end Developer",
             description: "Jesica weaves the web with pixel-perfect spells, making interfaces dance to the rhythm of user experiences.",
@@ -36,13 +43,6 @@ const AboutUsPage = () => {
             description: "Vanshika is the database whisperer, spinning up server-side scripts that are as robust as they are ingenious.",
             imageUrl:VanshikaImage,
             linkedinUrl: "https://www.linkedin.com/in/agrawal-vanshika/"
-        },
-        {
-            name: "Dave Petroviki",
-            role: "Software Engineer",
-            description: "In the digital dojo, Dave is the ninja coder, silently slicing through bugs and deploying features with stealthy precision.",
-            imageUrl: DaveImage,
-            linkedinUrl: "https://www.linkedin.com/in/dpetrovikj/"
         },
         {
             name: "Erantha Arachchi",

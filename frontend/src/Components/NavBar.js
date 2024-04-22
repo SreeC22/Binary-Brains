@@ -75,7 +75,8 @@ const NavBar = () => {
             <MenuItem as={RouterLink} to="/documentation">Documentation</MenuItem>
             <MenuItem as={RouterLink} to="/faqs">FAQ's</MenuItem>
             <MenuItem as={RouterLink} to="/contactus">Contact Us</MenuItem>
-           
+            <MenuItem as={RouterLink} to="/AboutUs">About Us</MenuItem>
+
           </MenuList>
         </Menu>
       </Box>
@@ -108,7 +109,6 @@ const NavBar = () => {
                   <MenuItem as={RouterLink} to="/feedback-summary" style={{ color: 'inherit' }}>Feedback Summary</MenuItem>
                 )}
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                
               </MenuList>
             </Menu>
           </>
