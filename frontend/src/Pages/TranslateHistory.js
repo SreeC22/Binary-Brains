@@ -43,11 +43,12 @@ const TranslateHistory = () => {
   const toast = useToast();
 
   const languageOptions = ['Python', 'Java', 'CPP', 'Ruby', 'Rust', 'Typescript', 'Csharp', 'Perl', 'Swift', 'Matlab'];
+  const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
 
   useEffect(() => {
     const fetchTranslationHistory = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8080/get_translation_history/${encodeURIComponent(user.email)}`);
+        const response = await fetch(`${apiUrl}/get_translation_history/${encodeURIComponent(user.email)}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

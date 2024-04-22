@@ -11,6 +11,7 @@ use mongodb::options::FindOptions;
 use actix_web::error::{ErrorUnauthorized, ErrorInternalServerError};
 use crate::errors::ServiceError;
 
+use mongodb::bson::{self};
 // initializes the mongo client and user collection
 pub async fn init_mongo() -> mongodb::error::Result<Collection<User>> {
     dotenv::dotenv().ok();
@@ -36,6 +37,8 @@ pub async fn find_or_create_user_by_google_id(db: &Collection<User>, user_info: 
                 github_id: None,
                 reset_token: None,
                 reset_token_expiry: None,
+                two_fa_expiration: None,
+                two_fa_token: None,
             };
             db.insert_one(new_user.clone(), None).await?;
             Ok(new_user)
@@ -58,6 +61,10 @@ pub async fn find_or_create_user_by_github_id(db: &Collection<User>, github_user
                 github_id: Some(github_user_info.login.clone()),
                 reset_token: None,
                 reset_token_expiry: None,
+                two_fa_expiration: None,
+                two_fa_token: None,
+
+                
             };
             db.insert_one(new_user.clone(), None).await?;
             Ok(new_user)
@@ -233,3 +240,19 @@ pub async fn insert_translation_history(
         None => Err(mongodb::error::Error::custom("Failed to retrieve ObjectId from insertion result"))
     }
 }
+
+
+//store token in db with 10 min expiry
+pub async fn store_2fa_token(db: &Collection<User>, email: &str, token: &str) -> MongoResult<()> {
+    let expiration = Utc::now() + Duration::minutes(10); // Token expires in 10 minutes
+    db.update_one(
+        doc! {"email": email},
+        doc! {"$set": {
+            "two_fa_token": token, 
+            "two_fa_expiration": Bson::DateTime(bson::DateTime::from_millis(expiration.timestamp_millis()))
+        }},
+        None
+    ).await?;
+    Ok(())
+}
+

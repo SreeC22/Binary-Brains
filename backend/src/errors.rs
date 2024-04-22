@@ -2,6 +2,7 @@ use actix_web::{error, HttpResponse, http::StatusCode, ResponseError};
 use derive_more::Display;
 use serde::Serialize;
 use serde_json::json;
+
 #[derive(Debug, Display, Serialize)]
 pub enum ServiceError {
     #[display(fmt = "Internal Server Error")]
@@ -19,7 +20,6 @@ pub enum ServiceError {
     #[display(fmt = "Incorrect Password")]
     IncorrectPassword,
 
-    // Added variants for JWT-related errors
     #[display(fmt = "Token has expired")]
     ExpiredToken,
 
@@ -58,3 +58,4 @@ impl From<bcrypt::BcryptError> for ServiceError {
         ServiceError::InternalServerError
     }
 }
+

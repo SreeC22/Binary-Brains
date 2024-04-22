@@ -1,4 +1,6 @@
 import ace from 'ace-builds/src-noconflict/ace'; // this isnt used but it needs to be here for it to work. idk why.
+import 'ace-builds/src-noconflict/ext-beautify';
+import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/mode-c_cpp';
 import 'ace-builds/src-noconflict/mode-csharp';
 import 'ace-builds/src-noconflict/mode-java';
@@ -11,20 +13,18 @@ import 'ace-builds/src-noconflict/mode-swift';
 import 'ace-builds/src-noconflict/mode-typescript';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-monokai';
-import { BiSolidDownArrowAlt } from "react-icons/bi";
-import React, { useState, useEffect, useRef } from "react";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
+
 import {useMediaQuery, Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button as CustomButton, Center, ChakraProvider, CloseButton, Flex, FormLabel, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList, Slide,Icon, Text, useColorMode, useColorModeValue, VStack } from "@chakra-ui/react";
-import 'ace-builds/src-noconflict/ext-language_tools'; 
-import 'ace-builds/src-noconflict/ext-beautify';
-import { useAuth } from '../Components/AuthContext'; 
-import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
 import { useToast } from "@chakra-ui/react";
-import AceEditor from 'react-ace';
+
 import { motion } from "framer-motion"; // Import motion from Framer Motion
-import { FaCode, FaCog, FaCube, FaPaste,FaTimes,FaUpload, FaSearchPlus, FaSearchMinus, FaDownload } from 'react-icons/fa';
-import axios from 'axios';
+import React, { useEffect, useRef, useState } from "react";
+import AceEditor from 'react-ace';
+import { AiOutlineCheckCircle, AiOutlineCloseCircle } from 'react-icons/ai';
+import { FaCode, FaCog, FaCube, FaDownload, FaPaste, FaSearchMinus, FaSearchPlus, FaTimes, FaUpload } from 'react-icons/fa';
 import { SiConvertio } from "react-icons/si";
+import { useAuth } from '../Components/AuthContext';
 
 const languages = [
   { label: "Python", value: "python", icon: <PythonOriginal /> },
@@ -55,7 +55,9 @@ const TranslateCode = () => {
   useEffect(() => {
     const callAPI = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8080/api/test_gpt3');
+        const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
+
+        const response = await fetch(`${apiUrl}/api/test_gpt3`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -113,9 +115,10 @@ const TranslateCode = () => {
     setFontSize(prevFontSize => Math.max(prevFontSize - 2, 8));
   };
 
+
   const handleCopyOutputCode = () => {
     navigator.clipboard.writeText(outputCode).then(() => {
-      toast({
+        toast({
         title: "Copied.",
         description: "Code copied to clipboard successfully.",
         status: "success",
@@ -132,70 +135,72 @@ const TranslateCode = () => {
     };
 
   const fetchTranslatedCode = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:8080/backendtranslationlogic', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            source_code: inputCode,
-            source_language: sourceLanguage,
-            target_language: targetLanguage,
-          }),
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+  const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
 
-        const result = await response.json();
-        console.log("API response:", result);
-        setOutputCode(result.translated_code); 
-        console.log(outputCode);// Set the translated code received from the API
-
-        await saveTranslationHistory();
-              
-        toast({
-          title: "Translation Successful",
-          description: "Translation completed successfully.",
-          status: "success",
-          duration: 5000,
-          isClosable: true,
-          position: "top",
-        });
-      } 
-    catch (error) {
-      console.error("Error during translation:", error);
-      if (error.message === "Rate limit exceeded. Please try again later.") {
-        toast({
-          title: "Rate Limit Exceeded",
-          description: "The rate limit for translation API has been exceeded. Please try again later.",
-          status: "error",
-          duration: 9000,
-          isClosable: true,
-          position: "top",
-        });
-      } else if (error.message === "Translation timeout") {
-        toast({
-          title: "Translation Timeout",
-          description: "Translation took longer than 5 minutes. Please try again later.",
-          status: "error",
-          duration: 9000,
-          isClosable: true,
-          position: "top",
-        });
-      } else {
-        toast({
-          title: "Translation Error",
-          description: error.message,
-          status: "error",
-          duration: 9000, 
-          isClosable: true,
-          position: "top",
-        });
+    try {
+      const response = await fetch(`${apiUrl}/backendtranslationlogic`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          source_code: inputCode,
+          source_language: sourceLanguage,
+          target_language: targetLanguage,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const result = await response.json();
+      console.log("API response:", result);
+      setOutputCode(result.translated_code); 
+      console.log(outputCode);// Set the translated code received from the API
+
+      await saveTranslationHistory();
+             
+      toast({
+        title: "Translation Successful",
+        description: "Translation completed successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } 
+  catch (error) {
+    console.error("Error during translation:", error);
+    if (error.message === "Rate limit exceeded. Please try again later.") {
+      toast({
+        title: "Rate Limit Exceeded",
+        description: "The rate limit for translation API has been exceeded. Please try again later.",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+        position: "top",
+      });
+    } else if (error.message === "Translation timeout") {
+      toast({
+        title: "Translation Timeout",
+        description: "Translation took longer than 5 minutes. Please try again later.",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+        position: "top",
+      });
+    } else {
+      toast({
+        title: "Translation Error",
+        description: error.message,
+        status: "error",
+        duration: 9000, 
+        isClosable: true,
+        position: "top",
+      });
     }
-  };
+  }
+};
 
   const handleFileChange = (event) => {
       const file = event.target.files[0];
@@ -210,102 +215,106 @@ const TranslateCode = () => {
       fileInputRef.current.click();
   };
 
-  const saveTranslationHistory = async () => {
-    // Ensure there's translated content to save
-    if (!user || outputCode.trim() === "") {
-      console.error("No user logged in or outputCode is empty.");
+const saveTranslationHistory = async () => {
+  // Ensure there's translated content to save
+  if (!user || outputCode.trim() === "") {
+    console.error("No user logged in or outputCode is empty.");
+    return;
+  }
+  const apiUrl = process.env.REACT_APP_BACKEND_URL;
+
+  const requestData = {
+    email: user.email, // Assuming `user` object has an `email` property
+    source_code: inputCode,
+    translated_code: outputCode,
+    source_language: sourceLanguage,
+    target_language: targetLanguage,
+  };
+
+  console.log("Sending request with data:", requestData);
+  
+    try {
+      const response = await fetch(`${apiUrl}/save_translation_history`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email, // Assuming `user` object has an `email` property
+          source_code: inputCode,
+          translated_code: outputCode,
+          source_language: sourceLanguage,
+          target_language: targetLanguage,
+        }),      });
+  
+      if (!response.ok) {
+        console.error(`HTTP error! status: ${response.status}`);
+        return;
+      }
+  
+      console.log("Translation history saved successfully");
+    } catch (error) {
+      console.error("Error saving translation history:", error);
+    }
+  };
+
+//the way handleconvert works : when u press convert button, it calls preprocess api in the handle convert function 
+//and then it calls the translate api which is in the fetchtranslate code function
+const handleConvert = async () => {
+  setOutputCode(""); // Reset output code
+  setError(""); // Clear any existing errors
+    toast({
+      title: "Translation Queued",
+      description: "Your translation is being processed. Please wait...",
+      status: "info",
+      duration: 5000, // Setting duration to null to make it persist until user interaction
+      isClosable: true,
+      position: "top",
+    });
+    if (!sourceLanguage || !targetLanguage) {
+      setError("Both source and target languages are required");
       return;
     }
+    if (sourceLanguage === targetLanguage) {
+      setError("Source and target languages cannot be the same");
+      return;
+    }
+    if (!inputCode.trim()) {
+      setError("Input code is required");
+      return;
+    }
+    const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8080'; // Default to localhost if not set
 
-    const requestData = {
-      email: user.email, // Assuming `user` object has an `email` property
-      source_code: inputCode,
-      translated_code: outputCode,
-      source_language: sourceLanguage,
-      target_language: targetLanguage,
-    };
-
-    console.log("Sending request with data:", requestData);
-    
       try {
-        const response = await fetch('http://localhost:8080/save_translation_history', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: user.email, // Assuming `user` object has an `email` property
-            source_code: inputCode,
-            translated_code: outputCode,
-            source_language: sourceLanguage,
-            target_language: targetLanguage,
-          }),      });
-    
-        if (!response.ok) {
-          console.error(`HTTP error! status: ${response.status}`);
-          return;
-        }
-    
-        console.log("Translation history saved successfully");
-      } catch (error) {
-        console.error("Error saving translation history:", error);
-      }
-    };
-
-  //the way handleconvert works : when u press convert button, it calls preprocess api in the handle convert function 
-  //and then it calls the translate api which is in the fetchtranslate code function
-  const handleConvert = async () => {
-    setOutputCode(""); // Reset output code
-    setError(""); // Clear any existing errors
-      toast({
-        title: "Translation Queued",
-        description: "Your translation is being processed. Please wait...",
-        status: "info",
-        duration: 5000, // Setting duration to null to make it persist until user interaction
-        isClosable: true,
-        position: "top",
+        const preprocessedCodeResponse = await fetch(`${apiUrl}/preprocess_code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
       });
-      if (!sourceLanguage || !targetLanguage) {
-        setError("Both source and target languages are required");
-        return;
+      if (!preprocessedCodeResponse.ok) {
+        // throw new Error(`HTTP error! status: ${preprocessedCodeResponse.status}`);
+        const errorBody = await preprocessedCodeResponse.json();
+        const errorMessage = errorBody.error || `HTTP error! Status: ${preprocessedCodeResponse.status}`;
+        throw new Error(errorMessage);
       }
-      if (sourceLanguage === targetLanguage) {
-        setError("Source and target languages cannot be the same");
-        return;
-      }
-      if (!inputCode.trim()) {
-        setError("Input code is required");
-        return;
-      }
-        try {
-        const preprocessedCodeResponse = await fetch('http://127.0.0.1:8080/preprocess_code', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ code: inputCode, source_lang: sourceLanguage }),
-        });
-        if (!preprocessedCodeResponse.ok) {
-          // throw new Error(`HTTP error! status: ${preprocessedCodeResponse.status}`);
-          const errorBody = await preprocessedCodeResponse.json();
-          const errorMessage = errorBody.error || `HTTP error! Status: ${preprocessedCodeResponse.status}`;
-          throw new Error(errorMessage);
-        }
-        const preprocessedCodeResult = await preprocessedCodeResponse.json();
-        console.log(preprocessedCodeResult);
-        const unescapedCode = JSON.parse(JSON.stringify(preprocessedCodeResult.processed_code));
-        setInputCode(unescapedCode);
-        await fetchTranslatedCode();
-        await saveTranslationHistory();
-        
+      const preprocessedCodeResult = await preprocessedCodeResponse.json();
+      console.log(preprocessedCodeResult);
+      const unescapedCode = JSON.parse(JSON.stringify(preprocessedCodeResult.processed_code));
+      setInputCode(unescapedCode);
+      await fetchTranslatedCode();
+      await saveTranslationHistory();
+      
 
-      } catch (error) {
-        console.error("Error during preprocessing:", error);
-        setError(error.message);
-        setTimeout(() => {
-          setError(''); 
-        }, 4000);
-    
-      }
-  };
+    } catch (error) {
+      console.error("Error during preprocessing:", error);
+      setError(error.message);
+      setTimeout(() => {
+        setError(''); 
+      }, 4000);
+  
+    }
+};
+  
     
   const handleCopy = () => {
       navigator.clipboard.writeText(inputCode).then(() => {
