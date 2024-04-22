@@ -1,22 +1,16 @@
-import React, { useEffect, useState,useMemo, useContext } from 'react';
+import React, { useEffect, useState,useMemo } from 'react';
 import { useAuth  }from '../Components/AuthContext'; 
 import {
   VStack,
   Flex,
   IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  MenuGroup,
   Box,
   Text,
   Button,
-  useDisclosure,
   Select,
   useToast,
 } from '@chakra-ui/react';
-import { ArrowUpIcon, ArrowDownIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { ArrowUpIcon, ArrowDownIcon } from '@chakra-ui/icons';
 
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/theme-monokai'; // make sure you've imported the theme
@@ -35,11 +29,10 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools'; 
 import 'ace-builds/src-noconflict/ext-beautify';
 
-import { DeleteIcon, CloseIcon } from '@chakra-ui/icons';
+import { DeleteIcon } from '@chakra-ui/icons';
 
 
 const TranslateHistory = () => {
-  const authContext = useContext(useAuth);
   const { user } = useAuth();
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,10 +83,6 @@ const TranslateHistory = () => {
         // ... other languages
       };
       return modeMap[language.toLowerCase()] || 'text';
-    };
-    // Function to format the date
-    const formatDate = (timestamp) => {
-      return new Date(parseInt(timestamp.$date.$numberLong, 10)).toLocaleString('en-US');
     };
     const deleteHistoryEntry = async (created_at) => {
       if (!created_at || !created_at.$date || !created_at.$date.$numberLong) {

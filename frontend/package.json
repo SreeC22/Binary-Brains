@@ -8,6 +8,7 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@monaco-editor/react": "^4.6.0",
+    "@rive-app/react-canvas": "^4.8.9",
     "@testing-library/user-event": "^13.5.0",
     "ace-builds": "^1.32.9",
     "axios": "^1.6.8",

@@ -14,7 +14,7 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import { BiSolidDownArrowAlt } from "react-icons/bi";
 import React, { useState, useEffect, useRef } from "react";
 import { CplusplusOriginal, CsharpOriginal, JavaOriginal, MatlabOriginal, PerlOriginal, PythonOriginal, RubyOriginal, RustOriginal, SwiftOriginal, TypescriptOriginal } from 'devicons-react';
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button as CustomButton, Center, ChakraProvider, CloseButton, Flex, FormLabel, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList, Slide,Icon, Text, useColorMode, useColorModeValue, VStack } from "@chakra-ui/react";
+import {useMediaQuery, Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button as CustomButton, Center, ChakraProvider, CloseButton, Flex, FormLabel, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList, Slide,Icon, Text, useColorMode, useColorModeValue, VStack } from "@chakra-ui/react";
 import 'ace-builds/src-noconflict/ext-language_tools'; 
 import 'ace-builds/src-noconflict/ext-beautify';
 import { useAuth } from '../Components/AuthContext'; 
@@ -333,12 +333,11 @@ const TranslateCode = () => {
   };
 
   const HeadingSteps = () => (
-      
-      <Box paddingY={4} ml="auto" style={{ backgroundColor }}>
-        <HStack spacing={16} justify="center" marginTop={16} marginBottom={16} style={{ backgroundColor }}> {/* Increased spacing */}
+      <Box paddingY={4} style={{ backgroundColor }}>
+        <HStack spacing={16} justify="center" >
           <VStack align="left" spacing={2} >
             <FaCube size={40} color={"black"} />
-            <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Step-by-Step Code Translation Process</Text>
+            <Text fontSize="32" fontWeight="bold" fontFamily="Gelasio">Step-by-Step Code Translation Process</Text>
             <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
           </VStack>
           <VStack align="left" spacing={2}>
@@ -354,12 +353,12 @@ const TranslateCode = () => {
         </HStack>
       </Box>
     );
+
   return (
     <>
-
    <ChakraProvider>
    <HeadingSteps />
-   <VStack spacing={4} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}> 
+   <VStack spacing={6} align="stretch" style={{ backgroundColor, minHeight: "120vh" }}> 
          <Flex
          justifyContent="center"              
                 >
@@ -386,6 +385,7 @@ const TranslateCode = () => {
              </Text>
            </Box>
        </Flex>
+       {/*Source Language*/}
      <Flex justifyContent="space-between">
        <Box position="relative">
        <Menu>
@@ -419,6 +419,7 @@ const TranslateCode = () => {
            </MenuList>
        </Menu>
        </Box>
+       {/*Target Language*/}
 
        <Box position="relative">
          <Menu>
@@ -451,6 +452,7 @@ const TranslateCode = () => {
 
        </Box>
      </Flex>
+    {/*Input Code Language*/}
      <Box display="flex" justifyContent="space-between">
             <Box width="48%" p="30px">
               <FormLabel htmlFor="inputCode" display="flex" alignItems="center">
@@ -550,7 +552,7 @@ const TranslateCode = () => {
                    />
              </div>
            </Box>
-
+          {/*Output Code Language Editor */}
            <Box width="48%" p="30px">
              <FormLabel htmlFor="outputCode" display="flex" alignItems="center">
                Converted Code
@@ -585,37 +587,33 @@ const TranslateCode = () => {
            cursor="pointer"
            color="white"
          />
-                 <IconButton
-                   title="Clear"
-                   icon={<FaTimes />}
-                   onClick={() => setOutputCode('')}
-                   position="absolute"
-                   top="60px"
-                   right="8px"
-                   zIndex="999"
-                   backgroundColor="transparent"
-                   border="none"
-                   cursor="pointer"
-                   color="white"
-                 />
-                
-               
-                 <AceEditor
-                   id="outputCode"
-                   mode={targetLanguage ? (targetLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === targetLanguage)?.value || "text") : "text"}
-                   theme="monokai"
-                   width="100%"
-                   height="500px"
-                   value= {outputCode}
-                   readOnly={true}
-                   useWorker={false}
-                 />
-             </div>
-           </Box>
-         </Box>
-
-
-     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, pointerEvents: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <IconButton
+            title="Clear"
+            icon={<FaTimes />}
+            onClick={() => setOutputCode('')}
+            position="absolute"
+            top="60px"
+            right="8px"
+            zIndex="999"
+            backgroundColor="transparent"
+            border="none"
+            cursor="pointer"
+            color="white"
+          />
+          <AceEditor
+           id="outputCode"
+           mode={targetLanguage ? (targetLanguage === "cpp" ? "c_cpp" : languages.find(lang => lang.value === targetLanguage)?.value || "text") : "text"}
+           theme="monokai"
+           width="100%"
+           height="500px"
+           value= {outputCode}
+           readOnly={true}
+           useWorker={false}
+           />
+        </div>
+      </Box>
+    </Box>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, pointerEvents: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
        <Slide in={Boolean(error)} direction="bottom">
          {error && (
            <Alert
