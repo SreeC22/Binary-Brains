@@ -16,8 +16,10 @@ const FeedbackSummary = () => {
     }, []);
 
     const fetchFeedbackData = async () => {
+        const apiUrl = process.env.REACT_APP_BACKEND_URL; // Default to localhost if not set
+
         try {
-            const response = await fetch('http://localhost:8080/feedback');
+            const response = await fetch(`${apiUrl}/feedback`);
             const data = await response.json();
             if (data.aggregatedData) {
                 setAggregatedData(data.aggregatedData);

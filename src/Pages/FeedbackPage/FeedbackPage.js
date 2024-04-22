@@ -26,10 +26,11 @@ const FeedbackPage = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         const feedbackData = new FormData(event.currentTarget);
+        const apiUrl = process.env.REACT_APP_BACKEND_URL; // Default to localhost if not set
 
         try {
-            const response = await fetch('http://localhost:8080/submit_feedback', {
-                method: 'POST',
+            const response = await fetch(`${apiUrl}/submit_feedback`, {
+                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
