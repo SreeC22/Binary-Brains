@@ -117,5 +117,5 @@ fn init_routes(cfg: &mut web::ServiceConfig) {
 
     .service(
         web::resource("/verify-2fa").route(web::post().to(handlers::verify_2fa))
-    )
+    );
 }
