@@ -40,10 +40,10 @@ use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Serialize};
 
 pub async fn get_user_profile(auth: BearerAuth, db: web::Data<mongodb::Collection<User>>) -> impl Responder {
-    println!("Received token: {}", auth.token()); // Debug print
+    //println!("Received token: {}", auth.token()); // Debug print
     match decode_jwt(auth.token()) {
         Ok(claims) => {
-            println!("JWT claims decoded successfully: {:?}", claims); // Debug print
+            //println!("JWT claims decoded successfully: {:?}", claims); // Debug print
             match get_user_by_email(&db, &claims.email).await {
                 Ok(Some(user)) => HttpResponse::Ok().json(user),
                 Ok(None) => {
