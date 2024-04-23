@@ -49,8 +49,8 @@ const TranslateHistory = () => {
 
   useEffect(() => {
     const fetchTranslationHistory = async () => {
-      const baseUrl = process.env.REACT_APP_BACKEND_URL; // Make sure to set API_BASE_URL in your .env file
-
+      const baseUrl = process.env.REACT_APP_BACKEND_URL;
+      setIsLoading(true);
       try {
         const response = await fetch(`${baseUrl}/get_translation_history/${encodeURIComponent(user.email)}`);
         if (!response.ok) {
@@ -59,10 +59,11 @@ const TranslateHistory = () => {
         const data = await response.json();
         setHistory(data);
       } catch (error) {
+        console.error('Fetching error:', error);
         setError('Failed to load translation history');
       }
       setIsLoading(false);
-    };
+    };    
     fetchTranslationHistory();
   },[user]);
 
@@ -108,10 +109,10 @@ const TranslateHistory = () => {
         });
     
       // Log each item with the parsed date for inspection
-      console.log("Sorted and Filtered History with Dates:", result.map(item => ({
-        ...item,
-        parsedDate: item.created_at && item.created_at.$date ? (item.created_at.$date.$numberLong ? new Date(parseInt(item.created_at.$date.$numberLong)).toString() : new Date(item.created_at.$date).toString()) : 'Invalid Date'
-      })));
+      //console.log("Sorted and Filtered History with Dates:", result.map(item => ({
+        //...item,
+        //parsedDate: item.created_at && item.created_at.$date ? (item.created_at.$date.$numberLong ? new Date(parseInt(item.created_at.$date.$numberLong)).toString() : new Date(item.created_at.$date).toString()) : 'Invalid Date'
+      //})));
     
       return result;
     }, [history, filterSourceLanguage, filterTargetLanguage, sortDirection]); 
