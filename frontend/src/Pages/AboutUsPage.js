@@ -24,7 +24,7 @@ const AboutUsPage = () => {
             linkedinUrl: "https://www.linkedin.com/in/sreekaree/"
         },
         {
-            name: "Dave Petroviki",
+            name: "Dave Petrovikj",
             role: "Rust Expert",
             description: "In the digital dojo, Dave is the ninja coder, silently slicing through bugs and deploying features with stealthy precision.",
             imageUrl: DaveImage,
