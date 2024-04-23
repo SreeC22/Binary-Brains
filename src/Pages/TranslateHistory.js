@@ -49,8 +49,8 @@ const TranslateHistory = () => {
 
   useEffect(() => {
     const fetchTranslationHistory = async () => {
-      const baseUrl = process.env.REACT_APP_BACKEND_URL;
-      setIsLoading(true);
+      const baseUrl = process.env.REACT_APP_BACKEND_URL; // Make sure to set API_BASE_URL in your .env file
+
       try {
         const response = await fetch(`${baseUrl}/get_translation_history/${encodeURIComponent(user.email)}`);
         if (!response.ok) {
@@ -59,11 +59,10 @@ const TranslateHistory = () => {
         const data = await response.json();
         setHistory(data);
       } catch (error) {
-        console.error('Fetching error:', error);
         setError('Failed to load translation history');
       }
       setIsLoading(false);
-    };    
+    };
     fetchTranslationHistory();
   },[user]);
 
