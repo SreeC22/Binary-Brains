@@ -39,6 +39,7 @@ async fn main() -> std::io::Result<()> {
     let mongo_client = mongodb::Client::with_uri_str(&mongo_uri).await.expect("Failed to connect to MongoDB");
     let mongo_database = mongo_client.database("my_database");
     let mongo_database_for_translate_history = mongo_client.database("my_app");
+    let feedback_collection = mongo_database.collection::<Feedback>("feedback");
     let user_collection = mongo_database.collection::<User>("users");
     let translation_history_collection = mongo_database_for_translate_history.collection::<TranslationHistory>("translation_history");
 
