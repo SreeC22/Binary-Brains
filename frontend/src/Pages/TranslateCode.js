@@ -347,17 +347,17 @@ const handleConvert = async () => {
           <VStack align="left" spacing={2} >
             <FaCube size={40} color={"black"} />
             <Text fontSize="32" fontWeight="bold" fontFamily="Gelasio">Step-by-Step Code Translation Process</Text>
-            <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
+            <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Gelasio">Our code translation tool simplifies the process for you.</Text> {/* Removed space */}
           </VStack>
           <VStack align="left" spacing={2}>
             <FaCube size={40} color={"black"} />
-            <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Submit Your Code</Text>
-            <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">Easily submit your code and select the desired language.</Text> {/* Removed space */}
+            <Text fontSize="32" fontWeight="bold" fontFamily="Gelasio">Submit Your Code</Text>
+            <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Gelasio">Easily submit your code and select the desired language.</Text> {/* Removed space */}
           </VStack>
           <VStack align="left" spacing={2}>
             <FaCube size={40} color={"black"} />
-            <Text fontSize="32" fontWeight="bold" fontFamily="Roboto">Translation Output</Text>
-            <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Roboto">View the translated code with enhanced readability features.</Text> {/* Removed space */}
+            <Text fontSize="32" fontWeight="bold" fontFamily="Gelasio">Translation Output</Text>
+            <Text fontSize="16" color={backgroundColor === "#2D3748" ? "#ffffff" : "#000000"} marginTop={0} fontFamily="Gelasio">View the translated code with enhanced readability features.</Text> {/* Removed space */}
           </VStack>
         </HStack>
       </Box>

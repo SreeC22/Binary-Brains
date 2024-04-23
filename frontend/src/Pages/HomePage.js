@@ -31,13 +31,15 @@ const HomePage = () => {
 
   return (
     <> 
-      <Box className='HOMEPAGE'
+      <Box className="HOMEPAGE"
+        scrollSnapAlign="start"
         w="full"
         h="100vh"
         minH="100vh"
         overflow="auto"
       >
-         <Box
+      <Box
+      scrollSnapAlign="start"
       display="flex"
       w={{ base: "100%" }}
       h={{ base: "auto", lg: "900px" }}
@@ -79,10 +81,9 @@ const HomePage = () => {
       </VStack>
     </Box>
       
-        <Divider orientation="horizontal" borderColor="black" borderWidth="1px" width="full" />
-
-
-        <Box className='page 2'
+    <Divider orientation="horizontal" borderColor="black" borderWidth="1px" width="full" />
+        <Box className="page 2"
+          scrollSnapAlign="start"
           display="flex"
           w="full"
           p={{ base: "56px 32px", md: "112px 64px" }}
@@ -94,6 +95,7 @@ const HomePage = () => {
 
         >
           <Box
+            scrollSnapAlign="start"
             display="flex"
             flexDirection={{ base: "column", md: "row" }}
             alignItems="center"
@@ -143,8 +145,8 @@ const HomePage = () => {
             </Box>
           </Box>
         </Box>
-        <Divider orientation="horizontal" borderColor="black" borderWidth="1px" width="full" />
 
+        <Divider orientation="horizontal" borderColor="black" borderWidth="1px" width="full" />
         <Flex className='Get Started with Our Code Translation '
           direction="column"
           alignItems="flex-start"
@@ -210,7 +212,7 @@ const HomePage = () => {
         </Flex>
         <Divider orientation="horizontal" borderColor="black" borderWidth="1px" width="full" />
 
-        <Box className='Save time and improve accuracy'
+        <Box className="Save time and improve accuracy smooth-transition"
           display="flex"
           flexDirection={{ base: 'column', md: 'row-reverse' }}
           alignItems="flex-start"
@@ -225,6 +227,7 @@ const HomePage = () => {
           bg="lightgray"
         >
           <Box
+            className="smooth-transition"
             display="flex"
             alignItems="center"
             gap="20"
@@ -286,7 +289,7 @@ const HomePage = () => {
         </Box>
         <Divider orientation="horizontal" borderColor="black" borderWidth="1px" width="full" />
 
-        <Box className='Support for multiple programming'
+        <Box className="Support for multiple programming smooth-transition" 
           bg="#fbf2e3"
           p={{ base: "56px 32px", md: "112px 64px" }}
           display="flex"
@@ -359,7 +362,6 @@ const HomePage = () => {
         </Box>
         <Divider orientation="horizontal" borderColor="black" borderWidth="1px" width="full" />
 
-
         <Box className='FeedBack'
           padding={{ base: "56px 32px", md: "112px 64px" }}
           width="full"
@@ -374,6 +376,7 @@ const HomePage = () => {
           backdropFilter="blur(5px)"
         >
           <Box
+            scrollSnapAlign="start"
             flex={{ base: "none", md: "1" }}
             display="flex"
             flexDirection="column"
@@ -422,7 +425,7 @@ const HomePage = () => {
         </Box>
         <Divider orientation="horizontal" borderColor="black" borderWidth="1px" width="full" />
 
-        <Box className='FAQs'
+        <Box className='FAQs smooth-transition'
           // bg="#e2e8f0"
           background={`url(${faqs}), lightgray`}
           backdropFilter="blur(5px)"
@@ -498,7 +501,7 @@ const HomePage = () => {
               fontWeight="400"
               lineHeight="150%"
               textAlign="center"
-            >                    Feel free to reach out to us.
+            > Feel free to reach out to us.
             </Text>
             <Button variant="outline" borderColor="#000" colorScheme="blackAlpha" onClick={() => goToPage('/ContactUs')}>
               Contact
