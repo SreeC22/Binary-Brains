@@ -10,6 +10,7 @@ const ADMIN_EMAILS = [
     'jkr27@njit.edu',
     'va332@njit.edu',
     'dakipetrovic3@gmail.com',
+    'bill.mccann@gmail.com',
   ];
 
 export const useAuth = () => useContext(AuthContext);
