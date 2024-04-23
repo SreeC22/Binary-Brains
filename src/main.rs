@@ -38,9 +38,9 @@ async fn main() -> std::io::Result<()> {
 
     let mongo_client = mongodb::Client::with_uri_str(&mongo_uri).await.expect("Failed to connect to MongoDB");
     let mongo_database = mongo_client.database("my_database");
-    let feedback_collection = mongo_database.collection::<Feedback>("feedback");
+    let mongo_database_for_translate_history = mongo_client.database("my_app");
     let user_collection = mongo_database.collection::<User>("users");
-    let translation_history_collection = mongo_database.collection::<TranslationHistory>("translation_history");
+    let translation_history_collection = mongo_database_for_translate_history.collection::<TranslationHistory>("translation_history");
 
     let oauth_config = models::OAuthConfig {
         google_client_id: env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID"),
