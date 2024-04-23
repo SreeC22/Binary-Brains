@@ -46,10 +46,10 @@ const TranslateHistory = () => {
   const [sortDirection, setSortDirection] = useState('desc'); // 'asc' or 'desc'
 
   const languageOptions = ['Python', 'Java', 'CPP', 'Ruby', 'Rust', 'Typescript', 'Csharp', 'Perl', 'Swift', 'Matlab'];
+  const baseUrl = process.env.REACT_APP_BACKEND_URL; // Make sure to set API_BASE_URL in your .env file
 
   useEffect(() => {
     const fetchTranslationHistory = async () => {
-      const baseUrl = process.env.REACT_APP_BACKEND_URL; // Make sure to set API_BASE_URL in your .env file
 
       try {
         const response = await fetch(`${baseUrl}/get_translation_history/${encodeURIComponent(user.email)}`);
