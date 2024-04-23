@@ -101,8 +101,9 @@ const TranslateHistory = () => {
       const timestamp = created_at.$date.$numberLong;
       const date = new Date(parseInt(timestamp));
       const formattedTimestamp = date.toISOString();
-    
-      const url = `http://127.0.0.1:8080/delete_translation_history/${encodeURIComponent(formattedTimestamp)}`;
+      const baseUrl =process.env.REACT_APP_BACKEND_URL;
+
+      const url = `${baseUrl}/delete_translation_history/${encodeURIComponent(formattedTimestamp)}`;
       try {
         const response = await fetch(url, { method: 'DELETE' });
         if (!response.ok) {
@@ -134,7 +135,9 @@ const TranslateHistory = () => {
     
     
     const clearAllHistory = async () => {
-      const url = `http://127.0.0.1:8080/clear_translation_history/${encodeURIComponent(user.email)}`;
+      const baseUrl =process.env.REACT_APP_BACKEND_URL;
+
+      const url = `${baseUrl}/clear_translation_history/${encodeURIComponent(user.email)}`;  // Construct the URL dynamically
       try {
         const response = await fetch(url, {
           method: 'DELETE',
