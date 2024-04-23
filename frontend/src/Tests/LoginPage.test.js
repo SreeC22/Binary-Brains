@@ -5,13 +5,14 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../Components/AuthContext'; // Adjust the path to your AuthProvider
 import LoginPage from '../Pages/LoginPage'; // Adjust the path to your LoginPage component
 import fetchMock from 'jest-fetch-mock';
+import { useNavigate } from 'react-router-dom';
 
 fetchMock.enableMocks();
 
 // Mocking the useNavigate hook used within the LoginPage component
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
-  useNavigate: () => jest.fn(),
+  useNavigate: jest.fn(() => jest.fn()),
 }));
 
 // Mocking environmental variables
@@ -140,9 +141,11 @@ describe('Email Format and Password Validation', () => {
       expect(screen.getByText(/Passwords must match/i)).toBeInTheDocument();
     });
   });
+
   beforeEach(() => {
     fetch.resetMocks();
   });
+
   test('handles successful registration', async () => {
     fetch.mockResponseOnce(JSON.stringify({ message: 'Registration successful', user: { id: '123', email: 'user@example.com' } }), { status: 200 });
   
@@ -254,5 +257,36 @@ describe('Email Format and Password Validation', () => {
     await userEvent.click(forgotPasswordText);
     await userEvent.click(forgotPasswordText); // Simulate rapid double-click
   });
+  
+  test('displays all fields in the registration mode', async () => {
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <LoginPage />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+  
+    userEvent.click(screen.getByText(/Not registered\? Create account now/i));
+  
+    expect(screen.getByLabelText(/Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
+    expect(screen.getByTestId('passwordInput')).toBeInTheDocument();
+    expect(screen.getByTestId('confirmPasswordInput')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Register/i })).toBeInTheDocument();
+  });
+
+  test('navigates to registration page from login', async () => {
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <LoginPage />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+  
+    userEvent.click(screen.getByText(/Not registered\? Create account now/i));
+    expect(screen.getByRole('button', { name: /Register/i })).toBeInTheDocument();
+  });  
 
 });

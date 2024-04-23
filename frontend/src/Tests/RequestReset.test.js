@@ -81,4 +81,39 @@ describe('RequestReset Component', () => {
       {timeout: 500} // Specify a timeout to wait for assertions to pass. Adjust as necessary.
     );
   });
+
+  test('displays network error when the fetch fails', async () => {
+    fetch.mockRejectedValueOnce(new Error('Network error'));
+    render(<RequestReset />);
+    const inputElement = screen.getByPlaceholderText('Enter your email');
+    const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+  
+    await userEvent.type(inputElement, 'test@example.com');
+    userEvent.click(submitButton);
+  
+    await waitFor(() => 
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Error',
+        description: 'Failed to request password reset. Please try again.',
+        status: 'error',
+      }))
+    );
+  });
+  
+  test('trims the email input before submission', async () => {
+    fetch.mockResolvedValueOnce({ ok: true });
+    render(<RequestReset />);
+    const inputElement = screen.getByPlaceholderText('Enter your email');
+    const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+  
+    await userEvent.type(inputElement, '   test@example.com   ');
+    userEvent.click(submitButton);
+  
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+        body: JSON.stringify({ email: 'test@example.com' }) // Assuming JSON payload structure
+      }));
+    });
+  });
+
 });

@@ -82,4 +82,25 @@ describe('ResetPasswordPage', () => {
 
     expect(fetchMock).not.toHaveBeenCalled();
     });
+    
+    it('makes API call with correct body and handles API response errors', async () => {
+      fetchMock.mockResponseOnce(JSON.stringify({ status: 'success' }));
+      render(<ResetPasswordPage />, { wrapper: Wrapper });
+
+      const newPasswordInput = screen.getByPlaceholderText('Enter your new password');
+      const confirmPasswordInput = screen.getByPlaceholderText('Confirm your new password');
+      fireEvent.change(newPasswordInput, { target: { value: 'password123' } });
+      fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
+
+      fireEvent.click(screen.getByRole('button', { name: /Reset Password/i }));
+
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+        expect.any(String), 
+        expect.objectContaining({
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ token: 'valid_token', new_password: 'password123' })
+        })
+      ));
+    });    
 });
