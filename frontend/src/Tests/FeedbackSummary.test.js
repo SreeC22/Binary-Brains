@@ -36,7 +36,7 @@ describe('FeedbackSummary', () => {
     it('renders loading indicator before data is fetched', () => {
         render(<FeedbackSummary />);
         expect(screen.getByText('Loading...')).toBeInTheDocument();
-      });
+    });
 
     it('renders feedback summary and chart correctly', async () => {
         render(<FeedbackSummary />);
@@ -46,5 +46,6 @@ describe('FeedbackSummary', () => {
             expect(screen.getByText('Total Feedback')).toBeInTheDocument();
         });
     });
+
 
 });
