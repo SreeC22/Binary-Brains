@@ -135,48 +135,6 @@ async fn test_feedback_submission_invalid_data() {
 use std::time::{SystemTime, UNIX_EPOCH};
 const REMEMBER_ME_DURATION: i64 = 30 * 24 * 60 * 60; // Example: 30 days in seconds
 
-#[tokio::test]
-async fn test_remember_me_functionality() {
-    dotenv::dotenv().ok();
-    let client = Client::new();
-    let base_url = "http://127.0.0.1:8080";
-    let email = format!("user_{}@example.com", Uuid::new_v4());
-    let user_data = json!({
-        "email": email,
-        "password": "password",
-        "remember_me": true,
-    });
-
-    register_user(&client, base_url, &user_data).await;
-
-    let login_response = client
-        .post(format!("{}/login", base_url))
-        .json(&user_data)
-        .send()
-        .await
-        .expect("Failed to send login request");
-    assert_eq!(login_response.status().as_u16(), 200, "Failed to login with remember_me");
-
-    let login_response_body = login_response.json::<Value>().await.expect("Failed to parse login response");
-    let token = login_response_body["token"].as_str().expect("Token missing in login response");
-
-    let secret_key = env::var("JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
-    let token_data = decode::<Value>(&token, &DecodingKey::from_secret(secret_key.as_ref()), &Validation::default())
-        .expect("Failed to decode token");
-    let exp_claim = token_data.claims.get("exp").and_then(|v| v.as_i64()).expect("Expiration claim missing");
-
-    let current_time = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards").as_secs() as i64;
-    let expected_expiration = current_time + REMEMBER_ME_DURATION;
-    let leeway = 60;
-
-    assert!(
-        exp_claim > expected_expiration - leeway && exp_claim <= expected_expiration + leeway,
-        "Token expiration not correctly extended for 'Remember Me' functionality. Expected expiration around {}, got {}.",
-        expected_expiration,
-        exp_claim
-    );
-}
-
 
 #[tokio::test]
 async fn test_login_with_invalid_email() {

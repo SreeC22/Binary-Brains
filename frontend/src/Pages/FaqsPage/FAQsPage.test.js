@@ -1,84 +1,66 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import FAQsPage, { initialFaqs } from './FAQsPage'; // Adjust the import based on your actual file structure
-import '@testing-library/jest-dom';
-import { BrowserRouter } from 'react-router-dom';
+import FAQsPage from './FAQsPage';
 
-// Mocking Chakra UI hooks and components
-jest.mock('@chakra-ui/react', () => ({
-  ...jest.requireActual('@chakra-ui/react'), // Import then override
-  useToast: jest.fn(),
-  useDisclosure: () => ({
-    isOpen: false,
-    onOpen: jest.fn(),
-    onClose: jest.fn(),
-  }),
-}));
-
-// Mocking react-router-dom Link component
+// Mocking the necessary modules and methods
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  Link: ({ children }) => <div>{children}</div>,
+  Link: ({ children, to }) => <div data-testid="mock-link">{children}</div>
 }));
 
-// Mocking speech recognition
-global.window.webkitSpeechRecognition = jest.fn();
+global.window.webkitSpeechRecognition = jest.fn().mockImplementation(() => ({
+  start: jest.fn(),
+  stop: jest.fn(),
+  onresult: jest.fn(),
+  onerror: jest.fn(),
+  onend: jest.fn(),
+}));
 
-describe('FAQsPage Component Tests', () => {
-  test('renders without crashing', () => {
-    render(<FAQsPage />, { wrapper: BrowserRouter });
-    expect(screen.getByPlaceholderText('Search FAQs...')).toBeInTheDocument();
+describe('FAQsPage Component', () => {
+  beforeEach(() => {
+    render(<FAQsPage />);
+  });
+  
+  test('initial state has correct FAQs and resources', () => {
+    expect(screen.getByText('How does it work?')).toBeInTheDocument();
+    expect(screen.getByText('Tutorial 1')).toBeInTheDocument();
   });
 
-  test('displays initial FAQs', () => {
-    render(<FAQsPage />, { wrapper: BrowserRouter });
-    initialFaqs.forEach((faq) => {
-      expect(screen.getByText(faq.question)).toBeInTheDocument();
-    });
-  });
-
-  test('filter FAQs based on search term', async () => {
-    render(<FAQsPage />, { wrapper: BrowserRouter });
-    const input = screen.getByPlaceholderText('Search FAQs...');
-    fireEvent.change(input, { target: { value: 'free' } });
+  test('search functionality filters FAQs', async () => {
+    fireEvent.change(screen.getByPlaceholderText('Search FAQs...'), { target: { value: 'free' } });
     await waitFor(() => {
       expect(screen.getByText('Is it free?')).toBeInTheDocument();
-      expect(screen.queryByText('How does it work?')).not.toBeInTheDocument(); // Corrected from screen.ByText to screen.queryByText
+      expect(screen.queryByText('How does it work?')).toBeNull();
     });
-  });
-  
-  test('voice search starts and processes result correctly', () => {
-    window.webkitSpeechRecognition = jest.fn().mockImplementation(() => ({
-      start: jest.fn(),
-      onresult: jest.fn((event) => {
-        // Simulate speech recognition result
-        event({ results: [[{ transcript: "free" }]] });
-      }),
-      onerror: jest.fn(),
-      onend: jest.fn(),
-    }));
-  
-    render(<FAQsPage />, { wrapper: BrowserRouter });
-    const voiceSearchButton = screen.getByLabelText('Voice Search');
-    fireEvent.click(voiceSearchButton);
-  
-    expect(window.webkitSpeechRecognition).toHaveBeenCalled();
   });
 
-  test('FAQ filtering is case insensitive and handles special characters', async () => {
-    render(<FAQsPage />, { wrapper: BrowserRouter });
-    const input = screen.getByPlaceholderText('Search FAQs...');
-  
-    // Test case insensitivity
-    fireEvent.change(input, { target: { value: 'free'.toUpperCase() } });
-    await waitFor(() => {
-      expect(screen.getByText('Is it free?')).toBeInTheDocument();
-    });
-  
-    // Test special characters
-    fireEvent.change(input, { target: { value: 'how does it work?' } });
-    await waitFor(() => {
-      expect(screen.getByText('How does it work?')).toBeInTheDocument();
-    });
-  });  
+  test('no results when search does not match any FAQs', () => {
+    fireEvent.change(screen.getByPlaceholderText('Search FAQs...'), { target: { value: 'nonexistent' } });
+    expect(screen.queryByText('How does it work?')).toBeNull();
+  });
+
+  test('voice search button starts listening', () => {
+    fireEvent.click(screen.getByLabelText('Voice Search'));
+    expect(window.webkitSpeechRecognition).toHaveBeenCalledTimes(1);
+  });
+
+  test('handles speech recognition errors', () => {
+    const recognition = new window.webkitSpeechRecognition();
+    fireEvent.click(screen.getByLabelText('Voice Search'));
+    recognition.onerror({ error: 'not-allowed' });
+    expect(screen.queryByDisplayValue('secure')).toBeNull();
+  });
+
+  test('opens modal with content when FAQ item is clicked', () => {
+    fireEvent.click(screen.getByText('How does it work?'));
+    expect(screen.getByText('Here is how it works: Write your code...')).toBeInTheDocument();
+  });
+
+  test('resource links and downloads are functional', () => {
+    const learnMoreButton = screen.getAllByText('Learn More')[0];
+    const downloadButton = screen.getByText('Download');
+
+    expect(learnMoreButton).toBeInTheDocument();
+    expect(downloadButton).toBeInTheDocument();
+    expect(downloadButton).toHaveAttribute('href', 'meme.png');
+  });
 });

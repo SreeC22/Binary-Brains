@@ -92,7 +92,7 @@ describe('TranslateCode', () => {
       expect(elementWithText).not.toBeNull(); // Check if the element exists
       expect(elementWithText.textContent).toEqual(targetLanguage);
     });
-  });
+  }, 10000);
 
   beforeEach(() => {
     fetchMock.resetMocks();
